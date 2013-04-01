@@ -1,0 +1,128 @@
+*dispatch.txt*  Asynchronous build and test dispatcher
+
+Author:  Tim Pope <http://tpo.pe/>
+Repo:    https://github.com/tpope/vim-dispatch
+License: Same terms as Vim itself (see |license|)
+
+INTRODUCTION                                    *dispatch*
+
+Leverage the power of Vim's compiler system without being constrained by
+synchronicity.
+
+COMMANDS                                        *dispatch-commands*
+
+                                                *dispatch-:Make*
+:Make [arguments]       Using the current |:compiler| settings, dispatch a
+                        build in the foreground.  Adapter strategies vary, but
+                        the goal is visibility without stealing focus.  When
+                        the build is complete, load the results into the
+                        |quickfix| list and call |:cwindow|.  This command is
+                        preferred for shorter tasks like "build this file."
+
+:Make! [arguments]      Using the current compiler settings, dispatch a build
+                        in the background.  Use |:Copen| to load the results.
+                        This command is preferred for longer tasks like "run
+                        the entire test suite."
+
+                                                *dispatch-:Copen*
+:Copen                  Load the latest build into the quickfix list and open
+                        it with |:copen|.  You may call this before the
+                        process is finished.
+
+:Copen!                 Load the latest build into the quickfix list using a
+                        catch-all parser.  This is useful when you can't tell
+                        what went wrong.
+
+                                                *dispatch-:Dispatch*
+:Dispatch[!] {program} [arguments]
+                        Find a compiler plugin that sets 'makeprg' to
+                        {command} and use its 'errorformat' to dispatch a
+                        |:Make| for the given {command} and [arguments].  If
+                        no compiler plugin is found, the generic format
+                        %+G%.%# is used.
+
+                        :Dispatch picks a compiler by looking for
+                        CompilerSet makeprg={program} in compiler plugins.
+                        To force a given {program} to use a given {compiler},
+                        create ~/.vim/after/compiler/{compiler}.vim and add to
+                        it a line like the following: >
+
+                        " CompilerSet makeprg={program}
+<
+                                                *b:dispatch*
+:Dispatch[!]            Invoke |:Dispatch| with the command and arguments
+                        found in b:dispatch.  When absent, equivalent to
+                        |:Make|.
+
+                                                *dispatch-:FocusDispatch*
+:FocusDispatch {program} [arguments]
+                        Set a global default command for |:Dispatch| with no
+                        arguments.  Overrides |b:dispatch|.
+
+:FocusDispatch! {program} [arguments]
+                        Set a window local default command for |:Dispatch|
+                        with no arguments.  Overrides |b:dispatch| and the
+                        global default.
+
+:FocusDispatch!         Clear the global and window local defaults for
+                        |:Dispatch|.
+
+:FocusDispatch          Show the task that would run when calling |:Dispatch|
+                        with no arguments.
+
+                                                *dispatch-:Start*
+:Start {command}        Start a process in a new, focused window.
+
+:Start! {command}       Start a process in a new, unfocused window.
+
+:Start[!] -title={title} {command}
+                        Start a process in a window titled {title}.  This is
+                        not normally used interactively.
+
+STRATEGIES                                      *dispatch-strategies*
+
+Strategies are listed in order of precedence.  The first available one is
+used.  Some strategies only provide for a subset of tasks.
+
+Tmux ~
+
+Foreground makes open in a small split at the bottom.  The closure of the
+pane triggers a |VimResized| event which loads the results into the quickfix
+list.  (All other strategies use the GUI subsystem to get this to work.)
+
+The tmux strategy can be used from the GUI as well.  Either start Vim from
+inside of tmux or assign g:tmux_session.  This will use a new window for
+foreground makes rather than a split.
+
+GNU Screen ~
+
+Not used for foreground |:Make| invocations unless you're in GUI Vim.
+
+Windows ~
+
+You can use either the standard cmd.exe or a cygwin shell.  Both foreground
+and background |:Make| invocations are started minimized to prevent focus
+stealing.
+
+iTerm ~
+
+This strategy fires if you're in MacVim with at least one iTerm window open,
+or if Vim is running in iTerm itself.  In the latter case, you can't use it
+for foreground |:Make| invocations.
+
+X11 ~
+
+Uses $TERMINAL, x-terminal-emulator, or xterm.  Used only for |:Start|, as its
+insistence on stealing focus makes it infuriating for much else.
+
+Headless ~
+
+Forks tasks into the background.  It's working, you just can't see it.  Don't
+forget to check |:Copen|.  The presence of this strategy means that |:Make!|
+and |:Start!| will never block Vim.
+
+Synchronous ~
+
+When all else fails, a vanilla |:make| or |:!| is performed.
+
+ vim:tw=78:et:ft=help:norl:
