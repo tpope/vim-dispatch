@@ -126,7 +126,7 @@ want to interact with it.  Use `:Start!` to launch it in the background.
 Using dispatch.vim from a plugin is a simple matter of checking for and using
 `:Make` and `:Start` if they're available instead of `:make` and `:!`.  Your
 favorite plugin already supports it, assuming your favorite plugin is
-[rails.vim](https://github.com/tpope/rails).
+[rails.vim](https://github.com/tpope/vim-rails).
 
 ## Self-Promotion
 
