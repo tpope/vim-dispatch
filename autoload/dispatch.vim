@@ -444,6 +444,7 @@ function! s:open_quickfix(request, copen) abort
       endif
     endif
   endfor
+  redraw
 endfunction
 
 " }}}1
