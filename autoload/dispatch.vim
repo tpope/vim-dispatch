@@ -412,6 +412,7 @@ function! s:cgetfile(request, all, copen) abort
     endif
     let &l:makeprg = request.command
     execute 'cgetfile '.fnameescape(request.file)
+    silent doautocmd QuickFixCmdPost cgetfile
   catch '^E40:'
     return v:exception
   finally
