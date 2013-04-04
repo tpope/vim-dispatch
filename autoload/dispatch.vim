@@ -95,7 +95,7 @@ function! dispatch#prepare_make(request, ...) abort
   else
     let exec .= 'sleep 1; '
   endif
-  let exec = a:0 ? a:1 : (a:request.expanded . dispatch#shellpipe(a:request.file))
+  let exec .= a:0 ? a:1 : (a:request.expanded . dispatch#shellpipe(a:request.file))
 
   let after = 'rm -f ' . a:request.file . '.pid; ' .
         \ 'touch ' . a:request.file . '.complete; ' .
