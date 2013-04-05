@@ -374,8 +374,7 @@ function! dispatch#complete(file, ...) abort
       endif
     endif
     if !request.background
-      let all = get(request, 'compiler', '') ==# 'run'
-      call s:cgetfile(request, all, 0)
+      call s:cgetfile(request, 0, 0)
     endif
   endif
   return ''
