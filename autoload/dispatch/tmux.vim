@@ -33,7 +33,13 @@ endfunction
 
 function! dispatch#tmux#make(request) abort
   let session = get(g:, 'tmux_session', '')
-  let exec = dispatch#prepare_make(a:request, 'cd "'.a:request.directory.'"; '.a:request.expanded)
+
+  if findfile('.rvmrc', '.;') != ''
+    let execshell = $rvm_bin_path . '/rvm-shell'
+  else
+    let execshell = '/bin/sh'
+  endif
+  let exec = dispatch#prepare_make(a:request, 'exec '.execshell.' -c "cd \"'.a:request.directory.'\"; '.a:request.expanded.'"')
 
   let title = shellescape(get(a:request, 'compiler', 'make'))
   if get(a:request, 'background', 0)
