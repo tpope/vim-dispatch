@@ -25,7 +25,7 @@ function! dispatch#tmux#handle(request) abort
     if a:request.background
       let command .= ' -d'
     endif
-    let command .= ' ' . shellescape('cd '.shellescape(getcwd()).'; '.a:request.expanded)
+    let command .= ' ' . shellescape('exec ' . dispatch#isolate(a:request.expanded))
     call system(command)
     return 1
   endif
@@ -33,7 +33,7 @@ endfunction
 
 function! dispatch#tmux#make(request) abort
   let session = get(g:, 'tmux_session', '')
-  let exec = dispatch#prepare_make(a:request, 'cd "'.a:request.directory.'"; '.a:request.expanded)
+  let script = dispatch#isolate(dispatch#prepare_make(a:request, a:request.expanded))
 
   let title = shellescape(get(a:request, 'compiler', 'make'))
   if get(a:request, 'background', 0)
@@ -44,7 +44,7 @@ function! dispatch#tmux#make(request) abort
     let cmd = 'split-window -l 10 -d'
   endif
 
-  let cmd .= ' ' . dispatch#shellescape('-P', '-t', session.':', exec)
+  let cmd .= ' ' . dispatch#shellescape('-P', '-t', session.':', 'exec ' . script)
 
   let filter = 'sed'
   let uname = system('uname')[0:-2]

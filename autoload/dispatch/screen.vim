@@ -20,9 +20,8 @@ function! dispatch#screen#handle(request) abort
 endfunction
 
 function! dispatch#screen#spawn(command, request) abort
-  let command = 'screen -ln -fn -t '.dispatch#shellescape(
-        \   a:request.title, &shell, &shellcmdflag,
-        \   'cd "' . a:request.directory . '"; ' . a:command)
+  let command = 'screen -ln -fn -t '.dispatch#shellescape(a:request.title)
+        \ . ' ' . dispatch#isolate(a:command)
   if a:request.background
     call system(command)
   else

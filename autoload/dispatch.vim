@@ -108,6 +108,24 @@ function! dispatch#prepare_make(request, ...) abort
   endif
 endfunction
 
+function! dispatch#isolate(...)
+  let command = ['cd ' . shellescape(getcwd())]
+  for line in split(system('env'), "\n")
+    let var = matchstr(line, '^\w\+\ze=')
+    if !empty(var) && var !=# '_'
+      if &shell =~# 'csh'
+        let command += ['setenv '.var.' '.shellescape(eval('$'.var))]
+      else
+        let command += ['export '.var.'='.shellescape(eval('$'.var))]
+      endif
+    endif
+  endfor
+  let command += a:000
+  let temp = tempname()
+  call writefile(command, temp)
+  return 'env -i ' . &shell . ' ' . temp
+endfunction
+
 function! s:set_current_compiler(name)
   if empty(a:name)
     unlet! b:current_compiler
