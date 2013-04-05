@@ -375,6 +375,7 @@ function! dispatch#complete(file, ...) abort
     endif
     if !request.background
       call s:cgetfile(request, 0, 0)
+      redraw
     endif
   endif
   return ''
