@@ -108,6 +108,13 @@ function! dispatch#prepare_make(request, ...) abort
   endif
 endfunction
 
+function! dispatch#set_title(request)
+  return dispatch#shellescape('printf',
+        \ '\033]1;%s\007\033]2;%s\007',
+        \ a:request.title,
+        \ a:request.expanded)
+endfunction
+
 function! dispatch#isolate(...)
   let command = ['cd ' . shellescape(getcwd())]
   for line in split(system('env'), "\n")

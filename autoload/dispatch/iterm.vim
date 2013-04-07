@@ -20,14 +20,8 @@ function! dispatch#iterm#handle(request) abort
   endif
 endfunction
 
-function! dispatch#iterm#printf_title(request)
-  return 'printf ' . shellescape('\033]1;%s\007\033]2;%s\007') .
-        \  ' ' . shellescape(a:request.title) .
-        \  ' ' . shellescape(a:request.expanded)
-endfunction
-
 function! dispatch#iterm#spawn(command, request, activate) abort
-  let script = dispatch#isolate(dispatch#iterm#printf_title(a:request), a:command)
+  let script = dispatch#isolate(dispatch#set_title(a:request), a:command)
   return s:osascript(
       \ 'tell application "iTerm"',
       \   'tell the current terminal',

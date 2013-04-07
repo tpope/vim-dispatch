@@ -18,11 +18,7 @@ function! dispatch#x11#handle(request) abort
   else
     return 0
   endif
-  let command = dispatch#shellescape('printf',
-        \ '\033]1;%s\007\033]2;%s\007',
-        \ a:request.title,
-        \ a:request.expanded) . '; '
-        \ . a:request.expanded
+  let command = dispatch#set_title(a:request) . '; ' . a:request.expanded
   call system(dispatch#shellescape(terminal, '-e', &shell, &shellcmdflag, command). ' &')
   return 1
 endfunction

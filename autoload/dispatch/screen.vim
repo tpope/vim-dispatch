@@ -21,7 +21,7 @@ endfunction
 
 function! dispatch#screen#spawn(command, request) abort
   let command = 'screen -ln -fn -t '.dispatch#shellescape(a:request.title)
-        \ . ' ' . dispatch#isolate(a:command)
+        \ . ' ' . dispatch#isolate(dispatch#set_title(a:request), a:command)
   if a:request.background
     call system(command)
   else
