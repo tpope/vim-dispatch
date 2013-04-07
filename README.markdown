@@ -39,7 +39,7 @@ takes charge.
 * If you're in tmux, a small split will be opened at the bottom.
 * If you have iTerm running, a new tab is opened.
 * On Windows, a minimized cmd.exe window is spawned.
-* Otherwise, you get a plain old `:make invocation`.
+* Otherwise, you get a plain old `:make` invocation.
 
 When the task completes, the window closes, the errors are loaded and parsed,
 and the quickfix window automatically opens.  At no point will your focus be
