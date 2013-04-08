@@ -231,9 +231,8 @@ function! dispatch#command_complete(A, L, P) abort
   if a:L =~# '\S\+\s\S\+\s'
     return join(map(split(glob(a:A.'*'), "\n"), 'isdirectory(v:val) ? v:val . dispatch#slash() : v:val'), "\n")
   else
-    let compilers = split(globpath(escape(&rtp, ' '), 'compiler/'.a:A.'*.vim'), "\n")
     let executables = []
-    for dir in split($PATH, ':')
+    for dir in split($PATH, has('win32') ? ';' : ':')
       let executables += map(split(glob(dir.'/'.a:A.'*'), "\n"), 'v:val[strlen(dir)+1 : -1]')
     endfor
     return join(sort(dispatch#uniq(executables)), "\n")
