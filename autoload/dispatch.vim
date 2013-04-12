@@ -250,7 +250,7 @@ function! dispatch#compile_command(bang, args) abort
   else
     let args = '_'
     for vars in [b:, g:, t:, w:]
-      if has_key(vars, 'dispatch')
+      if has_key(vars, 'dispatch') && type(vars.dispatch) == type('')
         let args = vars.dispatch
       endif
     endfor
