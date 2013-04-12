@@ -75,6 +75,10 @@ COMMANDS                                        *dispatch-commands*
 
 :Start! {command}       Start a process in a new, unfocused window.
 
+                                                *b:start*
+:Start[!]               With no arguments, |:Start| the command given by
+                        |b:start|.  If not set, falls back to 'shell'.
+
 :Start[!] -title={title} {command}
                         Start a process in a window titled {title}.  This is
                         not normally used interactively.
