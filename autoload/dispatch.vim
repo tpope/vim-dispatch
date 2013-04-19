@@ -195,7 +195,7 @@ function! dispatch#compiler_for_program(program) abort
   endif
   for plugin in reverse(split(globpath(escape(&rtp, ' '), 'compiler/*.vim', 1), "\n"))
     for line in readfile(plugin, '', 100)
-      if matchstr(line, '\<CompilerSet\s\+makeprg=\zs[[:alnum:]_]\+') == a:program
+      if matchstr(line, '\<CompilerSet\s\+makeprg=\zs[[:alnum:]_-]\+') == a:program
         return fnamemodify(plugin, ':t:r')
       endif
     endfor
