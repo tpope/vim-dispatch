@@ -44,7 +44,7 @@ function! dispatch#tmux#make(request) abort
     let cmd = 'split-window -l 10 -d'
   endif
 
-  let cmd .= ' ' . dispatch#shellescape('-P', '-t', session.':', dispatch#set_title(a:request) . '; exec ' . script)
+  let cmd .= ' ' . dispatch#shellescape('-P', '-t', session.':', 'exec ' . script)
 
   let filter = 'sed'
   let uname = system('uname')[0:-2]
