@@ -49,7 +49,7 @@ function! dispatch#tmux#make(request) abort
   let filter = 'sed'
   let uname = system('uname')[0:-2]
   if uname ==# 'Darwin'
-    let filter .= ' -l'
+    let filter = '/usr/bin/sed -l'
   elseif uname ==# 'Linux'
     let filter .= ' -u'
   endif
