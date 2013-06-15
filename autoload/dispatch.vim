@@ -430,7 +430,7 @@ function! s:cgetfile(request, all, copen) abort
   let dir = getcwd()
   try
     call s:set_current_compiler(get(request, 'compiler', ''))
-    exe cd request.directory
+    exe cd fnameescape(request.directory)
     if a:all
       let &l:efm = '%+G%.%#'
     else
@@ -442,7 +442,7 @@ function! s:cgetfile(request, all, copen) abort
   catch '^E40:'
     return v:exception
   finally
-    exe cd dir
+    exe cd fnameescape(dir)
     let &l:efm = efm
     let &l:makeprg = makeprg
     call s:set_current_compiler(compiler)
