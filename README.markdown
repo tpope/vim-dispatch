@@ -128,6 +128,10 @@ Using dispatch.vim from a plugin is a simple matter of checking for and using
 favorite plugin already supports it, assuming your favorite plugin is
 [rails.vim](https://github.com/tpope/vim-rails).
 
+## Compatibility
+
+You'll be needing a `tmux -V` version of at least `1.6` for this plugin to work.
+
 ## Self-Promotion
 
 Like dispatch.vim?  Follow the repository on
