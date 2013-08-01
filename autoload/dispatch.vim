@@ -193,7 +193,7 @@ function! dispatch#compiler_for_program(program) abort
   if a:program ==# 'make'
     return 'make'
   endif
-  for plugin in reverse(split(globpath(escape(&rtp, ' '), 'compiler/*.vim', 1), "\n"))
+  for plugin in reverse(split(globpath(escape(&rtp, ' '), 'compiler/*.vim'), "\n"))
     for line in readfile(plugin, '', 100)
       if matchstr(line, '\<CompilerSet\s\+makeprg=\zs[[:alnum:]_-]\+') == a:program
         return fnamemodify(plugin, ':t:r')
