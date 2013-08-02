@@ -295,7 +295,7 @@ function! dispatch#compile_command(bang, args) abort
   endif
   let request.title = get(request, 'compiler', 'make')
 
-  if &autowrite
+  if &autowrite || &autowriteall
     wall
   endif
 
