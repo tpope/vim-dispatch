@@ -36,7 +36,7 @@ function! dispatch#shellescape(...) abort
   return join(args, ' ')
 endfunction
 
-let s:flags = '\%(:[p8~.htre]\|:g\=s\(\.\).\{-\}\1.\{-\}\1\)*'
+let s:flags = '\%(:[p8~.htre]:g\=s\(.\).\{-\}\1.\{-\}\1\)*'
 let s:expandable = '\\*\%(<\w\+>\|%\|#\d*\)' . s:flags
 function! dispatch#expand(string) abort
   return substitute(a:string, s:expandable, '\=s:expand(submatch(0))', 'g')
