@@ -10,9 +10,9 @@ function! s:escape(str)
     return '"' . substitute(a:str, '"', '""', 'g') . '"'
   else
     let esc = exists('+shellxescape') ? &shellxescape : '"&|<>()@^'
-    return &shellquote .
+    return &shellxquote .
           \ substitute(a:str, '['.esc.']', '^&', 'g') .
-          \ get({'(': ')', '"(': ')"'}, &shellquote, &shellquote)
+          \ get({'(': ')', '"(': ')"'}, &shellxquote, &shellxquote)
   endif
 endfunction
 
