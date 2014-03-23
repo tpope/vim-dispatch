@@ -196,14 +196,27 @@ endfunction
 " }}}1
 " :Dispatch, :Make {{{1
 
-function! dispatch#compiler_for_program(program) abort
-  if a:program ==# 'make'
+function! dispatch#compiler_for_program(args) abort
+  let program = fnamemodify(matchstr(a:args, '\S\+'), ':t:r')
+  if program ==# 'make'
     return 'make'
   endif
-  for plugin in reverse(split(globpath(escape(&rtp, ' '), 'compiler/*.vim'), "\n"))
-    for line in readfile(plugin, '', 100)
-      if matchstr(line, '\<CompilerSet\s\+makeprg=\zs[[:alnum:]_-]\+') == a:program
-        return fnamemodify(plugin, ':t:r')
+  let plugins = map(reverse(split(globpath(escape(&rtp, ' '), 'compiler/*.vim'), "\n")), '[fnamemodify(v:val, ":t:r"), readfile(v:val)]')
+  for [plugin, lines] in plugins
+    for line in lines
+      let full = substitute(substitute(
+            \ matchstr(line, '\<CompilerSet\s\+makeprg=\zs\a\%(\\.\|[^[:space:]"]\)*'),
+            \ '\\\(.\)', '\1', 'g'),
+            \ ' \=["'']\=\%(%\|\$\*\|--\w\@!\).*', '', '')
+      if !empty(full) && strpart(a:args, 0, len(full)) ==# full
+        return plugin
+      endif
+    endfor
+  endfor
+  for [plugin, lines] in plugins
+    for line in lines
+      if matchstr(line, '\<CompilerSet\s\+makeprg=\zs[[:alnum:]_-]\+') == program
+        return plugin
       endif
     endfor
   endfor
@@ -290,7 +303,7 @@ function! dispatch#compile_command(bang, args) abort
     let request.format = &errorformat
     let request.compiler = get((empty(&l:makeprg) ? g: : b:), 'current_compiler', '')
   else
-    let request.compiler = dispatch#compiler_for_program(fnamemodify(executable, ':t:r'))
+    let request.compiler = dispatch#compiler_for_program(args)
     if !empty(request.compiler)
       call extend(request,dispatch#compiler_options(request.compiler))
     endif

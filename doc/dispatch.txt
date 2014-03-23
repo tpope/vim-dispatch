@@ -41,8 +41,9 @@ COMMANDS                                        *dispatch-commands*
                         no compiler plugin is found, the generic format
                         %+G%.%# is used.
 
-                        :Dispatch picks a compiler by looking for
-                        CompilerSet makeprg={program} in compiler plugins.
+                        :Dispatch picks a compiler by looking for either
+                        CompilerSet makeprg={program}\ [arguments] or
+                        CompilerSet makeprg={command} in compiler plugins.
                         To force a given {program} to use a given {compiler},
                         create ~/.vim/after/compiler/{compiler}.vim and add to
                         it a line like the following: >
