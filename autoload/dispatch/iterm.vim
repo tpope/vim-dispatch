@@ -23,12 +23,15 @@ endfunction
 function! dispatch#iterm#spawn(command, request, activate) abort
   let script = dispatch#isolate(dispatch#set_title(a:request), a:command)
   return s:osascript(
+      \ 'if application "iTerm" is not running',
+      \   'error',
+      \ 'end if') && s:osascript(
       \ 'tell application "iTerm"',
       \   'tell the current terminal',
       \     'set oldsession to the current session',
       \     'tell (make new session)',
-      \       'set name to '.s:escape(a:request.title),
-      \       'set title to '.s:escape(a:request.command),
+      \       'set name to ' . s:escape(a:request.title),
+      \       'set title to ' . s:escape(a:request.command),
       \       'exec command ' . s:escape(script),
       \       a:request.background ? 'select oldsession' : '',
       \     'end tell',
