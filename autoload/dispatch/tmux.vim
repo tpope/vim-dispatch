@@ -10,7 +10,7 @@ let s:make_pane = tempname()
 
 function! dispatch#tmux#handle(request) abort
   let session = get(g:, 'tmux_session', '')
-  if empty($TMUX) && empty(session) || !executable('tmux')
+  if empty($TMUX) && empty(''.session) || !executable('tmux')
     return 0
   endif
   if !empty(system('tmux has-session -t '.shellescape(session))[0:-2])
@@ -38,7 +38,7 @@ function! dispatch#tmux#make(request) abort
   let title = shellescape(get(a:request, 'compiler', 'make'))
   if get(a:request, 'background', 0)
     let cmd = 'new-window -d -n '.title
-  elseif has('gui_running') || empty($TMUX) || (!empty(session) && session !=# system('tmux display-message -p "#S"')[0:-2])
+  elseif has('gui_running') || empty($TMUX) || (!empty(''.session) && session !=# system('tmux display-message -p "#S"')[0:-2])
     let cmd = 'new-window -n '.title
   else
     let cmd = 'split-window -l 10 -d'
