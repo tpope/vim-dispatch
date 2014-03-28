@@ -167,6 +167,9 @@ function! dispatch#start(command, ...) abort
   let command = a:command
   if empty(command) && type(get(b:, 'start', [])) == type('')
     let command = b:start
+    if command =~# '^:.'
+      return substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', '')
+    endif
   endif
   let title = matchstr(command, '-title=\zs\%(\\.\|\S\)*')
   if !empty(title)
@@ -280,6 +283,8 @@ function! dispatch#compile_command(bang, args) abort
 
   if args =~# '^!'
     return 'Start' . (a:bang ? '!' : '') . ' ' . args[1:-1]
+  elseif args =~# '^:.'
+    return substitute(a:args, '\>', (a:bang ? '!' : ''), '')
   endif
   let executable = matchstr(args, '\S\+')
 

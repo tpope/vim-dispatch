@@ -17,7 +17,7 @@ command! -bang -nargs=* -complete=file Make
       \ Dispatch<bang> _ <args>
 
 command! -bang -nargs=* -complete=custom,dispatch#command_complete Start
-      \ call dispatch#start(<q-args>, {'background': <bang>0})
+      \ execute dispatch#start(<q-args>, {'background': <bang>0})
 
 command! -bang Copen call dispatch#copen(<bang>0)
 
