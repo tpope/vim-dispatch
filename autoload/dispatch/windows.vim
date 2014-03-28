@@ -41,7 +41,7 @@ function! dispatch#windows#make(request) abort
     let exec = dispatch#prepare_make(a:request)
   else
     let exec =
-          \ "wmic process where (Name='WMIC.exe' AND CommandLine LIKE '\\%\\%\\%TIME\\%\\%\\%') get ParentProcessId | more +1 > ".a:request.file.'.pid' .
+          \ "wmic process where ^(Name='WMIC.exe' AND CommandLine LIKE '\\%\\%\\%TIME\\%\\%\\%'^) get ParentProcessId | more +1 > ".a:request.file.'.pid' .
           \ ' & ' . escape(a:request.expanded, '%#!') .
           \ ' ' . dispatch#shellpipe(a:request.file) .
           \ ' & cd . > ' . a:request.file . '.complete' .
