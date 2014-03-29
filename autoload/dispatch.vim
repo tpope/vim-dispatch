@@ -167,13 +167,13 @@ function! dispatch#start(command, ...) abort
   let command = a:command
   if empty(command) && type(get(b:, 'start', [])) == type('')
     let command = b:start
-    if command =~# '^:.'
-      return substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', '')
-    endif
   endif
   let title = matchstr(command, '-title=\zs\%(\\.\|\S\)*')
   if !empty(title)
     let command = command[strlen(title) + 8 : -1]
+  endif
+  if command =~# '^:.'
+    return substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', '')
   endif
   if empty(command)
     let command = &shell
