@@ -40,11 +40,13 @@ function! dispatch#windows#make(request) abort
   if &shellxquote ==# '"'
     let exec = dispatch#prepare_make(a:request)
   else
+    let pidfile = a:request.file.'.pid'
     let exec =
-          \ "wmic process where ^(Name='WMIC.exe' AND CommandLine LIKE '\\%\\%\\%TIME\\%\\%\\%'^) get ParentProcessId | more +1 > ".a:request.file.'.pid' .
+          \ "wmic process where ^(Name='WMIC.exe' AND CommandLine LIKE '\\%\\%\\%TIME\\%\\%\\%'^) get ParentProcessId | more +1 > " . pidfile .
           \ ' & ' . escape(a:request.expanded, '%#!') .
           \ ' ' . dispatch#shellpipe(a:request.file) .
           \ ' & cd . > ' . a:request.file . '.complete' .
+          \ ' & del ' . pidfile .
           \ ' & ' . dispatch#callback(a:request)
   endif
 
