@@ -287,7 +287,7 @@ function! dispatch#compile_command(bang, args) abort
   if args =~# '^!'
     return 'Start' . (a:bang ? '!' : '') . ' ' . args[1:-1]
   elseif args =~# '^:.'
-    return substitute(a:args, '\>', (a:bang ? '!' : ''), '')
+    return substitute(args, '\>', (a:bang ? '!' : ''), '')
   endif
   let executable = matchstr(args, '\S\+')
 
