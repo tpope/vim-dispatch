@@ -154,6 +154,7 @@ function! s:dispatch(request) abort
     if !empty(response)
       redraw
       echo ':!'.a:request.expanded . ' ('.handler.')'
+      let a:request.handler = handler
       return 1
     endif
   endfor
@@ -173,6 +174,7 @@ function! dispatch#start(command, ...) abort
     let command = command[strlen(title) + 8 : -1]
   endif
   if command =~# '^:.'
+    unlet! g:dispatch_last_start
     return substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', '')
   endif
   if empty(command)
@@ -190,6 +192,7 @@ function! dispatch#start(command, ...) abort
         \ 'expanded': dispatch#expand(command),
         \ 'title': title,
         \ }, a:0 ? a:1 : {})
+  let g:dispatch_last_start = request
   if !s:dispatch(request)
     execute '!' . request.command
   endif
