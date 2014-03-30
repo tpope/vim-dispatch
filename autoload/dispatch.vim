@@ -783,6 +783,9 @@ endfunction
 function! dispatch#complete(file) abort
   if !dispatch#completed(a:file)
     let request = s:request(a:file)
+    if get(request, 'aborted')
+      return ''
+    endif
     let request.completed = 1
     try
       let status = readfile(request.file . '.complete', 1)[0]
@@ -801,6 +804,46 @@ function! dispatch#complete(file) abort
       call s:cgetfile(request, 0, -status)
       redraw
     endif
+  endif
+  return ''
+endfunction
+
+function! dispatch#pid(...) abort
+  let request = a:0 ? s:request(a:1) : get(a:makes, -1, {})
+  if has_key(request, 'file')
+    let pidfile = request.file . '.pid'
+    " PID is created asynchonously so allow a bit of time for it to catch up.
+    for i in range(10)
+      if filereadable(pidfile)
+        return 0+matchstr(get(readfile(pidfile, '', 1), 0), '\d\+')
+      endif
+      sleep 5m
+    endfor
+  endif
+endfunction
+
+" }}}1
+" :AbortDispatch {{{1
+
+function! dispatch#abort_command(bang) abort
+  if empty(s:makes)
+    return 'echoerr' string('No dispatches')
+  endif
+  let request = s:makes[-1]
+  if dispatch#completed(request)
+    return 'echomsg' string('Already finished')
+  endif
+  let request.aborted = 1
+  let pid = dispatch#pid(request)
+  if !pid
+    return 'echoerr '.string('No pid file')
+  endif
+  if exists('*dispatch#'.get(request, 'handler').'#kill')
+    return dispatch#{request.handler}#kill(pid)
+  elseif has('win32')
+    call system('taskkill /PID '.pid)
+  else
+    call system('kill -HUP '.pid)
   endif
   return ''
 endfunction
