@@ -402,11 +402,17 @@ endfunction
 function! s:request(request) abort
   if type(a:request) == type({})
     return a:request
-  elseif type(a:request) == type(0)
+  elseif type(a:request) == type(0) && a:request > 0
     return get(s:makes, a:request-1, {})
-  else
+  elseif type(a:request) == type('') && !empty(a:request)
     return get(s:files, a:request, {})
+  else
+    return {}
   endif
+endfunction
+
+function! dispatch#request(...) abort
+  return a:0 ? s:request(a:1) : get(s:makes, -1, {})
 endfunction
 
 function! dispatch#completed(request) abort
