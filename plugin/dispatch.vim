@@ -28,6 +28,9 @@ command! -bang -nargs=* -complete=customlist,dispatch#command_complete Start
 
 command! -bang -bar Copen call dispatch#copen(<bang>0)
 
+command! -bang -bar -nargs=* AbortDispatch
+      \ execute dispatch#abort_command(<bang>0, <q-args>)
+
 function! s:map(mode, lhs, rhs, ...) abort
   let flags = (a:0 ? a:1 : '') . (a:rhs =~# '^<Plug>' ? '' : '<script>')
   let head = a:lhs

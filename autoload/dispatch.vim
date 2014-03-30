@@ -944,7 +944,9 @@ function! dispatch#complete(file) abort
       let status = -1
       call writefile([-1], request.file . '.complete')
     endtry
-    if status > 0
+    if has_key(request, 'aborted')
+      let label = 'Aborted:'
+    elseif status > 0
       let label = 'Failure:'
     elseif status == 0
       let label = 'Success:'
@@ -952,12 +954,43 @@ function! dispatch#complete(file) abort
       let label = 'Complete:'
     endif
     echo label '!'.request.expanded s:postfix(request)
-    if !request.background
+    if !request.background && !get(request, 'aborted')
       call s:cwindow(request, 0, status)
       redraw
     endif
   endif
   return ''
+endfunction
+
+" }}}1
+" :AbortDispatch {{{1
+
+function! dispatch#abort_command(bang, query) abort
+  let i = len(s:makes) - 1
+  while i >= 0
+    let request = s:makes[i]
+    if strpart(request.command, 0, len(a:query)) ==# a:query &&
+          \ !dispatch#completed(request)
+      break
+    endif
+    let i -= 1
+  endwhile
+  if i < 0
+    return 'echomsg '.string('No running dispatch found')
+  endif
+  let request.aborted = 1
+  let pid = dispatch#pid(request)
+  if !pid
+    return 'echoerr '.string('No pid file')
+  endif
+  if exists('*dispatch#'.get(request, 'handler').'#kill')
+    return dispatch#{request.handler}#kill(pid)
+  elseif has('win32')
+    call system('taskkill /PID '.pid)
+  else
+    call system('kill -HUP '.pid)
+  endif
+  return 'call dispatch#complete('.request.id.')'
 endfunction
 
 " }}}1
