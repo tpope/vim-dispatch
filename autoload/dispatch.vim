@@ -164,7 +164,7 @@ endfunction
 " }}}1
 " :Start {{{1
 
-function! dispatch#start(command, ...) abort
+function! dispatch#start_command(bang, command) abort
   let command = a:command
   if empty(command) && type(get(b:, 'start', [])) == type('')
     let command = b:start
@@ -173,6 +173,7 @@ function! dispatch#start(command, ...) abort
   if !empty(title)
     let command = command[strlen(title) + 8 : -1]
   endif
+  let title = substitute(title, '\\\(\s\)', '\1', 'g')
   if command =~# '^:.'
     unlet! g:dispatch_last_start
     return substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', '')
@@ -180,23 +181,27 @@ function! dispatch#start(command, ...) abort
   if empty(command)
     let command = &shell
   endif
-  if empty(title)
-    let title = fnamemodify(matchstr(command, '\%(\\.\|\S\)\+'), ':t:r')
-  endif
-  let title = substitute(title, '\\\(\s\)', '\1', 'g')
+  call dispatch#start(command, {'background': a:bang, 'title': title})
+  return ''
+endfunction
+
+function! dispatch#start(command, ...) abort
   let request = extend({
         \ 'action': 'start',
         \ 'background': 0,
-        \ 'command': command,
+        \ 'command': a:command,
         \ 'directory': getcwd(),
-        \ 'expanded': dispatch#expand(command),
-        \ 'title': title,
+        \ 'title': '',
+        \ 'expanded': dispatch#expand(a:command),
         \ }, a:0 ? a:1 : {})
+  if empty(request.title)
+    let request.title = substitute(fnamemodify(matchstr(request.command, '\%(\\.\|\S\)\+'), ':t:r'), '\\\(\s\)', '\1', 'g')
+  endif
   let g:dispatch_last_start = request
   if !s:dispatch(request)
     execute '!' . request.command
   endif
-  return ''
+  return request
 endfunction
 
 " }}}1
