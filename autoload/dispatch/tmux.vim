@@ -32,8 +32,10 @@ function! dispatch#tmux#handle(request) abort
 endfunction
 
 function! dispatch#tmux#make(request) abort
+  let pipepane = &shellpipe ==# '2>&1| tee' || &shellpipe ==# '|& tee'
   let session = get(g:, 'tmux_session', '')
-  let script = dispatch#isolate(dispatch#prepare_make(a:request, a:request.expanded))
+  let script = dispatch#isolate(call('dispatch#prepare_make',
+        \ [a:request] + (pipepane ? [a:request.expanded] : [])))
 
   let title = shellescape(get(a:request, 'compiler', 'make'))
   if get(a:request, 'background', 0)
@@ -54,7 +56,8 @@ function! dispatch#tmux#make(request) abort
     let filter .= ' -u'
   endif
   let filter .= " -e \"s/\r//g\" -e \"s/\e[[0-9;]*m//g\" > ".a:request.file
-  call system('tmux ' . cmd . '|tee ' . s:make_pane . '|xargs -I {} tmux pipe-pane -t {} '.shellescape(filter))
+  call system('tmux ' . cmd . '|tee ' . s:make_pane .
+        \ (pipepane ? '|xargs -I {} tmux pipe-pane -t {} '.shellescape(filter) : ''))
 
   let pane = get(readfile(s:make_pane, '', 1), 0, '')
   return s:record(pane, a:request)
