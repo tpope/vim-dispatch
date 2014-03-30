@@ -148,7 +148,7 @@ function! s:set_current_compiler(name)
   endif
 endfunction
 
-function! s:dispatch(request) abort
+function! dispatch#dispatch(request) abort
   for handler in g:dispatch_handlers
     let response = call('dispatch#'.handler.'#handle', [a:request])
     if !empty(response)
@@ -190,7 +190,7 @@ function! dispatch#start(command, ...) abort
         \ 'expanded': dispatch#expand(command),
         \ 'title': title,
         \ }, a:0 ? a:1 : {})
-  if !s:dispatch(request)
+  if !dispatch#dispatch(request)
     execute '!' . request.command
   endif
   return ''
@@ -332,7 +332,7 @@ function! dispatch#compile_command(bang, args) abort
   let &errorfile = request.file
 
   cclose
-  if !s:dispatch(request)
+  if !dispatch#dispatch(request)
     execute '!'.request.command dispatch#shellpipe(request.file)
     call dispatch#complete(request.id, 'quiet')
   endif
