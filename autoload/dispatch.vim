@@ -166,6 +166,11 @@ endfunction
 
 function! dispatch#start_command(bang, command) abort
   let command = a:command
+  if empty(command) && exists('*projectile#query_exec')
+    for [root, command] in projectile#query_exec('start')
+      break
+    endfor
+  endif
   if empty(command) && type(get(b:, 'start', [])) == type('')
     let command = b:start
   endif
@@ -174,14 +179,26 @@ function! dispatch#start_command(bang, command) abort
     let command = command[strlen(title) + 8 : -1]
   endif
   let title = substitute(title, '\\\(\s\)', '\1', 'g')
-  if command =~# '^:.'
-    unlet! g:dispatch_last_start
-    return substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', '')
-  endif
-  if empty(command)
-    let command = &shell
-  endif
-  call dispatch#start(command, {'background': a:bang, 'title': title})
+  let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
+  let restore = ''
+  try
+    if exists('root')
+      let restore = cd . ' ' . fnameescape(getcwd())
+      exe cd fnameescape(root)
+    endif
+    if command =~# '^:.'
+      unlet! g:dispatch_last_start
+      return substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', '')
+    endif
+    if empty(command)
+      let command = &shell
+    endif
+    call dispatch#start(command, {'background': a:bang, 'title': title})
+  finally
+    if exists('root')
+      execute restore
+    endif
+  endtry
   return ''
 endfunction
 
