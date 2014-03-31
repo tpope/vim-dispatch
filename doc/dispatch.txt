@@ -52,9 +52,9 @@ COMMANDS                                        *dispatch-commands*
 <
                         If you need more control, *g:dispatch_compilers* can
                         be set to a dictionary with commands for keys and
-                        compiler plugins for values.  Use an empty key to skip
-                        the matched string and try again with the rest of the
-                        command.
+                        compiler plugins for values.  Use an empty value to
+                        skip the matched string and try again with the rest of
+                        the command.
 >
                         let g:dispatch_compilers = {
                               \ 'latex': 'tex',
