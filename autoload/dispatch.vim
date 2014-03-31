@@ -305,7 +305,7 @@ if !exists('s:makes')
   let s:files = {}
 endif
 
-function! dispatch#compile_command(bang, args) abort
+function! dispatch#compile_command(bang, args, ...) abort
   if !empty(a:args)
     let args = a:args
   else
@@ -350,6 +350,8 @@ function! dispatch#compile_command(bang, args) abort
     endif
     let request.command = args
   endif
+
+  let request.callback = a:0 >= 1 ? a:1 : "dispatch#default_callback"
 
   if empty(request.compiler)
     unlet request.compiler
@@ -455,6 +457,13 @@ function! dispatch#completed(request) abort
   return get(s:request(a:request), 'completed', 0)
 endfunction
 
+function! dispatch#default_callback(request) abort
+  if !a:request.background
+    call s:cgetfile(a:request, 0, 0)
+    redraw
+  endif
+endfunction
+
 function! dispatch#complete(file, ...) abort
   if !dispatch#completed(a:file)
     let request = s:request(a:file)
@@ -466,9 +475,8 @@ function! dispatch#complete(file, ...) abort
         echo 'Finished :Dispatch' request.command
       endif
     endif
-    if !request.background
-      call s:cgetfile(request, 0, 0)
-      redraw
+    if has_key(request, 'callback') && !empty(request.callback)
+      exec 'call '.request.callback.'(request)'
     endif
   endif
   return ''
