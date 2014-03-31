@@ -21,7 +21,7 @@ command! -bang -nargs=* -complete=custom,dispatch#command_complete Start
 
 command! -bang -bar Copen call dispatch#copen(<bang>0)
 
-function! DispatchComplete(id)
+function! DispatchComplete(id) abort
   return dispatch#complete(a:id)
 endfunction
 

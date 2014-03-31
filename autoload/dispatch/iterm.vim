@@ -45,6 +45,6 @@ function! s:osascript(...) abort
   return !v:shell_error
 endfunction
 
-function! s:escape(string)
+function! s:escape(string) abort
   return '"'.escape(a:string, '"\').'"'
 endfunction

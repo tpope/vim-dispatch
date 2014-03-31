@@ -5,7 +5,7 @@ if exists('g:autoloaded_dispatch_windows')
 endif
 let g:autoloaded_dispatch_windows = 1
 
-function! s:escape(str)
+function! s:escape(str) abort
   if &shellxquote ==# '"'
     return '"' . substitute(a:str, '"', '""', 'g') . '"'
   else

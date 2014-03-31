@@ -67,7 +67,7 @@ function! dispatch#tmux#make(request) abort
   endif
 endfunction
 
-function! s:pane_id(pane)
+function! s:pane_id(pane) abort
   if a:pane =~# '\.\d\+$'
     let [window, index] = split(a:pane, '\.\%(\d\+$\)\@=')
     let out = system('tmux list-panes -F "#P #{pane_id}" -t '.shellescape(window))
