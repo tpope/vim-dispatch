@@ -224,8 +224,19 @@ endfunction
 " }}}1
 " :Dispatch, :Make {{{1
 
+let g:dispatch_compilers = get(g:, 'dispatch_compilers', {})
+
 function! dispatch#compiler_for_program(args) abort
-  let program = fnamemodify(matchstr(a:args, '\S\+'), ':t:r')
+  let remove = keys(filter(copy(g:dispatch_compilers), 'empty(v:val)'))
+  let pattern = '\%('.join(map(remove, 'substitute(escape(v:val, ".*^$~[]\\"), "\\w\\zs$", " ", "")'), '\s*\|').'\)'
+  let args = substitute(a:args, '\s\+', ' ', 'g')
+  let args = substitute(args, '^\s*'.pattern.'*', '', '')
+  for [command, plugin] in items(g:dispatch_compilers)
+    if strpart(args.' ', 0, len(command)+1) ==# command.' ' && !empty(plugin)
+      return plugin
+    endif
+  endfor
+  let program = fnamemodify(matchstr(args, '\S\+'), ':t:r')
   if program ==# 'make'
     return 'make'
   endif
@@ -236,14 +247,14 @@ function! dispatch#compiler_for_program(args) abort
             \ matchstr(line, '\<CompilerSet\s\+makeprg=\zs\a\%(\\.\|[^[:space:]"]\)*'),
             \ '\\\(.\)', '\1', 'g'),
             \ ' \=["'']\=\%(%\|\$\*\|--\w\@!\).*', '', '')
-      if !empty(full) && strpart(a:args, 0, len(full)) ==# full
+      if !empty(full) && strpart(args.' ', 0, len(full)+1) ==# full.' '
         return plugin
       endif
     endfor
   endfor
   for [plugin, lines] in plugins
     for line in lines
-      if matchstr(line, '\<CompilerSet\s\+makeprg=\zs[[:alnum:]_-]\+') == program
+      if matchstr(line, '\<CompilerSet\s\+makeprg=\zs[[:alnum:]_-]\+') ==# program
         return plugin
       endif
     endfor
