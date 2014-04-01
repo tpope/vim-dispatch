@@ -1,4 +1,4 @@
-" dispatch.vim - Asynchronous build and test dispatcher
+" Location:     plugin/dispatch.vim
 " Maintainer:   Tim Pope <http://tpo.pe/>
 " Version:      1.0
 

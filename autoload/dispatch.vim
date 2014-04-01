@@ -1,4 +1,5 @@
-" autoload/dispatch.vim
+" Location:     autoload/dispatch.vim
+
 if exists('g:autoloaded_dispatch')
   finish
 endif
