@@ -209,8 +209,9 @@ function! dispatch#start(command, ...) abort
         \ 'background': 0,
         \ 'command': a:command,
         \ 'directory': getcwd(),
-        \ 'title': '',
         \ 'expanded': dispatch#expand(a:command),
+        \ 'file': tempname(),
+        \ 'title': '',
         \ }, a:0 ? a:1 : {})
   if empty(request.title)
     let request.title = substitute(fnamemodify(matchstr(request.command, '\%(\\.\|\S\)\+'), ':t:r'), '\\\(\s\)', '\1', 'g')
