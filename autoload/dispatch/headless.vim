@@ -12,7 +12,7 @@ function! dispatch#headless#handle(request) abort
   if a:request.action ==# 'make'
     let command = dispatch#prepare_make(a:request)
   elseif a:request.action ==# 'start'
-    let command = a:request.command
+    let command = dispatch#prepare_start(a:request)
   else
     return 0
   endif
@@ -21,6 +21,6 @@ function! dispatch#headless#handle(request) abort
   else
     let redir = &shellredir . ' ' . '/dev/null'
   endif
-  call system('('.command.') ' . redir . ' &')
+  echomsg system(&shell.' '.&shellcmdflag.' '.shellescape(command).redir.' &')
   return !v:shell_error
 endfunction

@@ -23,8 +23,7 @@ function! dispatch#windows#handle(request) abort
   if a:request.action ==# 'make'
     return dispatch#windows#make(a:request)
   elseif a:request.action ==# 'start'
-    let title = get(a:request, 'title', matchstr(a:request.command, '\S\+'))
-    return dispatch#windows#spawn(title, a:request.command, a:request.background)
+    return dispatch#windows#start(a:request)
   endif
 endfunction
 
@@ -36,13 +35,15 @@ function! dispatch#windows#spawn(title, exec, background) abort
   return 1
 endfunction
 
+let s:pid = "wmic process where ^(Name='WMIC.exe' AND CommandLine LIKE '\\%\\%\\%TIME\\%\\%\\%'^) get ParentProcessId | more +1 > "
+
 function! dispatch#windows#make(request) abort
   if &shellxquote ==# '"'
     let exec = dispatch#prepare_make(a:request)
   else
     let pidfile = a:request.file.'.pid'
     let exec =
-          \ "wmic process where ^(Name='WMIC.exe' AND CommandLine LIKE '\\%\\%\\%TIME\\%\\%\\%'^) get ParentProcessId | more +1 > " . pidfile .
+          \ s:pid . pidfile .
           \ ' & ' . escape(a:request.expanded, '%#!') .
           \ ' ' . dispatch#shellpipe(a:request.file) .
           \ ' & cd . > ' . a:request.file . '.complete' .
@@ -51,4 +52,20 @@ function! dispatch#windows#make(request) abort
   endif
 
   return dispatch#windows#spawn(a:request.title, exec, 1)
+endfunction
+
+function! dispatch#windows#start(request) abort
+  if &shellxquote ==# '"'
+    let exec = dispatch#prepare_start(a:request)
+  else
+    let pidfile = a:request.file.'.pid'
+    let exec =
+          \ s:pid . pidfile .
+          \ ' & ' . a:request.command .
+          \ ' & cd . > ' . a:request.file . '.complete' .
+          \ ' & del ' . pidfile
+  endif
+
+  let title = get(a:request, 'title', matchstr(a:request.command, '\S\+'))
+  return dispatch#windows#spawn(title, exec, a:request.background)
 endfunction

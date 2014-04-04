@@ -15,7 +15,7 @@ function! dispatch#screen#handle(request) abort
     endif
     return dispatch#screen#spawn(dispatch#prepare_make(a:request), a:request)
   elseif a:request.action ==# 'start'
-    return dispatch#screen#spawn(a:request.expanded, a:request)
+    return dispatch#screen#spawn(dispatch#prepare_start(a:request), a:request)
   endif
 endfunction
 

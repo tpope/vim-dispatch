@@ -16,7 +16,7 @@ function! dispatch#iterm#handle(request) abort
     let exec = dispatch#prepare_make(a:request)
     return dispatch#iterm#spawn(exec, a:request, 0)
   elseif a:request.action ==# 'start'
-    return dispatch#iterm#spawn(a:request.expanded, a:request, !a:request.background)
+    return dispatch#iterm#spawn(dispatch#prepare_start(a:request), a:request, !a:request.background)
   endif
 endfunction
 

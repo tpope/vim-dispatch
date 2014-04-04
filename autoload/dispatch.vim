@@ -88,7 +88,7 @@ function! dispatch#vim_executable() abort
 endfunction
 
 function! dispatch#callback(request) abort
-  if !empty(v:servername)
+  if !empty(v:servername) && has_key(s:request(a:request), 'id')
     return dispatch#shellescape(dispatch#vim_executable()) .
           \ ' --servername ' . dispatch#shellescape(v:servername) .
           \ ' --remote-expr "' . 'DispatchComplete(' . s:request(a:request).id . ')' . '"'
@@ -96,24 +96,29 @@ function! dispatch#callback(request) abort
   return ''
 endfunction
 
-function! dispatch#prepare_make(request, ...) abort
+function! dispatch#prepare_start(request, ...) abort
   let exec = 'echo $$ > ' . a:request.file . '.pid; '
-  if executable('perl')
-    let exec .= 'perl -e "select(undef,undef,undef,0.1)"; '
-  else
-    let exec .= 'sleep 1; '
-  endif
-  let exec .= a:0 ? a:1 : (a:request.expanded . dispatch#shellpipe(a:request.file))
-
+  let exec .= a:0 ? a:1 : a:request.expanded
+  let callback = dispatch#callback(a:request)
   let after = 'rm -f ' . a:request.file . '.pid; ' .
-        \ 'touch ' . a:request.file . '.complete; ' .
-        \ dispatch#callback(a:request)
+        \ 'touch ' . a:request.file . '.complete' .
+        \ (empty(callback) ? '' : '; ' . callback)
   if &shellpipe =~# '2>&1'
     return 'trap ' . shellescape(after) . ' EXIT INT TERM; ' . exec
   else
     " csh
     return exec . '; ' . after
   endif
+endfunction
+
+function! dispatch#prepare_make(request, ...) abort
+  if executable('perl')
+    let exec = 'perl -e "select(undef,undef,undef,0.1)"; '
+  else
+    let exec = 'sleep 1; '
+  endif
+  let exec .= a:0 ? a:1 : (a:request.expanded . dispatch#shellpipe(a:request.file))
+  return dispatch#prepare_start(a:request, exec, 1)
 endfunction
 
 function! dispatch#set_title(request) abort

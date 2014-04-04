@@ -18,7 +18,7 @@ function! dispatch#x11#handle(request) abort
   else
     return 0
   endif
-  let command = dispatch#set_title(a:request) . '; ' . a:request.expanded
+  let command = dispatch#set_title(a:request) . '; ' . dispatch#prepare_start(a:request)
   call system(dispatch#shellescape(terminal, '-e', &shell, &shellcmdflag, command). ' &')
   return 1
 endfunction

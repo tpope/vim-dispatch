@@ -25,8 +25,8 @@ function! dispatch#tmux#handle(request) abort
     if a:request.background
       let command .= ' -d'
     endif
-    let command .= ' ' . shellescape('exec '
-          \ . dispatch#isolate(['TMUX', 'TMUX_PANE'], a:request.expanded))
+    let command .= ' ' . shellescape('exec ' . dispatch#isolate(
+          \ ['TMUX', 'TMUX_PANE'], dispatch#prepare_start(a:request)))
     let a:request.tmux_pane = s:pane_id(system(command)[0:-2])
     return 1
   endif
