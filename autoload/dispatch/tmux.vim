@@ -25,7 +25,8 @@ function! dispatch#tmux#handle(request) abort
     if a:request.background
       let command .= ' -d'
     endif
-    let command .= ' ' . shellescape('exec ' . dispatch#isolate(a:request.expanded))
+    let command .= ' ' . shellescape('exec '
+          \ . dispatch#isolate(['TMUX', 'TMUX_PANE'], a:request.expanded))
     let a:request.tmux_pane = s:pane_id(system(command)[0:-2])
     return 1
   endif
@@ -34,7 +35,8 @@ endfunction
 function! dispatch#tmux#make(request) abort
   let pipepane = &shellpipe ==# '2>&1| tee' || &shellpipe ==# '|& tee'
   let session = get(g:, 'tmux_session', '')
-  let script = dispatch#isolate(call('dispatch#prepare_make',
+  let script = dispatch#isolate(['TMUX', 'TMUX_PANE'],
+        \ call('dispatch#prepare_make',
         \ [a:request] + (pipepane ? [a:request.expanded] : [])))
 
   let title = shellescape(get(a:request, 'compiler', 'make'))

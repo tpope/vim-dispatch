@@ -123,11 +123,11 @@ function! dispatch#set_title(request) abort
         \ a:request.expanded)
 endfunction
 
-function! dispatch#isolate(...) abort
+function! dispatch#isolate(keep, ...) abort
   let command = ['cd ' . shellescape(getcwd())]
   for line in split(system('env'), "\n")
     let var = matchstr(line, '^\w\+\ze=')
-    if !empty(var) && var !=# '_'
+    if !empty(var) && var !=# '_' && index(a:keep, var) < 0
       if &shell =~# 'csh'
         let command += ['setenv '.var.' '.shellescape(eval('$'.var))]
       else
@@ -138,7 +138,7 @@ function! dispatch#isolate(...) abort
   let command += a:000
   let temp = tempname()
   call writefile(command, temp)
-  return 'env -i ' . &shell . ' ' . temp
+  return 'env -i ' . join(map(copy(a:keep), 'v:val."=\"$". v:val ."\" "'), '') . &shell . ' ' . temp
 endfunction
 
 function! s:set_current_compiler(name) abort
