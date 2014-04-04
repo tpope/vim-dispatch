@@ -5,7 +5,6 @@ if exists('g:autoloaded_dispatch_headless')
 endif
 let g:autoloaded_dispatch_headless = 1
 
-
 function! dispatch#headless#handle(request) abort
   if !a:request.background || &shell !~# 'sh'
     return 0
