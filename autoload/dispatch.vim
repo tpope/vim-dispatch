@@ -221,6 +221,7 @@ function! dispatch#start(command, ...) abort
   if empty(request.title)
     let request.title = substitute(fnamemodify(matchstr(request.command, '\%(\\.\|\S\)\+'), ':t:r'), '\\\(\s\)', '\1', 'g')
   endif
+  let s:files[request.file] = request
   let g:dispatch_last_start = request
   if !s:dispatch(request)
     execute '!' . request.command
