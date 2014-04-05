@@ -27,7 +27,7 @@ function! dispatch#tmux#handle(request) abort
     endif
     let command .= ' ' . shellescape('exec ' . dispatch#isolate(
           \ ['TMUX', 'TMUX_PANE'], dispatch#prepare_start(a:request)))
-    let a:request.tmux_pane = s:pane_id(system(command)[0:-2])
+    call system(command)
     return 1
   endif
 endfunction
@@ -63,7 +63,6 @@ function! dispatch#tmux#make(request) abort
 
   let pane = s:pane_id(get(readfile(s:make_pane, '', 1), 0, ''))
   if !empty(pane)
-    let a:request.tmux_pane = pane
     let s:waiting[pane] = a:request
     return 1
   endif
