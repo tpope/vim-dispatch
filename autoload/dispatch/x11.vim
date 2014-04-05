@@ -6,7 +6,10 @@ endif
 let g:autoloaded_dispatch_x11 = 1
 
 function! dispatch#x11#handle(request) abort
-  if $DISPLAY !~# '^:' || a:request.action !=# 'start' || a:request.background
+  if $DISPLAY !~# '^:' || a:request.action !=# 'start'
+    return 0
+  endif
+  if a:request.background && (!v:windowid || !executable('wmctrl'))
     return 0
   endif
   if !empty($TERMINAL)
@@ -20,5 +23,9 @@ function! dispatch#x11#handle(request) abort
   endif
   let command = dispatch#set_title(a:request) . '; ' . dispatch#prepare_start(a:request)
   call system(dispatch#shellescape(terminal, '-e', &shell, &shellcmdflag, command). ' &')
+  if a:request.background
+    sleep 100m
+    call system('wmctrl -i -a '.v:windowid)
+  endif
   return 1
 endfunction

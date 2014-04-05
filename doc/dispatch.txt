@@ -127,8 +127,8 @@ for foreground |:Make| invocations.
 
 X11 ~
 
-Uses $TERMINAL, x-terminal-emulator, or xterm.  Used only for |:Start|, as its
-insistence on stealing focus makes it infuriating for much else.
+Uses $TERMINAL, x-terminal-emulator, or xterm.  Used for |:Start| and, if
+wmctrl installed to aid in switching the focus back, |:Start!|.
 
 Headless ~
 
