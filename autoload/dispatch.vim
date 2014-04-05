@@ -459,6 +459,38 @@ function! dispatch#request(...) abort
   return a:0 ? s:request(a:1) : get(s:makes, -1, {})
 endfunction
 
+function! dispatch#pid(request) abort
+  let request = s:request(a:request)
+  let file = request.file
+  if !has_key(request, 'pid')
+    for i in range(50)
+      if getfsize(file.'.pid') > 0 || filereadable(file.'.complete')
+        break
+      endif
+      sleep 10m
+    endfor
+    try
+      let request.pid = +readfile(file.'.pid')[0]
+    catch
+      let request.pid = 0
+    endtry
+  endif
+  if request.pid && getfsize(file.'.pid') > 0
+    if has('win32')
+      let running = system('tasklist /fi "pid eq '.request.pid.'"') =~# '==='
+    else
+      call system('kill -0 '.request.pid)
+      let running = !v:shell_error
+    endif
+    if running
+      return request.pid
+    else
+      let request.pid = 0
+      call delete(file)
+    endif
+  endif
+endfunction
+
 function! dispatch#completed(request) abort
   return get(s:request(a:request), 'completed', 0)
 endfunction
