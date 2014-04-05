@@ -69,3 +69,12 @@ function! dispatch#windows#start(request) abort
   let title = get(a:request, 'title', matchstr(a:request.command, '\S\+'))
   return dispatch#windows#spawn(title, exec, a:request.background)
 endfunction
+
+function! dispatch#windows#activate(pid) abort
+  if !exists('s:activator')
+    let s:activator = tempname().'.vbs'
+    call writefile(['WScript.CreateObject("WScript.Shell").AppActivate(WScript.Arguments(0))'], s:activator)
+  endif
+  call system('cscript //nologo '.s:activator.' '.a:pid)
+  return !v:shell_error
+endfunction

@@ -40,6 +40,22 @@ function! dispatch#iterm#spawn(command, request, activate) abort
       \ 'end tell')
 endfunction
 
+function! dispatch#iterm#activate(pid) abort
+  let tty = matchstr(system('ps -p '.a:pid), 'tty\S\+')
+  if !empty(tty)
+    return s:osascript(
+        \ 'if application "iTerm" is not running',
+        \   'error',
+        \ 'end if') && s:osascript(
+        \ 'tell application "iTerm"',
+        \   'activate',
+        \   'tell the current terminal',
+        \      'select session id "/dev/'.tty.'"',
+        \   'end tell',
+        \ 'end tell')
+  endif
+endfunction
+
 function! s:osascript(...) abort
   call system('osascript'.join(map(copy(a:000), '" -e ".shellescape(v:val)'), ''))
   return !v:shell_error

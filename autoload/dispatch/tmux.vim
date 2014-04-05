@@ -92,6 +92,20 @@ function! dispatch#tmux#poll() abort
   endfor
 endfunction
 
+function! dispatch#tmux#activate(pid) abort
+  let out = system('ps ewww -p '.a:pid)
+  let pane = matchstr(out, 'TMUX_PANE=\zs%\d\+')
+  let session = get(g:, 'tmux_session', '')
+  if !empty(session)
+    let session = ' -t '.shellescape(session)
+  endif
+  let panes = split(system('tmux list-panes -s -F "#{pane_id}"'.session), "\n")
+  if index(panes, pane) >= 0
+    call system('tmux select-window -t '.pane.'; tmux select-pane -t '.pane)
+    return !v:shell_error
+  endif
+endfunction
+
 augroup dispatch_tmux
   autocmd!
   autocmd VimResized * if !has('gui_running') | call dispatch#tmux#poll() | endif

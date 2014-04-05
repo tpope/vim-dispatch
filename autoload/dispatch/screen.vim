@@ -30,3 +30,15 @@ function! dispatch#screen#spawn(command, request) abort
   endif
   return 1
 endfunction
+
+function! dispatch#screen#activate(pid) abort
+  let out = system('ps ewww -p '.a:pid)
+  if empty($STY) || stridx(out, 'STY='.$STY) < 0
+    return 0
+  endif
+  let window = matchstr(out, 'WINDOW=\zs\d\+')
+  if !empty(window)
+    silent execute '!screen -X select '.window
+    return !v:shell_error
+  endif
+endfunction

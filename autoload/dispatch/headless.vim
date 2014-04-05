@@ -24,3 +24,7 @@ function! dispatch#headless#handle(request) abort
   echomsg system(&shell.' '.&shellcmdflag.' '.shellescape(command).redir.' &')
   return !v:shell_error
 endfunction
+
+function! dispatch#headless#activate(pid) abort
+  return 0
+endfunction

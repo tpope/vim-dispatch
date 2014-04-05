@@ -29,3 +29,12 @@ function! dispatch#x11#handle(request) abort
   endif
   return 1
 endfunction
+
+function! dispatch#x11#activate(pid) abort
+  let out = system('ps ewww -p '.a:pid)
+  let window = matchstr(out, 'WINDOWID=\zs\d\+')
+  if !empty(window) && executable('wmctrl')
+    call system('wmctrl -i -a '.window)
+    return !v:shell_error
+  endif
+endfunction
