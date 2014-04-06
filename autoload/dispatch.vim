@@ -506,7 +506,7 @@ function! dispatch#complete(file, ...) abort
         echo 'Finished :Dispatch' request.command
       endif
     endif
-    if !request.background
+    if !a:0 && !request.background
       call s:cgetfile(request, 0, 0)
       redraw
     endif
