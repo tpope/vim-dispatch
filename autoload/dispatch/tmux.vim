@@ -95,6 +95,9 @@ endfunction
 function! dispatch#tmux#activate(pid) abort
   let out = system('ps ewww -p '.a:pid)
   let pane = matchstr(out, 'TMUX_PANE=\zs%\d\+')
+  if empty(pane)
+    return 0
+  endif
   let session = get(g:, 'tmux_session', '')
   if !empty(session)
     let session = ' -t '.shellescape(session)

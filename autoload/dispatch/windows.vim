@@ -71,6 +71,9 @@ function! dispatch#windows#start(request) abort
 endfunction
 
 function! dispatch#windows#activate(pid) abort
+  if system('tasklist /fi "pid eq '.a:pid.'"') !~# '==='
+    return 0
+  endif
   if !exists('s:activator')
     let s:activator = tempname().'.vbs'
     call writefile(['WScript.CreateObject("WScript.Shell").AppActivate(WScript.Arguments(0))'], s:activator)
