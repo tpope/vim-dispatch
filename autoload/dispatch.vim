@@ -379,6 +379,7 @@ function! dispatch#compile_command(bang, args) abort
   if !s:dispatch(request)
     execute '!'.request.command dispatch#shellpipe(request.file)
     call dispatch#complete(request.id, 'quiet')
+    execute 'cgetfile '.request.file
   endif
   return ''
 endfunction
