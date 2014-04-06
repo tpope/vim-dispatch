@@ -404,6 +404,8 @@ function! dispatch#focus() abort
     return [':Make' . compiler[1:-1], why]
   elseif compiler =~# '^!'
     return [':Start ' . compiler[1:-1], why]
+  elseif compiler =~# '^:.'
+    return [compiler, why]
   else
     return [':Dispatch ' . compiler, why]
   endif
