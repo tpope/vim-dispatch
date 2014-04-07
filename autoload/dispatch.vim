@@ -159,7 +159,8 @@ function! s:dispatch(request) abort
     let response = call('dispatch#'.handler.'#handle', [a:request])
     if !empty(response)
       redraw
-      echo ':!'.a:request.expanded . ' ('.handler.')'
+      let pid = dispatch#pid(a:request)
+      echo ':!'.a:request.expanded . ' ('.handler.'/'.(pid ? pid : '?').')'
       let a:request.handler = handler
       return 1
     endif
