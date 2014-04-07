@@ -466,7 +466,7 @@ function! dispatch#pid(request) abort
   let file = request.file
   if !has_key(request, 'pid')
     for i in range(50)
-      if getfsize(file.'.pid') > 0 || filereadable(file.'.complete')
+      if filereadable(file.'.pid') || filereadable(file.'.complete')
         break
       endif
       sleep 10m
