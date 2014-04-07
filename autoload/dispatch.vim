@@ -377,8 +377,8 @@ function! dispatch#compile_command(bang, args) abort
 
   cclose
   if !s:dispatch(request)
-    execute '!'.request.command dispatch#shellpipe(request.file)
-    call dispatch#complete(request.id, 'quiet')
+    execute 'silent !'.request.command dispatch#shellpipe(request.file)
+    call feedkeys(":redraw!|call dispatch#complete(".request.id.")\r")
   endif
   return ''
 endfunction
@@ -497,18 +497,16 @@ function! dispatch#completed(request) abort
   return get(s:request(a:request), 'completed', 0)
 endfunction
 
-function! dispatch#complete(file, ...) abort
+function! dispatch#complete(file) abort
   if !dispatch#completed(a:file)
     let request = s:request(a:file)
     let request.completed = 1
-    if !a:0
-      if has_key(request, 'args')
-        echo 'Finished :Make' request.args
-      else
-        echo 'Finished :Dispatch' request.command
-      endif
+    if has_key(request, 'args')
+      echo 'Finished :Make' request.args
+    else
+      echo 'Finished :Dispatch' request.command
     endif
-    if !a:0 && !request.background
+    if !request.background
       call s:cgetfile(request, 0, 0)
       redraw
     endif
