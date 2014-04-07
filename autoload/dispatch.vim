@@ -379,7 +379,7 @@ function! dispatch#compile_command(bang, args) abort
   cclose
   if !s:dispatch(request)
     execute 'silent !'.request.command dispatch#shellpipe(request.file)
-    call feedkeys(":redraw!|call dispatch#complete(".request.id.")\r")
+    call feedkeys(":redraw!|call dispatch#complete(".request.id.")\r", 'n')
   endif
   return ''
 endfunction
