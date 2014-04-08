@@ -413,6 +413,7 @@ function! dispatch#focus() abort
 endfunction
 
 function! dispatch#focus_command(bang, args) abort
+  let args = a:args =~# '^:.' ? a:args : escape(dispatch#expand(a:args), '#%')
   if empty(a:args) && a:bang
     unlet! w:dispatch t:dispatch g:dispatch
     let [what, why] = dispatch#focus()
@@ -421,12 +422,12 @@ function! dispatch#focus_command(bang, args) abort
     let [what, why] = dispatch#focus()
     echo printf('%s is %s', why, what)
   elseif a:bang
-    let w:dispatch = escape(dispatch#expand(a:args), '#%')
+    let w:dispatch = args
     let [what, why] = dispatch#focus()
     echo 'Set window local focus to ' . what
   else
     unlet! w:dispatch t:dispatch
-    let g:dispatch = escape(dispatch#expand(a:args), '#%')
+    let g:dispatch = args
     let [what, why] = dispatch#focus()
     echo 'Set global focus to ' . what
   endif
