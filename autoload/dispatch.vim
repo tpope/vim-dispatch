@@ -503,11 +503,7 @@ function! dispatch#complete(file) abort
   if !dispatch#completed(a:file)
     let request = s:request(a:file)
     let request.completed = 1
-    if has_key(request, 'args')
-      echo 'Finished :Make' request.args
-    else
-      echo 'Finished :Dispatch' request.command
-    endif
+    echo 'Finished:' request.command
     if !request.background
       call s:cgetfile(request, 0, 0)
       redraw
