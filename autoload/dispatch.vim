@@ -209,6 +209,10 @@ function! dispatch#start_command(bang, command) abort
   return ''
 endfunction
 
+if !exists('g:DISPATCH_STARTS')
+  let g:DISPATCH_STARTS = {}
+endif
+
 function! dispatch#start(command, ...) abort
   let request = extend({
         \ 'action': 'start',
@@ -216,15 +220,38 @@ function! dispatch#start(command, ...) abort
         \ 'command': a:command,
         \ 'directory': getcwd(),
         \ 'expanded': dispatch#expand(a:command),
-        \ 'file': tempname(),
         \ 'title': '',
         \ }, a:0 ? a:1 : {})
+  let g:dispatch_last_start = request
   if empty(request.title)
     let request.title = substitute(fnamemodify(matchstr(request.command, '\%(\\.\|\S\)\+'), ':t:r'), '\\\(\s\)', '\1', 'g')
   endif
+  let key = request.directory."\t".substitute(request.expanded, '\s*$', '', '')
+  let i = 0
+  while i < len(get(g:DISPATCH_STARTS, key, []))
+    let [handler, pid] = split(g:DISPATCH_STARTS[key][i], '@')
+    if !s:running(pid)
+      call remove(g:DISPATCH_STARTS[key], i)
+      continue
+    endif
+    try
+      if request.background || dispatch#{handler}#activate(pid)
+        let request.handler = handler
+        let request.pid = pid
+        return request
+      endif
+    catch
+    endtry
+    let i += 1
+  endwhile
+  let request.file = tempname()
   let s:files[request.file] = request
-  let g:dispatch_last_start = request
-  if !s:dispatch(request)
+  if s:dispatch(request)
+    if !has_key(g:DISPATCH_STARTS, key)
+      let g:DISPATCH_STARTS[key] = []
+    endif
+    call add(g:DISPATCH_STARTS[key], request.handler.'@'.dispatch#pid(request))
+  else
     execute '!' . request.command
   endif
   return request
@@ -463,6 +490,17 @@ function! dispatch#request(...) abort
   return a:0 ? s:request(a:1) : get(s:makes, -1, {})
 endfunction
 
+function! s:running(pid) abort
+  if !a:pid
+    return 0
+  elseif has('win32')
+    return system('tasklist /fi "pid eq '.a:pid.'"') =~# '==='
+  else
+    call system('kill -0 '.a:pid)
+    return !v:shell_error
+  endif
+endfunction
+
 function! dispatch#pid(request) abort
   let request = s:request(a:request)
   let file = request.file
@@ -480,13 +518,7 @@ function! dispatch#pid(request) abort
     endtry
   endif
   if request.pid && getfsize(file.'.pid') > 0
-    if has('win32')
-      let running = system('tasklist /fi "pid eq '.request.pid.'"') =~# '==='
-    else
-      call system('kill -0 '.request.pid)
-      let running = !v:shell_error
-    endif
-    if running
+    if s:running(request.pid)
       return request.pid
     else
       let request.pid = 0
