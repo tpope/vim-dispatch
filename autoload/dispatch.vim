@@ -505,8 +505,12 @@ function! dispatch#pid(request) abort
   let request = s:request(a:request)
   let file = request.file
   if !has_key(request, 'pid')
+    if has('win32') && !executable('wmic')
+      let request.pid = 0
+      return 0
+    endif
     for i in range(50)
-      if filereadable(file.'.pid') || filereadable(file.'.complete')
+      if getfsize(file.'.pid') > 0 || filereadable(file.'.complete')
         break
       endif
       sleep 10m
