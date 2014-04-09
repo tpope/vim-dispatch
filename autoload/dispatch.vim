@@ -363,7 +363,7 @@ function! dispatch#compile_command(bang, args) abort
   let request = {
         \ 'action': 'make',
         \ 'background': a:bang,
-        \ 'directory': getcwd(),
+        \ 'file': tempname(),
         \ 'format': '%+G%.%#'
         \ }
 
@@ -395,19 +395,24 @@ function! dispatch#compile_command(bang, args) abort
   if &autowrite || &autowriteall
     wall
   endif
-
-  let request.expanded = dispatch#expand(request.command)
-  let request.file = tempname()
-  call extend(s:makes, [request])
-  let request.id = len(s:makes)
-  let s:files[request.file] = request
+  cclose
   let &errorfile = request.file
 
-  cclose
-  if !s:dispatch(request)
-    execute 'silent !'.request.command dispatch#shellpipe(request.file)
-    call feedkeys(":redraw!|call dispatch#complete(".request.id.")\r", 'n')
-  endif
+  try
+    silent doautocmd QuickFixCmdPre dispatch
+    let request.directory = getcwd()
+    let request.expanded = dispatch#expand(request.command)
+    call extend(s:makes, [request])
+    let request.id = len(s:makes)
+    let s:files[request.file] = request
+
+    if !s:dispatch(request)
+      execute 'silent !'.request.command dispatch#shellpipe(request.file)
+      call feedkeys(":redraw!|call dispatch#complete(".request.id.")\r", 'n')
+    endif
+  finally
+    silent doautocmd QuickFixCmdPost dispatch
+  endtry
   return ''
 endfunction
 
