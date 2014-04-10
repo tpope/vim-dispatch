@@ -7,8 +7,8 @@ if exists("g:loaded_dispatch") || v:version < 700 || &cp
 endif
 let g:loaded_dispatch = 1
 
-command! -bang -nargs=* -complete=custom,dispatch#command_complete Dispatch
-      \ execute dispatch#compile_command(<bang>0, <q-args>)
+command! -bang -nargs=* -range=0 -complete=custom,dispatch#command_complete Dispatch
+      \ execute dispatch#compile_command(<bang>0, <q-args>, <count>)
 
 command! -bang -nargs=* -complete=custom,dispatch#command_complete FocusDispatch
       \ execute dispatch#focus_command(<bang>0, <q-args>)

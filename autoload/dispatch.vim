@@ -341,7 +341,7 @@ if !exists('s:makes')
   let s:files = {}
 endif
 
-function! dispatch#compile_command(bang, args) abort
+function! dispatch#compile_command(bang, args, count) abort
   if !empty(a:args)
     let args = a:args
   else
@@ -356,7 +356,7 @@ function! dispatch#compile_command(bang, args) abort
   if args =~# '^!'
     return 'Start' . (a:bang ? '!' : '') . ' ' . args[1:-1]
   elseif args =~# '^:.'
-    return substitute(args, '\>', (a:bang ? '!' : ''), '')
+    return (a:count ? a:count : '').substitute(args[1:-1], '\>', (a:bang ? '!' : ''), '')
   endif
   let executable = matchstr(args, '\S\+')
 
@@ -385,6 +385,11 @@ function! dispatch#compile_command(bang, args) abort
       call extend(request,dispatch#compiler_options(request.compiler))
     endif
     let request.command = args
+  endif
+  if a:count
+    let request.command = substitute(request.command, '<lnum>'.s:flags, '\=fnamemodify(a:count, submatch(0)[6:-1])', 'g')
+  else
+    let request.command = substitute(request.command, '<lnum>'.s:flags, '', 'g')
   endif
 
   if empty(request.compiler)
