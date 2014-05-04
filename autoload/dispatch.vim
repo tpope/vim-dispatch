@@ -389,7 +389,7 @@ function! dispatch#compile_command(bang, args, count) abort
   let &errorfile = request.file
 
   try
-    silent doautocmd QuickFixCmdPre dispatch
+    silent doautocmd QuickFixCmdPre dispatch-make
     let request.directory = getcwd()
     let request.expanded = dispatch#expand(request.command)
     call extend(s:makes, [request])
@@ -401,7 +401,7 @@ function! dispatch#compile_command(bang, args, count) abort
       call feedkeys(":redraw!|call dispatch#complete(".request.id.")\r", 'n')
     endif
   finally
-    silent doautocmd QuickFixCmdPost dispatch
+    silent doautocmd QuickFixCmdPost dispatch-make
   endtry
   return ''
 endfunction
