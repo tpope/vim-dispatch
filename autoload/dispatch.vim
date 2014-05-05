@@ -383,7 +383,7 @@ function! dispatch#compile_command(bang, args, count) abort
   let request.title = get(request, 'compiler', 'make')
 
   if &autowrite || &autowriteall
-    wall
+    silent! wall
   endif
   cclose
   let &errorfile = request.file
