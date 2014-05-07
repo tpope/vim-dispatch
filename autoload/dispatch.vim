@@ -194,7 +194,8 @@ function! dispatch#start_command(bang, command) abort
   return ''
 endfunction
 
-if !exists('g:DISPATCH_STARTS')
+if type(get(g:, 'DISPATCH_STARTS')) != type({})
+  unlet! g:DISPATCH_STARTS
   let g:DISPATCH_STARTS = {}
 endif
 
