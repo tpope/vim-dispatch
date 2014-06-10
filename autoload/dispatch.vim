@@ -522,7 +522,7 @@ function! dispatch#pid(request) abort
       return request.pid
     else
       let request.pid = 0
-      call delete(file)
+      call delete(file.'.pid')
     endif
   endif
 endfunction
