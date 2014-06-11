@@ -255,6 +255,7 @@ function! dispatch#compiler_for_program(args) abort
   let args = substitute(args, '^\s*'.pattern.'*', '', '')
   for [command, plugin] in items(g:dispatch_compilers)
     if strpart(args.' ', 0, len(command)+1) ==# command.' ' && !empty(plugin)
+          \ && !empty(findfile('compiler/'.plugin.'.vim', escape(&rtp, ' ')))
       return plugin
     endif
   endfor
