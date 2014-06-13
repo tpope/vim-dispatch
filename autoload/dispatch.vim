@@ -146,6 +146,10 @@ function! dispatch#isolate(keep, ...) abort
   return 'env -i ' . join(map(copy(a:keep), 'v:val."=\"$". v:val ."\" "'), '') . &shell . ' ' . temp
 endfunction
 
+function! s:current_compiler() abort
+  return get((empty(&l:makeprg) ? g: : b:), 'current_compiler', '')
+endfunction
+
 function! s:set_current_compiler(name) abort
   if empty(a:name)
     unlet! b:current_compiler
@@ -311,9 +315,40 @@ function! dispatch#compiler_options(compiler) abort
   endtry
 endfunction
 
+function! s:compiler_complete(compiler, A, L, P)
+  let compiler = empty(a:compiler) ? 'make' : a:compiler
+
+  let fn = ''
+  for file in findfile('compiler/'.compiler.'.vim', escape(&rtp, ' '), -1)
+    for line in readfile(file)
+      let fn = matchstr(line, '-complete=custom\%(list\)\=,\zs\%(s:\)\@!\S\+')
+      if !empty(fn)
+        break
+      endif
+    endfor
+  endfor
+
+  if !empty(fn)
+    let results = call(fn, [a:A, a:L, a:P])
+  elseif exists('*CompilerComplete_' . compiler)
+    let results = call('CompilerComplete_' . compiler, [a:A, a:L, a:P])
+  else
+    let results = -1
+  endif
+
+  if type(results) != type('') && type(results) != type([])
+    unlet! results
+    let results = map(split(glob(a:A.'*'), "\n"),
+          \           'isdirectory(v:val) ? v:val . dispatch#slash() : v:val')
+  endif
+
+  return type(results) == type([]) ? join(results, "\n") : results
+endfunction
+
 function! dispatch#command_complete(A, L, P) abort
   if a:L =~# '\S\+\s\S\+\s'
-    return join(map(split(glob(a:A.'*'), "\n"), 'isdirectory(v:val) ? v:val . dispatch#slash() : v:val'), "\n")
+    let compiler = dispatch#compiler_for_program(matchstr(a:L, '\s\zs.*'))
+    return s:compiler_complete(compiler, a:A, a:L, a:P)
   else
     let executables = []
     for dir in split($PATH, has('win32') ? ';' : ':')
@@ -321,6 +356,15 @@ function! dispatch#command_complete(A, L, P) abort
     endfor
     return join(sort(dispatch#uniq(executables)), "\n")
   endif
+endfunction
+
+function! dispatch#make_complete(A, L, P) abort
+  try
+    silent doautocmd QuickFixCmdPre dispatch-make-complete
+    return s:compiler_complete(s:current_compiler(), a:A, a:L, a:P)
+  finally
+    silent doautocmd QuickFixCmdPost dispatch-make-complete
+  endtry
 endfunction
 
 if !exists('s:makes')
@@ -365,7 +409,7 @@ function! dispatch#compile_command(bang, args, count) abort
       let request.command = &makeprg . ' ' . request.args
     endif
     let request.format = &errorformat
-    let request.compiler = get((empty(&l:makeprg) ? g: : b:), 'current_compiler', '')
+    let request.compiler = s:current_compiler()
   else
     let request.compiler = dispatch#compiler_for_program(args)
     if !empty(request.compiler)

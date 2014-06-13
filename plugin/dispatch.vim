@@ -13,7 +13,7 @@ command! -bang -nargs=* -range=0 -complete=custom,dispatch#command_complete Disp
 command! -bang -nargs=* -complete=custom,dispatch#command_complete FocusDispatch
       \ execute dispatch#focus_command(<bang>0, <q-args>)
 
-command! -bang -nargs=* -complete=file Make
+command! -bang -nargs=* -complete=custom,dispatch#make_complete Make
       \ Dispatch<bang> _ <args>
 
 command! -bang -nargs=* -complete=custom,dispatch#command_complete Start
