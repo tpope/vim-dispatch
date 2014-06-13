@@ -315,7 +315,11 @@ function! dispatch#compiler_options(compiler) abort
   endtry
 endfunction
 
-function! s:compiler_complete(compiler, A, L, P)
+function! s:completion_filter(results, query) abort
+  return filter(a:results, 'strpart(v:val, 0, len(a:query)) ==# a:query')
+endfunction
+
+function! s:compiler_complete(compiler, A, L, P) abort
   let compiler = empty(a:compiler) ? 'make' : a:compiler
 
   let fn = ''
@@ -336,13 +340,15 @@ function! s:compiler_complete(compiler, A, L, P)
     let results = -1
   endif
 
-  if type(results) != type('') && type(results) != type([])
+  if type(results) == type([])
+    return results
+  elseif type(results) != type('')
     unlet! results
     let results = map(split(glob(a:A.'*'), "\n"),
           \           'isdirectory(v:val) ? v:val . dispatch#slash() : v:val')
   endif
 
-  return type(results) == type([]) ? join(results, "\n") : results
+  return s:completion_filter(split(results, "\n"))
 endfunction
 
 function! dispatch#command_complete(A, L, P) abort
@@ -354,7 +360,7 @@ function! dispatch#command_complete(A, L, P) abort
     for dir in split($PATH, has('win32') ? ';' : ':')
       let executables += map(split(glob(dir.'/'.a:A.'*'), "\n"), 'v:val[strlen(dir)+1 : -1]')
     endfor
-    return join(sort(dispatch#uniq(executables)), "\n")
+    return s:completion_filter(sort(dispatch#uniq(executables)), a:A)
   endif
 endfunction
 
