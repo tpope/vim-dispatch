@@ -401,7 +401,7 @@ function! dispatch#compile_command(bang, args, count) abort
         \ 'action': 'make',
         \ 'background': a:bang,
         \ 'file': tempname(),
-        \ 'format': '%+G%.%#'
+        \ 'format': '%+I%.%#'
         \ }
 
   if executable ==# '_'
