@@ -423,6 +423,7 @@ function! dispatch#compile_command(bang, args, count) abort
     endif
     let request.command = args
   endif
+  let request.format = substitute(request.format, ',%-G%\.%#\%($\|,\@=\)', '', '')
   if a:count
     let request.command = substitute(request.command, '<lnum>'.s:flags, '\=fnamemodify(a:count, submatch(0)[6:-1])', 'g')
   else
