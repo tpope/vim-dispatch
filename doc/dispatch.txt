@@ -16,7 +16,8 @@ COMMANDS                                        *dispatch-commands*
                         build in the foreground.  Adapter strategies vary, but
                         the goal is visibility without stealing focus.  When
                         the build is complete, load the results into the
-                        |quickfix| list and call |:cwindow|.  This command is
+                        |quickfix| list.  The quickfix window is opened if
+                        there are any matching errors.  This command is
                         preferred for shorter tasks like "build this file."
 
 :Make! [arguments]      Using the current compiler settings, dispatch a build
@@ -39,7 +40,7 @@ COMMANDS                                        *dispatch-commands*
                         {command} and use its 'errorformat' to dispatch a
                         |:Make| for the given {command} and [arguments].  If
                         no compiler plugin is found, the generic format
-                        %+G%.%# is used.
+                        %+I%.%# is used.
 
                         :Dispatch picks a compiler by looking for either
                         CompilerSet makeprg={program}\ [arguments] or
