@@ -16,8 +16,7 @@ COMMANDS                                        *dispatch-commands*
                         build in the foreground.  Adapter strategies vary, but
                         the goal is visibility without stealing focus.  When
                         the build is complete, load the results into the
-                        |quickfix| list.  The quickfix window is opened if
-                        there are any matching errors.  This command is
+                        |quickfix| list and call |:cwindow|.  This command is
                         preferred for shorter tasks like "build this file."
 
 :Make! [arguments]      Using the current compiler settings, dispatch a build
