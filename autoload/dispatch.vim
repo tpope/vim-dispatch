@@ -30,6 +30,8 @@ function! dispatch#shellescape(...) abort
   for arg in a:000
     if arg =~ '^[A-Za-z0-9_/.-]\+$'
       let args += [arg]
+    elseif &shell =~# 'c\@<!sh'
+      let args += [substitute(shellescape(arg), '\\\n', '\n', 'g')]
     else
       let args += [shellescape(arg)]
     endif
@@ -136,7 +138,7 @@ function! dispatch#isolate(keep, ...) abort
       if &shell =~# 'csh'
         let command += ['setenv '.var.' '.shellescape(eval('$'.var))]
       else
-        let command += ['export '.var.'='.shellescape(eval('$'.var))]
+        let command += ['export '.var.'='.dispatch#shellescape(eval('$'.var))]
       endif
     endif
   endfor
