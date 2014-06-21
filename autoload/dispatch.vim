@@ -136,9 +136,9 @@ function! dispatch#isolate(keep, ...) abort
     let var = matchstr(line, '^\w\+\ze=')
     if !empty(var) && var !=# '_' && index(a:keep, var) < 0
       if &shell =~# 'csh'
-        let command += ['setenv '.var.' '.shellescape(eval('$'.var))]
+        let command += split('setenv '.var.' '.shellescape(eval('$'.var)), "\n")
       else
-        let command += ['export '.var.'='.dispatch#shellescape(eval('$'.var))]
+        let command += split('export '.var.'='.dispatch#shellescape(eval('$'.var)), "\n")
       endif
     endif
   endfor
