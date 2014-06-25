@@ -354,9 +354,10 @@ function! s:compiler_complete(compiler, A, L, P) abort
 endfunction
 
 function! dispatch#command_complete(A, L, P) abort
-  if a:L =~# '\S\+\s\S\+\s'
+  let len = matchend(a:L, '\S\+\s\+\S\+\s')
+  if len >= 0 && len <= a:P
     let compiler = dispatch#compiler_for_program(matchstr(a:L, '\s\zs.*'))
-    return s:compiler_complete(compiler, a:A, a:L, a:P)
+    return s:compiler_complete(compiler, a:A, 'Make '.strpart(a:L, len), a:P-len+5)
   else
     let executables = []
     for dir in split($PATH, has('win32') ? ';' : ':')
