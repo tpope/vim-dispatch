@@ -402,7 +402,7 @@ function! dispatch#compile_command(bang, args, count) abort
     let args = a:args
   else
     let args = '_'
-    for vars in [b:, g:, t:, w:]
+    for vars in a:count < 0 ? [b:, g:, t:, w:] : [b:]
       if has_key(vars, 'dispatch') && type(vars.dispatch) == type('')
         let args = vars.dispatch
       endif
@@ -412,7 +412,7 @@ function! dispatch#compile_command(bang, args, count) abort
   if args =~# '^!'
     return 'Start' . (a:bang ? '!' : '') . ' ' . args[1:-1]
   elseif args =~# '^:.'
-    return (a:count ? a:count : '').substitute(args[1:-1], '\>', (a:bang ? '!' : ''), '')
+    return (a:count > 0 ? a:count : '').substitute(args[1:-1], '\>', (a:bang ? '!' : ''), '')
   endif
   let executable = matchstr(args, '\S\+')
 
