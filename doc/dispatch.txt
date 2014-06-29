@@ -99,6 +99,11 @@ COMMANDS                                        *dispatch-commands*
                         Start a process in a window titled {title}.  This is
                         not normally used interactively.
 
+                                                *dispatch-:Spawn*
+:Spawn[!] [command]     Like |:Start|, but always spawn a new process rather
+                        than focusing an existing one.  The default is always
+                        to spawn a new 'shell'.
+
 STRATEGIES                                      *dispatch-strategies*
 
 Strategies are listed in order of precedence.  The first available one is

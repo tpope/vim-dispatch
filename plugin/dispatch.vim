@@ -16,6 +16,9 @@ command! -bang -nargs=* -complete=customlist,dispatch#command_complete FocusDisp
 command! -bang -nargs=* -complete=customlist,dispatch#make_complete Make
       \ Dispatch<bang> _ <args>
 
+command! -bang -nargs=* -complete=customlist,dispatch#command_complete Spawn
+      \ execute dispatch#spawn_command(<bang>0, <q-args>)
+
 command! -bang -nargs=* -complete=customlist,dispatch#command_complete Start
       \ execute dispatch#start_command(<bang>0, <q-args>)
 

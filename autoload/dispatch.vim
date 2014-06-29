@@ -175,26 +175,33 @@ function! s:dispatch(request) abort
 endfunction
 
 " }}}1
-" :Start {{{1
+" :Start, :Spawn {{{1
+
+function! s:extract_title(command) abort
+  let command = a:command
+  let title = matchstr(command, '-title=\zs\%(\\.\|\S\)*')
+  if !empty(title)
+    let command = command[strlen(title) + 8 : -1]
+  endif
+  let title = substitute(title, '\\\(\s\)', '\1', 'g')
+  return [command, title]
+endfunction
+
+function! dispatch#spawn_command(bang, command) abort
+  let [command, title] = s:extract_title(a:command)
+  call dispatch#spawn(command, {'background': a:bang, 'title': title})
+  return ''
+endfunction
 
 function! dispatch#start_command(bang, command) abort
   let command = a:command
   if empty(command) && type(get(b:, 'start', [])) == type('')
     let command = b:start
   endif
-  let title = matchstr(command, '-title=\zs\%(\\.\|\S\)*')
-  if !empty(title)
-    let command = command[strlen(title) + 8 : -1]
-  endif
-  let title = substitute(title, '\\\(\s\)', '\1', 'g')
-  let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
-  let restore = ''
+  let [command, title] = s:extract_title(command)
   if command =~# '^:.'
     unlet! g:dispatch_last_start
     return substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', '')
-  endif
-  if empty(command)
-    let command = &shell
   endif
   call dispatch#start(command, {'background': a:bang, 'title': title})
   return ''
@@ -206,43 +213,52 @@ if type(get(g:, 'DISPATCH_STARTS')) != type({})
 endif
 
 function! dispatch#start(command, ...) abort
+  return dispatch#spawn(a:command, extend({'manage': 1}, a:0 ? a:1 : {}))
+endfunction
+
+function! dispatch#spawn(command, ...) abort
+  let command = empty(a:command) ? &shell : a:command
   let request = extend({
         \ 'action': 'start',
         \ 'background': 0,
-        \ 'command': a:command,
+        \ 'command': command,
         \ 'directory': getcwd(),
-        \ 'expanded': dispatch#expand(a:command),
+        \ 'expanded': dispatch#expand(command),
         \ 'title': '',
         \ }, a:0 ? a:1 : {})
   let g:dispatch_last_start = request
   if empty(request.title)
     let request.title = substitute(fnamemodify(matchstr(request.command, '\%(\\.\|\S\)\+'), ':t:r'), '\\\(\s\)', '\1', 'g')
   endif
-  let key = request.directory."\t".substitute(request.expanded, '\s*$', '', '')
-  let i = 0
-  while i < len(get(g:DISPATCH_STARTS, key, []))
-    let [handler, pid] = split(g:DISPATCH_STARTS[key][i], '@')
-    if !s:running(pid)
-      call remove(g:DISPATCH_STARTS[key], i)
-      continue
-    endif
-    try
-      if request.background || dispatch#{handler}#activate(pid)
-        let request.handler = handler
-        let request.pid = pid
-        return request
+  if get(request, 'manage')
+    let key = request.directory."\t".substitute(request.expanded, '\s*$', '', '')
+    let i = 0
+    while i < len(get(g:DISPATCH_STARTS, key, []))
+      let [handler, pid] = split(g:DISPATCH_STARTS[key][i], '@')
+      if !s:running(pid)
+        call remove(g:DISPATCH_STARTS[key], i)
+        continue
       endif
-    catch
-    endtry
-    let i += 1
-  endwhile
+      try
+        if request.background || dispatch#{handler}#activate(pid)
+          let request.handler = handler
+          let request.pid = pid
+          return request
+        endif
+      catch
+      endtry
+      let i += 1
+    endwhile
+  endif
   let request.file = tempname()
   let s:files[request.file] = request
   if s:dispatch(request)
-    if !has_key(g:DISPATCH_STARTS, key)
-      let g:DISPATCH_STARTS[key] = []
+    if get(request, 'manage')
+      if !has_key(g:DISPATCH_STARTS, key)
+        let g:DISPATCH_STARTS[key] = []
+      endif
+      call add(g:DISPATCH_STARTS[key], request.handler.'@'.dispatch#pid(request))
     endif
-    call add(g:DISPATCH_STARTS[key], request.handler.'@'.dispatch#pid(request))
   else
     execute '!' . request.command
   endif
