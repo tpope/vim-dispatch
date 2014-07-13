@@ -384,11 +384,14 @@ function! dispatch#command_complete(A, L, P) abort
 endfunction
 
 function! dispatch#make_complete(A, L, P) abort
+  let modelines = &modelines
   try
+    let &modelines = 0
     silent doautocmd QuickFixCmdPre dispatch-make-complete
     return s:compiler_complete(s:current_compiler(), a:A, a:L, a:P)
   finally
     silent doautocmd QuickFixCmdPost dispatch-make-complete
+    let &modelines = modelines
   endtry
 endfunction
 
@@ -460,7 +463,9 @@ function! dispatch#compile_command(bang, args, count) abort
   cclose
   let &errorfile = request.file
 
+  let modelines = &modelines
   try
+    let &modelines = 0
     silent doautocmd QuickFixCmdPre dispatch-make
     let request.directory = getcwd()
     let request.expanded = dispatch#expand(request.command)
@@ -474,6 +479,7 @@ function! dispatch#compile_command(bang, args, count) abort
     endif
   finally
     silent doautocmd QuickFixCmdPost dispatch-make
+    let &modelines = modelines
   endtry
   return ''
 endfunction
@@ -645,9 +651,15 @@ function! s:cgetfile(request, all, copen) abort
       let &l:efm = request.format
     endif
     let &l:makeprg = request.command
-    silent doautocmd QuickFixCmdPre cgetfile
-    execute 'cgetfile '.fnameescape(request.file)
-    silent doautocmd QuickFixCmdPost cgetfile
+    let modelines = &modelines
+    try
+      let &modelines = 0
+      silent doautocmd QuickFixCmdPre cgetfile
+      execute 'cgetfile '.fnameescape(request.file)
+      silent doautocmd QuickFixCmdPost cgetfile
+    finally
+      let &modelines = modelines
+    endtry
   catch '^E40:'
     return v:exception
   finally
