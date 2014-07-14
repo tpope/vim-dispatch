@@ -464,6 +464,7 @@ function! dispatch#compile_command(bang, args, count) abort
   let &errorfile = request.file
 
   let modelines = &modelines
+  let after = ''
   try
     let &modelines = 0
     silent doautocmd QuickFixCmdPre dispatch-make
@@ -474,13 +475,16 @@ function! dispatch#compile_command(bang, args, count) abort
     let s:files[request.file] = request
 
     if !s:dispatch(request)
+      let after = 'call dispatch#complete('.request.id.')'
+      redraw!
       execute 'silent !'.request.command dispatch#shellpipe(request.file)
-      call feedkeys(":redraw!|call dispatch#complete(".request.id.")\r", 'n')
+      redraw!
     endif
   finally
     silent doautocmd QuickFixCmdPost dispatch-make
     let &modelines = modelines
   endtry
+  execute after
   return ''
 endfunction
 
