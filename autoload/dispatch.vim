@@ -642,7 +642,9 @@ function! s:cgetfile(request, all, copen) abort
   let compiler = get(b:, 'current_compiler', '')
   let cd = haslocaldir() ? 'lcd' : 'cd'
   let dir = getcwd()
+  let modelines = &modelines
   try
+    let &modelines = 0
     call s:set_current_compiler(get(request, 'compiler', ''))
     exe cd fnameescape(request.directory)
     if a:all
@@ -651,18 +653,13 @@ function! s:cgetfile(request, all, copen) abort
       let &l:efm = request.format
     endif
     let &l:makeprg = request.command
-    let modelines = &modelines
-    try
-      let &modelines = 0
-      silent doautocmd QuickFixCmdPre cgetfile
-      execute 'cgetfile '.fnameescape(request.file)
-      silent doautocmd QuickFixCmdPost cgetfile
-    finally
-      let &modelines = modelines
-    endtry
+    silent doautocmd QuickFixCmdPre cgetfile
+    execute 'cgetfile '.fnameescape(request.file)
+    silent doautocmd QuickFixCmdPost cgetfile
   catch '^E40:'
     return v:exception
   finally
+    let &modelines = modelines
     exe cd fnameescape(dir)
     let &l:efm = efm
     let &l:makeprg = makeprg
