@@ -447,9 +447,9 @@ function! dispatch#compile_command(bang, args, count) abort
   endif
   let request.format = substitute(request.format, ',%-G%\.%#\%($\|,\@=\)', '', '')
   if a:count
-    let request.command = substitute(request.command, '<lnum>'.s:flags, '\=fnamemodify(a:count, submatch(0)[6:-1])', 'g')
+    let request.command = substitute(request.command, '<\%(lnum\|line1\|line2\)>'.s:flags, '\=fnamemodify(a:count, submatch(0)[6:-1])', 'g')
   else
-    let request.command = substitute(request.command, '<lnum>'.s:flags, '', 'g')
+    let request.command = substitute(request.command, '<\%(lnum\|line1\|line2\)>'.s:flags, '', 'g')
   endif
 
   if empty(request.compiler)
