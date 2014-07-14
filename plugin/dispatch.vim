@@ -1,6 +1,6 @@
 " Location:     plugin/dispatch.vim
 " Maintainer:   Tim Pope <http://tpo.pe/>
-" Version:      1.1
+" Version:      1.2
 
 if exists("g:loaded_dispatch") || v:version < 700 || &cp
   finish
