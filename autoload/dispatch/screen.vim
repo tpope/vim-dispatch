@@ -12,6 +12,9 @@ function! dispatch#screen#handle(request) abort
     return 0
   endif
   if a:request.action ==# 'make'
+    if !get(a:request, 'background', 0) && empty(v:servername) && !empty(s:waiting)
+	  return 0
+    endif
     return dispatch#screen#spawn(dispatch#prepare_make(a:request), a:request)
   elseif a:request.action ==# 'start'
     return dispatch#screen#spawn(dispatch#prepare_start(a:request), a:request)
