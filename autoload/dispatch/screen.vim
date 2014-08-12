@@ -11,6 +11,8 @@ function! dispatch#screen#handle(request) abort
   if empty($STY) || !executable('screen')
     return 0
   endif
+  call dispatch#screen#poll()
+
   if a:request.action ==# 'make'
     if !get(a:request, 'background', 0) && empty(v:servername) && !empty(s:waiting)
 	  return 0
@@ -59,8 +61,7 @@ function! dispatch#screen#poll() abort
     return
   endif
 
-  let pid = dispatch#pid(s:waiting)
-  if !pid
+  if !dispatch#pid(s:waiting)
     let request = s:waiting
     let s:waiting = {}
     call dispatch#complete(request)
