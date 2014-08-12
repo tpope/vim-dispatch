@@ -32,14 +32,10 @@ function! dispatch#screen#spawn(command, request) abort
         \ dispatch#set_title(a:request), a:command, teardown))
 
   if a:request.background
-    let command = command
+    call system(command)
   else
-    let command = 'screen -X eval "split" "focus down" "resize 10" "' . substitute(command, '"', '\"', '') . '" "focus up"'
-  endif
-
-  call system(command)
-
-  if !a:request.background
+    let command = 'screen -X eval "split" "focus down" "resize 10" "' . escape(command, '"') . '" "focus up"'
+    call system(command)
     let s:waiting = a:request
   endif
 
