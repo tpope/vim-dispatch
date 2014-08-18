@@ -644,7 +644,7 @@ function! s:cgetfile(request, all, copen) abort
   let efm = &l:efm
   let makeprg = &l:makeprg
   let compiler = get(b:, 'current_compiler', '')
-  let cd = haslocaldir() ? 'lcd' : 'cd'
+  let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
   let dir = getcwd()
   let modelines = &modelines
   try
