@@ -35,6 +35,7 @@ if !exists('g:dispatch_handlers')
         \ 'screen',
         \ 'windows',
         \ 'iterm',
+        \ 'vimproc',
         \ 'x11',
         \ 'headless',
         \ ]
