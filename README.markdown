@@ -128,6 +128,18 @@ Using dispatch.vim from a plugin is a simple matter of checking for and using
 favorite plugin already supports it, assuming your favorite plugin is
 [rails.vim](https://github.com/tpope/vim-rails).
 
+## FAQ
+
+> How can I have `:Dispatch!` or `:Make!` open the quickfix window on
+> completion?
+
+Use `:Dispatch` or `:Make`.  The entire point of the `!` is to run in the
+background without interrupting you.
+
+> But that blocks Vim.
+
+Then the adapter in use doesn't support foreground builds.  Adjust your setup.
+
 ## Self-Promotion
 
 Like dispatch.vim?  Follow the repository on
