@@ -423,7 +423,6 @@ function! dispatch#compile_command(bang, args, count) abort
   let request = {
         \ 'action': 'make',
         \ 'background': a:bang,
-        \ 'file': tempname(),
         \ 'format': '%+I%.%#'
         \ }
 
@@ -458,10 +457,18 @@ function! dispatch#compile_command(bang, args, count) abort
   endif
   let request.title = get(request, 'compiler', 'make')
 
+  if a:args ==# '-' && !empty(s:makes)
+    let request = copy(s:makes[-1])
+    unlet! request.pid
+    unlet! request.completed
+    unlet! request.handler
+  endif
+
   if &autowrite || &autowriteall
     silent! wall
   endif
   cclose
+  let request.file = tempname()
   let &errorfile = request.file
 
   let efm = &l:efm
@@ -469,14 +476,19 @@ function! dispatch#compile_command(bang, args, count) abort
   let compiler = get(b:, 'current_compiler', '')
   let modelines = &modelines
   let after = ''
+  let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
   try
     let &modelines = 0
     call s:set_current_compiler(get(request, 'compiler', ''))
     let &l:efm = request.format
     let &l:makeprg = request.command
     silent doautocmd QuickFixCmdPre dispatch-make
-    let request.directory = getcwd()
-    let request.expanded = dispatch#expand(request.command)
+    let request.directory = get(request, 'directory', getcwd())
+    if request.directory !=# getcwd()
+      let cwd = getcwd()
+      execute cd fnameescape(request.directory)
+    endif
+    let request.expanded = get(request, 'expanded', dispatch#expand(request.command))
     call extend(s:makes, [request])
     let request.id = len(s:makes)
     let s:files[request.file] = request
@@ -493,6 +505,9 @@ function! dispatch#compile_command(bang, args, count) abort
     let &l:efm = efm
     let &l:makeprg = makeprg
     call s:set_current_compiler(compiler)
+    if exists('cwd')
+      execute cd fnameescape(cwd)
+    endif
   endtry
   execute after
   return ''
