@@ -574,6 +574,13 @@ function! dispatch#compile_command(bang, args, count) abort
   endif
   let request.title = get(request, 'title', get(request, 'compiler', 'make'))
 
+  if a:args ==# '-' && !empty(s:makes)
+    let request = copy(s:makes[-1])
+    unlet! request.pid
+    unlet! request.completed
+    unlet! request.handler
+  endif
+
   call dispatch#autowrite()
   cclose
   let request.file = tempname()
