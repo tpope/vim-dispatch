@@ -335,7 +335,16 @@ function! dispatch#compiler_options(compiler) abort
 endfunction
 
 function! s:completion_filter(results, query) abort
-  return filter(a:results, 'strpart(v:val, 0, len(a:query)) ==# a:query')
+  if type(get(g:, 'completion_filter')) == type({})
+    return g:completion_filter.Apply(a:results, a:query)
+  else
+    return filter(a:results, 'strpart(v:val, 0, len(a:query)) ==# a:query')
+  endif
+endfunction
+
+function! s:file_complete(A) abort
+  return map(split(glob(substitute(a:A, '\(.\@<=[\\/]\|$\)', '*\1', 'g')), "\n"),
+        \ 'isdirectory(v:val) ? v:val . dispatch#slash() : v:val')
 endfunction
 
 function! s:compiler_complete(compiler, A, L, P) abort
@@ -363,8 +372,7 @@ function! s:compiler_complete(compiler, A, L, P) abort
     return results
   elseif type(results) != type('')
     unlet! results
-    let results = join(map(split(glob(a:A.'*'), "\n"),
-          \ 'isdirectory(v:val) ? v:val . dispatch#slash() : v:val'), "\n")
+    let results = join(s:file_complete(a:A), "\n")
   endif
 
   return s:completion_filter(split(results, "\n"), a:A)
@@ -375,13 +383,15 @@ function! dispatch#command_complete(A, L, P) abort
   if len >= 0 && len <= a:P
     let compiler = dispatch#compiler_for_program(matchstr(a:L, '\s\zs.*'))
     return s:compiler_complete(compiler, a:A, 'Make '.strpart(a:L, len), a:P-len+5)
+  elseif a:A =~# '^\%(\w:\|\.\)\=[\/]'
+    let executables = s:file_complete(a:A)
   else
     let executables = []
     for dir in split($PATH, has('win32') ? ';' : ':')
-      let executables += map(split(glob(dir.'/'.a:A.'*'), "\n"), 'v:val[strlen(dir)+1 : -1]')
+      let executables += map(split(glob(dir.'/'.substitute(a:A, '.', '*&', 'g').'*'), "\n"), 'v:val[strlen(dir)+1 : -1]')
     endfor
-    return s:completion_filter(sort(dispatch#uniq(executables)), a:A)
   endif
+  return s:completion_filter(sort(dispatch#uniq(executables)), a:A)
 endfunction
 
 function! dispatch#make_complete(A, L, P) abort
