@@ -282,7 +282,7 @@ function! dispatch#compiler_for_program(args) abort
       return plugin
     endif
   endfor
-  let program = fnamemodify(matchstr(args, '\S\+'), ':t:r')
+  let program = fnamemodify(matchstr(args, '\S\+'), ':t')
   if program ==# 'make'
     return 'make'
   endif
@@ -300,7 +300,7 @@ function! dispatch#compiler_for_program(args) abort
   endfor
   for [plugin, lines] in plugins
     for line in lines
-      if matchstr(line, '\<CompilerSet\s\+makeprg=\zs[[:alnum:]_-]\+') ==# program
+      if matchstr(line, '\<CompilerSet\s\+makeprg=\zs[[:alnum:]_.-]\+') ==# program
         return plugin
       endif
     endfor
