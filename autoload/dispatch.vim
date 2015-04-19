@@ -475,7 +475,7 @@ function! dispatch#compile_command(bang, args, count) abort
     let request.format = &errorformat
     let request.compiler = s:current_compiler()
   else
-    let request.compiler = dispatch#compiler_for_program(args)
+    let request.compiler = get(request, 'compiler', dispatch#compiler_for_program(args))
     if !empty(request.compiler)
       call extend(request,dispatch#compiler_options(request.compiler))
     endif
@@ -491,7 +491,7 @@ function! dispatch#compile_command(bang, args, count) abort
   if empty(request.compiler)
     unlet request.compiler
   endif
-  let request.title = get(request, 'compiler', 'make')
+  let request.title = get(request, 'title', get(request, 'compiler', 'make'))
 
   if &autowrite || &autowriteall
     silent! wall
