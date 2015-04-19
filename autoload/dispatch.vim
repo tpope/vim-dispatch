@@ -178,19 +178,26 @@ endfunction
 " }}}1
 " :Start, :Spawn {{{1
 
-function! s:extract_title(command) abort
+function! s:extract_opts(command) abort
   let command = a:command
-  let title = matchstr(command, '-title=\zs\%(\\.\|\S\)*')
-  if !empty(title)
-    let command = command[strlen(title) + 8 : -1]
-  endif
-  let title = substitute(title, '\\\(\s\)', '\1', 'g')
-  return [command, title]
+  let opts = {}
+  while command =~# '^-\%(\w\+\)\%([= ]\|$\)'
+    let opt = matchstr(command, '^-\zs\w\+')
+    if command =~ '^-\w\+='
+      let val = matchstr(command, '^-\w\+=\zs\%(\\.\|\S\)*')
+    else
+      let val = 1
+    endif
+    let opts[opt] = substitute(val, '\\\(\s\)', '\1', 'g')
+    let command = substitute(command, '^-\w\+\%(=\%(\\.\|\S\)*\)\=\s*', '', '')
+  endwhile
+  return [command, opts]
 endfunction
 
 function! dispatch#spawn_command(bang, command) abort
-  let [command, title] = s:extract_title(a:command)
-  call dispatch#spawn(command, {'background': a:bang, 'title': title})
+  let [command, opts] = s:extract_opts(a:command)
+  let opts.background = a:bang
+  call dispatch#spawn(command, opts)
   return ''
 endfunction
 
@@ -199,12 +206,13 @@ function! dispatch#start_command(bang, command) abort
   if empty(command) && type(get(b:, 'start', [])) == type('')
     let command = b:start
   endif
-  let [command, title] = s:extract_title(command)
+  let [command, opts] = s:extract_opts(command)
+  let opts.background = a:bang
   if command =~# '^:.'
     unlet! g:dispatch_last_start
     return substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', '')
   endif
-  call dispatch#start(command, {'background': a:bang, 'title': title})
+  call dispatch#start(command, opts)
   return ''
 endfunction
 
@@ -428,14 +436,17 @@ function! dispatch#compile_command(bang, args, count) abort
   elseif args =~# '^:.'
     return (a:count > 0 ? a:count : '').substitute(args[1:-1], '\>', (a:bang ? '!' : ''), '')
   endif
+
+  let [args, request] = s:extract_opts(args)
+
   let executable = matchstr(args, '\S\+')
 
-  let request = {
+  call extend(request, {
         \ 'action': 'make',
         \ 'background': a:bang,
         \ 'file': tempname(),
         \ 'format': '%+I%.%#'
-        \ }
+        \ }, 'keep')
 
   if executable ==# '_'
     let request.args = matchstr(args, '_\s*\zs.*')
