@@ -188,7 +188,11 @@ function! s:extract_opts(command) abort
     else
       let val = 1
     endif
-    let opts[opt] = substitute(val, '\\\(\s\)', '\1', 'g')
+    if opt ==# 'dir' || opt ==# 'directory'
+      let opts.directory = fnamemodify(expand(val), ':p')
+    else
+      let opts[opt] = substitute(val, '\\\(\s\)', '\1', 'g')
+    endif
     let command = substitute(command, '^-\w\+\%(=\%(\\.\|\S\)*\)\=\s*', '', '')
   endwhile
   return [command, opts]
@@ -261,16 +265,27 @@ function! dispatch#spawn(command, ...) abort
   endif
   let request.file = tempname()
   let s:files[request.file] = request
-  if s:dispatch(request)
-    if get(request, 'manage')
-      if !has_key(g:DISPATCH_STARTS, key)
-        let g:DISPATCH_STARTS[key] = []
-      endif
-      call add(g:DISPATCH_STARTS[key], request.handler.'@'.dispatch#pid(request))
+  let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
+  try
+    if request.directory !=# getcwd()
+      let cwd = getcwd()
+      execute cd fnameescape(request.directory)
     endif
-  else
-    execute '!' . request.command
-  endif
+    if s:dispatch(request)
+      if get(request, 'manage')
+        if !has_key(g:DISPATCH_STARTS, key)
+          let g:DISPATCH_STARTS[key] = []
+        endif
+        call add(g:DISPATCH_STARTS[key], request.handler.'@'.dispatch#pid(request))
+      endif
+    else
+      execute '!' . request.command
+    endif
+  finally
+    if exists('cwd')
+      execute cd fnameescape(cwd)
+    endif
+  endtry
   return request
 endfunction
 
@@ -444,7 +459,6 @@ function! dispatch#compile_command(bang, args, count) abort
   call extend(request, {
         \ 'action': 'make',
         \ 'background': a:bang,
-        \ 'file': tempname(),
         \ 'format': '%+I%.%#'
         \ }, 'keep')
 
@@ -483,6 +497,7 @@ function! dispatch#compile_command(bang, args, count) abort
     silent! wall
   endif
   cclose
+  let request.file = tempname()
   let &errorfile = request.file
 
   let efm = &l:efm
@@ -490,14 +505,19 @@ function! dispatch#compile_command(bang, args, count) abort
   let compiler = get(b:, 'current_compiler', '')
   let modelines = &modelines
   let after = ''
+  let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
   try
     let &modelines = 0
     call s:set_current_compiler(get(request, 'compiler', ''))
     let &l:efm = request.format
     let &l:makeprg = request.command
     silent doautocmd QuickFixCmdPre dispatch-make
-    let request.directory = getcwd()
-    let request.expanded = dispatch#expand(request.command)
+    let request.directory = get(request, 'directory', getcwd())
+    if request.directory !=# getcwd()
+      let cwd = getcwd()
+      execute cd fnameescape(request.directory)
+    endif
+    let request.expanded = get(request, 'expanded', dispatch#expand(request.command))
     call extend(s:makes, [request])
     let request.id = len(s:makes)
     let s:files[request.file] = request
@@ -514,6 +534,9 @@ function! dispatch#compile_command(bang, args, count) abort
     let &l:efm = efm
     let &l:makeprg = makeprg
     call s:set_current_compiler(compiler)
+    if exists('cwd')
+      execute cd fnameescape(cwd)
+    endif
   endtry
   execute after
   return ''
