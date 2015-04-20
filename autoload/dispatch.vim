@@ -98,18 +98,19 @@ function! dispatch#callback(request) abort
   return ''
 endfunction
 
-function! dispatch#prepare_start(request, ...) abort
+function! s:prepare_start(request, aftercmd, appendpipe) abort
   let exec = 'echo $$ > ' . a:request.file . '.pid; '
   if executable('perl')
     let exec .= 'perl -e "select(undef,undef,undef,0.1)" 2>/dev/null; '
   else
     let exec .= 'sleep 1; '
   endif
-  let exec .= a:0 ? a:1 : a:request.expanded
+  let exec .= a:request.expanded . (a:appendpipe ? dispatch#shellpipe(a:request.file) : '')
   let callback = dispatch#callback(a:request)
   let after = 'rm -f ' . a:request.file . '.pid; ' .
         \ 'touch ' . a:request.file . '.complete' .
-        \ (empty(callback) ? '' : '; ' . callback)
+        \ (empty(callback) ? '' : '; ' . callback) .
+        \ (empty(a:aftercmd) ? '' : '; ' . a:aftercmd)
   if &shellpipe =~# '2>&1'
     return 'trap ' . shellescape(after) . ' EXIT INT TERM; ' . exec
   else
@@ -118,9 +119,15 @@ function! dispatch#prepare_start(request, ...) abort
   endif
 endfunction
 
+function! dispatch#prepare_start(request, ...) abort
+  let aftercmd = a:0 >= 1 ? a:1 : ''
+  return s:prepare_start(request, aftercmd, 0)
+endfunction
+
 function! dispatch#prepare_make(request, ...) abort
-  let exec = a:0 ? a:1 : (a:request.expanded . dispatch#shellpipe(a:request.file))
-  return dispatch#prepare_start(a:request, exec, 1)
+  let aftercmd = a:0 >= 1 ? a:1 : ''
+  let appendpipe = a:0 >= 2 ? a:2 : 1
+  return s:prepare_start(a:request, aftercmd, appendpipe)
 endfunction
 
 function! dispatch#set_title(request) abort
