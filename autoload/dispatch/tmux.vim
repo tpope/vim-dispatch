@@ -40,7 +40,7 @@ function! dispatch#tmux#make(request) abort
         \ call('dispatch#prepare_make',
         \ [a:request] + (pipepane ? [a:request.expanded] : [])))
 
-  let title = shellescape(get(a:request, 'compiler', 'make'))
+  let title = shellescape(get(a:request, 'title', get(a:request, 'compiler', 'make')))
   if get(a:request, 'background', 0)
     let cmd = 'new-window -d -n '.title
   elseif has('gui_running') || empty($TMUX) || (!empty(''.session) && session !=# system('tmux display-message -p "#S"')[0:-2])
