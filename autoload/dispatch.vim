@@ -166,9 +166,10 @@ function! s:dispatch(request) abort
     let response = call('dispatch#'.handler.'#handle', [a:request])
     if !empty(response)
       redraw
-      let pid = dispatch#pid(a:request)
-      echo ':!'.a:request.expanded . ' ('.handler.'/'.(pid ? pid : '?').')'
       let a:request.handler = handler
+      let pid = dispatch#pid(a:request)
+      echo ':!'.a:request.expanded .
+            \ ' ('.handler.'/'.(!empty(pid) ? pid : '?').')'
       return 1
     endif
   endfor
@@ -248,7 +249,7 @@ function! dispatch#spawn(command, ...) abort
     let i = 0
     while i < len(get(g:DISPATCH_STARTS, key, []))
       let [handler, pid] = split(g:DISPATCH_STARTS[key][i], '@')
-      if !s:running(pid)
+      if !s:running(handler, pid)
         call remove(g:DISPATCH_STARTS[key], i)
         continue
       endif
@@ -621,9 +622,11 @@ function! dispatch#request(...) abort
   return a:0 ? s:request(a:1) : get(s:makes, -1, {})
 endfunction
 
-function! s:running(pid) abort
-  if !a:pid
+function! s:running(handler, pid) abort
+  if empty(a:pid)
     return 0
+  elseif exists('*dispatch#'.a:handler.'#running')
+    return dispatch#{a:handler}#running(a:pid)
   elseif has('win32')
     let tasklist_cmd = 'tasklist /fi "pid eq '.a:pid.'"'
     if &shellxquote ==# '"'
@@ -657,7 +660,7 @@ function! dispatch#pid(request) abort
     endtry
   endif
   if request.pid && getfsize(file.'.pid') > 0
-    if s:running(request.pid)
+    if s:running(request.handler, request.pid)
       return request.pid
     else
       let request.pid = 0
