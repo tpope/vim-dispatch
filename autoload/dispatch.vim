@@ -47,7 +47,31 @@ endfunction
 
 function! s:expand(string) abort
   let slashes = len(matchstr(a:string, '^\%(\\\\\)*'))
-  return repeat('\', slashes/2) . expand(a:string[slashes : -1])
+  sandbox let v = repeat('\', slashes/2) . expand(a:string[slashes : -1])
+  echomsg v
+  return v
+endfunction
+
+function! s:sandbox_eval(string) abort
+  sandbox execute 'let v = '.a:string
+  return v
+endfunction
+
+function! s:expand_lnum(string, ...) abort
+  let v = a:string
+  let old = v:lnum
+  try
+    let v:lnum = a:0 ? a:1 : 0
+    let sbeval = '\=s:sandbox_eval(submatch(1))'
+    let v = substitute(v, '`=\([^`]*\)`', sbeval, 'g')
+    let v = substitute(v, '`-=\([^`]*\)`', v:lnum < 1 ? sbeval : '', 'g')
+    let v = substitute(v, '`+=\([^`]*\)`', v:lnum > 0 ? sbeval : '', 'g')
+    let v = substitute(v, '<\%(lnum\|line1\|line2\)>'.s:flags,
+          \ v:lnum > 0 ? '\=fnamemodify(v:lnum, submatch(0)[6:-1])' : '', 'g')
+    return substitute(v, '^\s\+\|\s\+$', '', 'g')
+  finally
+    let v:lnum = old
+  endtry
 endfunction
 
 function! dispatch#slash() abort
@@ -200,6 +224,7 @@ function! s:extract_opts(command) abort
 endfunction
 
 function! dispatch#spawn_command(bang, command) abort
+  let command = s:expand_lnum(a:command)
   let [command, opts] = s:extract_opts(a:command)
   let opts.background = a:bang
   call dispatch#spawn(command, opts)
@@ -211,6 +236,7 @@ function! dispatch#start_command(bang, command) abort
   if empty(command) && type(get(b:, 'start', [])) == type('')
     let command = b:start
   endif
+  let command = s:expand_lnum(command)
   let [command, opts] = s:extract_opts(command)
   let opts.background = a:bang
   if command =~# '^:.'
@@ -449,7 +475,11 @@ function! dispatch#compile_command(bang, args, count) abort
 
   if args =~# '^!'
     return 'Start' . (a:bang ? '!' : '') . ' ' . args[1:-1]
-  elseif args =~# '^:.'
+  endif
+
+  let args = s:expand_lnum(args, a:count < 0 ? 0 : a:count)
+
+  if args =~# '^:.'
     return (a:count > 0 ? a:count : '').substitute(args[1:-1], '\>', (a:bang ? '!' : ''), '')
   endif
 
@@ -483,11 +513,6 @@ function! dispatch#compile_command(bang, args, count) abort
     let request.command = args
   endif
   let request.format = substitute(request.format, ',%-G%\.%#\%($\|,\@=\)', '', '')
-  if a:count
-    let request.command = substitute(request.command, '<\%(lnum\|line1\|line2\)>'.s:flags, '\=fnamemodify(a:count, submatch(0)[6:-1])', 'g')
-  else
-    let request.command = substitute(request.command, '<\%(lnum\|line1\|line2\)>'.s:flags, '', 'g')
-  endif
 
   if empty(request.compiler)
     unlet request.compiler
@@ -546,12 +571,13 @@ endfunction
 " }}}1
 " :FocusDispatch {{{1
 
-function! dispatch#focus() abort
-  if exists('w:dispatch')
+function! dispatch#focus(...) abort
+  let haslnum = a:0 && a:1 >= 0
+  if exists('w:dispatch') && !haslnum
     let [compiler, why] = [w:dispatch, 'Window local focus']
-  elseif exists('t:dispatch')
+  elseif exists('t:dispatch') && !haslnum
     let [compiler, why] = [t:dispatch, 'Tab local focus']
-  elseif exists('g:dispatch')
+  elseif exists('g:dispatch') && !haslnum
     let [compiler, why] = [g:dispatch, 'Global focus']
   elseif exists('b:dispatch')
     let [compiler, why] = [b:dispatch, 'Buffer default']
@@ -559,6 +585,10 @@ function! dispatch#focus() abort
     return [':Make', 'Buffer default']
   else
     return [':Make', 'Global default']
+  endif
+  if haslnum
+    let compiler = s:expand_lnum(compiler, a:1)
+    let compiler = substitute(compiler, '^:\zs\ze.', a:1 > 0 ? a:1 : '', 'g')
   endif
   if compiler =~# '^_\>'
     return [':Make' . compiler[1:-1], why]
@@ -571,23 +601,23 @@ function! dispatch#focus() abort
   endif
 endfunction
 
-function! dispatch#focus_command(bang, args) abort
+function! dispatch#focus_command(bang, args, count) abort
   let args = a:args =~# '^:.' ? a:args : escape(dispatch#expand(a:args), '#%')
   if empty(a:args) && a:bang
     unlet! w:dispatch t:dispatch g:dispatch
-    let [what, why] = dispatch#focus()
+    let [what, why] = dispatch#focus(a:count)
     echo 'Reverted default to ' . what
   elseif empty(a:args)
-    let [what, why] = dispatch#focus()
-    echo printf('%s is %s', why, what)
+    let [what, why] = dispatch#focus(a:count)
+    echo a:count < 0 ? printf('%s is %s', why, what) : what
   elseif a:bang
     let w:dispatch = args
-    let [what, why] = dispatch#focus()
+    let [what, why] = dispatch#focus(a:count)
     echo 'Set window local focus to ' . what
   else
     unlet! w:dispatch t:dispatch
     let g:dispatch = args
-    let [what, why] = dispatch#focus()
+    let [what, why] = dispatch#focus(a:count)
     echo 'Set global focus to ' . what
   endif
   return ''
