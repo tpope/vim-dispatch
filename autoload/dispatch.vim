@@ -74,6 +74,10 @@ function! s:expand_lnum(string, ...) abort
   endtry
 endfunction
 
+function s:escape_path(path)
+  return substitute(fnameescape(a:path), '^\\\~', '\~', '')
+endfunction
+
 function! dispatch#cd_helper(dir) abort
   let back = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
   let back .= ' ' . fnameescape(getcwd())
@@ -603,8 +607,17 @@ function! dispatch#focus(...) abort
   endif
   if haslnum
     let compiler = s:expand_lnum(compiler, a:1)
-    if s:extract_opts(compiler)[0] =~# '^:\S' && a:1 > 0
+    let [compiler, opts] = s:extract_opts(compiler)
+    if compiler =~# '^:\S' && a:1 > 0
       let compiler = substitute(compiler, ':\zs', a:1, 'g')
+    endif
+    if has_key(opts, 'compiler') && opts.compiler != dispatch#compiler_for_program(compiler)
+      let compiler = '-compiler=' . opts.compiler . ' ' . compiler
+    endif
+    if has_key(opts, 'directory') && opts.directory != getcwd()
+      let compiler = '-dir=' .
+            \ s:escape_path(fnamemodify(opts.directory, ':~:.')) .
+            \ ' ' . compiler
     endif
   endif
   if compiler =~# '^_\>'
