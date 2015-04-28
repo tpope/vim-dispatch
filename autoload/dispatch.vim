@@ -74,6 +74,19 @@ function! s:expand_lnum(string, ...) abort
   endtry
 endfunction
 
+function! dispatch#cd_helper(dir) abort
+  let back = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
+  let back .= ' ' . fnameescape(getcwd())
+  return 'let g:dispatch_back = '.string(back).'|lcd '.fnameescape(a:dir)
+endfunction
+
+function! s:wrapcd(dir, cmd) abort
+  if a:dir ==# getcwd()
+    return a:cmd
+  endif
+  return 'try|execute dispatch#cd_helper('.string(a:dir).')|execute '.string(a:cmd).'|finally|execute remove(g:, "dispatch_back")|endtry'
+endfunction
+
 function! dispatch#slash() abort
   return !exists("+shellslash") || &shellslash ? '/' : '\'
 endfunction
@@ -214,7 +227,7 @@ function! s:extract_opts(command) abort
       let val = 1
     endif
     if opt ==# 'dir' || opt ==# 'directory'
-      let opts.directory = fnamemodify(expand(val), ':p')
+      let opts.directory = fnamemodify(expand(val), ':p:s?[\\/]$??')
     else
       let opts[opt] = substitute(val, '\\\(\s\)', '\1', 'g')
     endif
@@ -239,9 +252,10 @@ function! dispatch#start_command(bang, command) abort
   let command = s:expand_lnum(command)
   let [command, opts] = s:extract_opts(command)
   let opts.background = a:bang
-  if command =~# '^:.'
+  if command =~# '^:\S'
     unlet! g:dispatch_last_start
-    return substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', '')
+    return s:wrapcd(get(opts, 'directory', getcwd()),
+          \ substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', ''))
   endif
   call dispatch#start(command, opts)
   return ''
@@ -479,11 +493,12 @@ function! dispatch#compile_command(bang, args, count) abort
 
   let args = s:expand_lnum(args, a:count < 0 ? 0 : a:count)
 
-  if args =~# '^:.'
-    return (a:count > 0 ? a:count : '').substitute(args[1:-1], '\>', (a:bang ? '!' : ''), '')
-  endif
-
   let [args, request] = s:extract_opts(args)
+
+  if args =~# '^:\S'
+    return s:wrapcd(get(request, 'directory', getcwd()),
+          \ (a:count > 0 ? a:count : '').substitute(args[1:-1], '\>', (a:bang ? '!' : ''), ''))
+  endif
 
   let executable = matchstr(args, '\S\+')
 
@@ -588,13 +603,15 @@ function! dispatch#focus(...) abort
   endif
   if haslnum
     let compiler = s:expand_lnum(compiler, a:1)
-    let compiler = substitute(compiler, '^:\zs\ze.', a:1 > 0 ? a:1 : '', 'g')
+    if s:extract_opts(compiler)[0] =~# '^:\S' && a:1 > 0
+      let compiler = substitute(compiler, ':\zs', a:1, 'g')
+    endif
   endif
   if compiler =~# '^_\>'
     return [':Make' . compiler[1:-1], why]
   elseif compiler =~# '^!'
     return [':Start ' . compiler[1:-1], why]
-  elseif compiler =~# '^:.'
+  elseif compiler =~# '^:\S'
     return [compiler, why]
   else
     return [':Dispatch ' . compiler, why]
@@ -602,7 +619,7 @@ function! dispatch#focus(...) abort
 endfunction
 
 function! dispatch#focus_command(bang, args, count) abort
-  let args = a:args =~# '^:.' ? a:args : escape(dispatch#expand(a:args), '#%')
+  let args = a:args =~# '^:\S' ? a:args : escape(dispatch#expand(a:args), '#%')
   if empty(a:args) && a:bang
     unlet! w:dispatch t:dispatch g:dispatch
     let [what, why] = dispatch#focus(a:count)
