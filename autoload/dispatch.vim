@@ -447,19 +447,43 @@ function! s:compiler_complete(compiler, A, L, P) abort
 endfunction
 
 function! dispatch#command_complete(A, L, P) abort
-  let len = matchend(a:L, '\S\+\s\+\S\+\s')
-  if len >= 0 && len <= a:P
-    let compiler = dispatch#compiler_for_program(matchstr(a:L, '\s\zs.*'))
-    return s:compiler_complete(compiler, a:A, 'Make '.strpart(a:L, len), a:P-len+5)
+  let args = matchstr(a:L, '\s\zs.*')
+  let [cmd, opts] = s:extract_opts(args)
+  let P = a:P + len(cmd) - len(a:L)
+  let len = matchend(cmd, '\S\+\s')
+  if len >= 0 && P >= 0
+    let args = matchstr(a:L, '\s\zs.*')
+    let [cmd, opts] = s:extract_opts(args)
+    let compiler = get(opts, 'compiler', dispatch#compiler_for_program(cmd))
+    let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
+    try
+      if get(opts, 'directory', getcwd()) !=# getcwd()
+        let cwd = getcwd()
+        execute cd fnameescape(opts.directory)
+      endif
+      return s:compiler_complete(compiler, a:A, 'Make '.strpart(a:L, len), P+5)
+    finally
+      if exists('cwd')
+        execute cd fnameescape(cwd)
+      endif
+    endtry
+  elseif a:A =~# '^-dir='
+    let results = map(filter(s:file_complete(a:A[5:-1]), 'isdirectory(v:val)'), '"-dir=".v:val')
+  elseif a:A =~# '^-compiler='
+    let results = map(reverse(split(globpath(escape(&rtp, ' '), 'compiler/*.vim'), "\n")), '"-compiler=".fnamemodify(v:val, ":t:r")')
+  elseif a:A =~# '^-'
+    let as = {'dir': 'directory'}
+    let results = filter(['-compiler=', '-dir='],
+          \ '!has_key(opts, get(as, v:val[1:-2], v:val[1:-2]))')
   elseif a:A =~# '^\%(\w:\|\.\)\=[\/]'
-    let executables = s:file_complete(a:A)
+    let results = s:file_complete(a:A)
   else
-    let executables = []
+    let results = []
     for dir in split($PATH, has('win32') ? ';' : ':')
-      let executables += map(split(glob(dir.'/'.substitute(a:A, '.', '*&', 'g').'*'), "\n"), 'v:val[strlen(dir)+1 : -1]')
+      let results += map(split(glob(dir.'/'.substitute(a:A, '.', '*&', 'g').'*'), "\n"), 'v:val[strlen(dir)+1 : -1]')
     endfor
   endif
-  return s:completion_filter(sort(dispatch#uniq(executables)), a:A)
+  return s:completion_filter(sort(dispatch#uniq(results)), a:A)
 endfunction
 
 function! dispatch#make_complete(A, L, P) abort
