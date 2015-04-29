@@ -74,7 +74,7 @@ function! s:expand_lnum(string, ...) abort
   endtry
 endfunction
 
-function s:escape_path(path)
+function! s:escape_path(path) abort
   return substitute(fnameescape(a:path), '^\\\~', '\~', '')
 endfunction
 
