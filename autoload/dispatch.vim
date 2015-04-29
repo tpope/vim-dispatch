@@ -231,7 +231,7 @@ function! s:extract_opts(command) abort
       let val = 1
     endif
     if opt ==# 'dir' || opt ==# 'directory'
-      let opts.directory = fnamemodify(expand(val), ':p:s?[\\/]$??')
+      let opts.directory = fnamemodify(expand(val), ':p:s?[^:]\zs[\\/]$??')
     else
       let opts[opt] = substitute(val, '\\\(\s\)', '\1', 'g')
     endif
