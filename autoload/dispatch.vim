@@ -62,7 +62,7 @@ function! s:expand_lnum(string, ...) abort
   let old = v:lnum
   try
     let v:lnum = a:0 ? a:1 : 0
-    let sbeval = '\=s:sandbox_eval(submatch(1))'
+    let sbeval = '\=escape(s:sandbox_eval(submatch(1)), "!#%")'
     let v = substitute(v, '`=\([^`]*\)`', sbeval, 'g')
     let v = substitute(v, '`-=\([^`]*\)`', v:lnum < 1 ? sbeval : '', 'g')
     let v = substitute(v, '`+=\([^`]*\)`', v:lnum > 0 ? sbeval : '', 'g')
