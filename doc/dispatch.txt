@@ -34,7 +34,7 @@ COMMANDS                                        *dispatch-commands*
                         what went wrong.
 
                                                 *dispatch-:Dispatch*
-:Dispatch[!] {program} [arguments]
+:Dispatch[!] [options] {program} [arguments]
                         Find a compiler plugin that sets 'makeprg' to
                         {command} and use its 'errorformat' to dispatch a
                         |:Make| for the given {command} and [arguments].  If
@@ -43,7 +43,7 @@ COMMANDS                                        *dispatch-commands*
 
                         :Dispatch picks a compiler by looking for either
                         CompilerSet makeprg={program}\ [arguments] or
-                        CompilerSet makeprg={command} in compiler plugins.
+                        CompilerSet makeprg={program} in compiler plugins.
                         To force a given {program} to use a given {compiler},
                         create ~/.vim/after/compiler/{compiler}.vim and add to
                         it a line like the following: >
@@ -60,17 +60,23 @@ COMMANDS                                        *dispatch-commands*
                               \ 'latex': 'tex',
                               \ 'bundle exec': ''}
 <
+                        You can optionally give one or more of the following
+                        options before {program}:
+
+                        -compiler=... force use of a compiler plugin
+                        -dir=...      run command in given directory
+
                                                 *b:dispatch*
-:Dispatch[!]            Invoke |:Dispatch| with the command and arguments
-                        found in b:dispatch.  When absent, equivalent to
-                        |:Make|.
+:Dispatch[!]            Invoke |:Dispatch| with the options, program, and
+                        arguments found in b:dispatch.  When b:dispatch is
+                        absent, equivalent to |:Make|.
 
                                                 *dispatch-:FocusDispatch*
-:FocusDispatch {program} [arguments]
+:FocusDispatch [options] {program} [arguments]
                         Set a global default command for |:Dispatch| with no
                         arguments.  Overrides |b:dispatch|.
 
-:FocusDispatch! {program} [arguments]
+:FocusDispatch! [options] {program} [arguments]
                         Set a window local default command for |:Dispatch|
                         with no arguments.  Overrides |b:dispatch| and the
                         global default.
@@ -82,25 +88,28 @@ COMMANDS                                        *dispatch-commands*
                         with no arguments.
 
                                                 *dispatch-:Start*
-:Start {command}        Start a process in a new, focused window.  If
-                        {command} and the current working directory match
+:Start [options] {command}
+                        Start a process in a new, focused window.  If
+                        {command} and the directory for execution match a
                         previous :Start invocation, focus it instead, if
-                        possible.
+                        possible.  Options:
 
-:Start! {command}       Start a process in a new, unfocused window.  If
+                        -dir=...      run command in given directory
+                        -title=...    short label for supported adapters
+
+:Start! [options] {command}
+                        Start a process in a new, unfocused window.  If
                         {command} and the current working directory match
                         previous :Start invocation, do nothing.
 
                                                 *b:start*
-:Start[!]               With no arguments, |:Start| the command given by
-                        |b:start|.  If not set, falls back to 'shell'.
-
-:Start[!] -title={title} {command}
-                        Start a process in a window titled {title}.  This is
-                        not normally used interactively.
+:Start[!]               With no arguments, |:Start| the options and command
+                        given by |b:start|.  If not set, falls back to
+                        'shell'.
 
                                                 *dispatch-:Spawn*
-:Spawn[!] [command]     Like |:Start|, but always spawn a new process rather
+:Spawn[!] [options] [command]
+                        Like |:Start|, but always spawn a new process rather
                         than focusing an existing one.  The default is always
                         to spawn a new 'shell'.
 
