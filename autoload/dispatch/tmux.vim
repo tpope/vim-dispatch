@@ -37,8 +37,7 @@ function! dispatch#tmux#make(request) abort
         \ && a:request.format !~# '%\\[er]'
   let session = get(g:, 'tmux_session', '')
   let script = dispatch#isolate(['TMUX', 'TMUX_PANE'],
-        \ call('dispatch#prepare_make',
-        \ [a:request] + (pipepane ? [a:request.expanded] : [])))
+        \ dispatch#prepare_make(a:request, '', !pipepane))
 
   let title = shellescape(get(a:request, 'title', get(a:request, 'compiler', 'make')))
   if get(a:request, 'background', 0)
