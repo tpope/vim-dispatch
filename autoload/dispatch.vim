@@ -78,7 +78,7 @@ function! s:escape_path(path) abort
   return substitute(fnameescape(a:path), '^\\\~', '\~', '')
 endfunction
 
-function! dispatch#dir_arg(...) abort
+function! dispatch#dir_opt(...) abort
   let dir = fnamemodify(a:0 ? a:1 : getcwd(), ':p:~:s?[^:]\zs[\\/]$??')
   return '-dir=' . s:escape_path(dir) . ' '
 endfunction
@@ -667,7 +667,7 @@ function! dispatch#focus_command(bang, args, count) abort
     let args = '-compiler=' . opts.compiler . ' ' . args
   endif
   if has_key(opts, 'directory')
-    let args = dispatch#dir_arg(opts.directory) . args
+    let args = dispatch#dir_opt(opts.directory) . args
   endif
   if empty(a:args) && a:bang
     unlet! w:dispatch t:dispatch g:dispatch
