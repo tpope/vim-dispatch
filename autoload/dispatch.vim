@@ -157,7 +157,7 @@ function! dispatch#prepare_start(request, ...) abort
         \ 'touch ' . a:request.file . '.complete' .
         \ (empty(callback) ? '' : '; ' . callback)
   if &shellpipe =~# '2>&1'
-    return 'trap ' . shellescape(after) . ' EXIT INT TERM; ' . exec
+    return 'trap : INT; trap ' . shellescape(after) . ' EXIT; ' . exec
   else
     " csh
     return exec . '; ' . after
