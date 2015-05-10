@@ -152,6 +152,10 @@ function! dispatch#prepare_start(request, ...) abort
     let exec .= 'sleep 1; '
   endif
   let exec .= a:0 ? a:1 : a:request.expanded
+  let pause = "(printf '\e[1m--- Press ENTER to continue ---\e[0m\\n' $?; exec head -1)"
+  if a:0 < 2 || a:2 =~# 'always\|error\|[1-9]'
+    let exec .= "; test $? = 0 -o $? = 130 || " . pause
+  endif
   let callback = dispatch#callback(a:request)
   let after = 'rm -f ' . a:request.file . '.pid; ' .
         \ 'touch ' . a:request.file . '.complete' .
@@ -166,7 +170,7 @@ endfunction
 
 function! dispatch#prepare_make(request, ...) abort
   let exec = a:0 ? a:1 : (a:request.expanded . dispatch#shellpipe(a:request.file))
-  return dispatch#prepare_start(a:request, exec, 1)
+  return dispatch#prepare_start(a:request, exec, 'never')
 endfunction
 
 function! dispatch#set_title(request) abort

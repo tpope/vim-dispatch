@@ -62,6 +62,7 @@ function! dispatch#windows#start(request) abort
     let exec =
           \ s:pid . pidfile .
           \ ' & ' . a:request.command .
+          \ ' || pause ' .
           \ ' & cd . > ' . a:request.file . '.complete' .
           \ ' & del ' . pidfile
   endif
