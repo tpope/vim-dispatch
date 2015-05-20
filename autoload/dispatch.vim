@@ -157,8 +157,7 @@ function! dispatch#prepare_start(request, ...) abort
     let exec .= "; test $? = 0 -o $? = 130 || " . pause
   endif
   let callback = dispatch#callback(a:request)
-  let after = 'rm -f ' . a:request.file . '.pid; ' .
-        \ 'touch ' . a:request.file . '.complete' .
+  let after = 'rm -f ' . a:request.file . '.pid' .
         \ (empty(callback) ? '' : '; ' . callback)
   if &shellpipe =~# '2>&1'
     return 'trap : INT; trap ' . shellescape(after) . ' EXIT; ' . exec
@@ -169,7 +168,8 @@ function! dispatch#prepare_start(request, ...) abort
 endfunction
 
 function! dispatch#prepare_make(request, ...) abort
-  let exec = a:0 ? a:1 : (a:request.expanded . dispatch#shellpipe(a:request.file))
+  let exec = a:0 ? a:1 : ('(' . a:request.expanded . '; echo $? > ' .
+        \ a:request.file . '.complete)' . dispatch#shellpipe(a:request.file))
   return dispatch#prepare_start(a:request, exec, 'never')
 endfunction
 
@@ -603,7 +603,13 @@ function! dispatch#compile_command(bang, args, count) abort
     if !s:dispatch(request)
       let after = 'call dispatch#complete('.request.id.')'
       redraw!
-      execute 'silent !'.request.command dispatch#shellpipe(request.file)
+      let sp = dispatch#shellpipe(request.file)
+      let dest = request.file . '.complete'
+      if &shellxquote ==# '"'
+        silent execute '!' . request.command sp '& echo \%ERRORLEVEL\% >' dest
+      else
+        silent execute '!(' . request.command . '; echo $? > ' . dest . ')' sp
+      endif
       redraw!
     endif
   finally
