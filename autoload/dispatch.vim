@@ -784,8 +784,9 @@ function! dispatch#complete(file) abort
     let request = s:request(a:file)
     let request.completed = 1
     echo 'Finished:' request.command
+    let copen = get(g:, 'dispatch_always_copen', 0)
     if !request.background
-      call s:cgetfile(request, 0, 0)
+      call s:cgetfile(request, 0, copen)
       redraw
     endif
   endif
