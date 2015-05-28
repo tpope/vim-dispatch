@@ -783,7 +783,18 @@ function! dispatch#complete(file) abort
   if !dispatch#completed(a:file)
     let request = s:request(a:file)
     let request.completed = 1
-    echo 'Finished:' request.command
+    try
+      let status = readfile(request.file . '.complete', 1)[0]
+    catch
+      let status = -1
+    endtry
+    if status > 0
+      echo 'Failed:' request.command
+    elseif status == 0
+      echo 'Succeeded:' request.command
+    else
+      echo 'Finished:' request.command
+    endif
     if !request.background
       call s:cgetfile(request, 0, 0)
       redraw
