@@ -791,7 +791,7 @@ function! dispatch#complete(file) abort
     endif
     echo label request.command
     if !request.background
-      call s:cgetfile(request, 0, 0)
+      call s:cgetfile(request, 0, -status)
       redraw
     endif
   endif
@@ -848,7 +848,7 @@ endfunction
 function! s:open_quickfix(request, copen) abort
   let was_qf = &buftype ==# 'quickfix'
   execute 'botright' (a:copen ? 'copen' : 'cwindow')
-  if &buftype ==# 'quickfix' && !was_qf && !a:copen
+  if &buftype ==# 'quickfix' && !was_qf && a:copen != 1
     wincmd p
   endif
   for winnr in range(1, winnr('$'))
