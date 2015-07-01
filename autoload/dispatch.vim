@@ -783,12 +783,13 @@ function! dispatch#complete(file) abort
       let status = -1
     endtry
     if status > 0
-      echo 'Failed:' request.command
+      let label = 'Failure:'
     elseif status == 0
-      echo 'Succeeded:' request.command
+      let label = 'Success:'
     else
-      echo 'Finished:' request.command
+      let label = 'Complete:'
     endif
+    echo label request.command
     if !request.background
       call s:cgetfile(request, 0, 0)
       redraw
