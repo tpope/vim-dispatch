@@ -789,11 +789,11 @@ function! dispatch#complete(file) abort
       let status = -1
     endtry
     if status > 0
-      echo 'Failed:' request.command
+      echoerr 'Failed:' request.command
     elseif status == 0
-      echo 'Succeeded:' request.command
+      echomsg 'Succeeded:' request.command
     else
-      echo 'Finished:' request.command
+      echomsg 'Finished:' request.command
     endif
     if !request.background
       call s:cgetfile(request, 0, 0)
