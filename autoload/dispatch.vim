@@ -48,7 +48,6 @@ endfunction
 function! s:expand(string) abort
   let slashes = len(matchstr(a:string, '^\%(\\\\\)*'))
   sandbox let v = repeat('\', slashes/2) . expand(a:string[slashes : -1])
-  echomsg v
   return v
 endfunction
 
