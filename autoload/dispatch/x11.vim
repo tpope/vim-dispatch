@@ -9,7 +9,7 @@ function! dispatch#x11#handle(request) abort
   if $DISPLAY !~# '^:'
     return 0
   endif
-  if (a:request.background || a:request.action ==# 'make') &&
+  if (get(a:request, 'background', 0) || a:request.action ==# 'make') &&
         \ (!v:windowid || !executable('wmctrl'))
     return 0
   endif
@@ -23,6 +23,9 @@ function! dispatch#x11#handle(request) abort
     return 0
   endif
   if a:request.action ==# 'make'
+    if !get(a:request, 'background', 0) && empty(v:servername)
+      return 0
+    endif
     return dispatch#x11#spawn(terminal, dispatch#prepare_make(a:request), a:request)
   elseif a:request.action ==# 'start'
     return dispatch#x11#spawn(terminal, dispatch#prepare_start(a:request), a:request)
