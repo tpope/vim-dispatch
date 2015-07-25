@@ -151,8 +151,11 @@ function! dispatch#prepare_start(request, ...) abort
     let exec .= 'sleep 1; '
   endif
   let exec .= a:0 ? a:1 : a:request.expanded
+  let wait = a:0 > 1 ? a:1 : get(a:request, 'wait', 'error')
   let pause = "(printf '\e[1m--- Press ENTER to continue ---\e[0m\\n' $?; exec head -1)"
-  if a:0 < 2 || a:2 =~# 'always\|error\|[1-9]'
+  if wait == 'always'
+    let exec .= '; ' . pause
+  elseif wait !=# 'never'
     let exec .= "; test $? = 0 -o $? = 130 || " . pause
   endif
   let callback = dispatch#callback(a:request)
@@ -235,7 +238,7 @@ function! s:extract_opts(command) abort
     endif
     if opt ==# 'dir' || opt ==# 'directory'
       let opts.directory = fnamemodify(expand(val), ':p:s?[^:]\zs[\\/]$??')
-    elseif index(['compiler', 'title'], opt) >= 0
+    elseif index(['compiler', 'title', 'wait'], opt) >= 0
       let opts[opt] = substitute(val, '\\\(\s\)', '\1', 'g')
     endif
     let command = substitute(command, '^-\w\+\%(=\%(\\.\|\S\)*\)\=\s*', '', '')

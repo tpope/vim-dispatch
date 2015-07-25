@@ -59,10 +59,12 @@ function! dispatch#windows#start(request) abort
     let exec = dispatch#prepare_start(a:request)
   else
     let pidfile = a:request.file.'.pid'
+    let pause = get({'always': ' & pause', 'never': ''},
+          \ get(a:request, 'wait'), ' || pause')
     let exec =
           \ s:pid . pidfile .
           \ ' & ' . a:request.command .
-          \ ' || pause ' .
+          \ pause .
           \ ' & del ' . pidfile
   endif
 

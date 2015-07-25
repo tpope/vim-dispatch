@@ -96,6 +96,8 @@ COMMANDS                                        *dispatch-commands*
 
                         -dir=...      run command in given directory
                         -title=...    short label for supported adapters
+                        -wait=...     when to display press enter prompt:
+                                      "always", "never", or "error"
 
 :Start! [options] {command}
                         Start a process in a new, unfocused window.  If
