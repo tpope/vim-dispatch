@@ -539,7 +539,7 @@ function! dispatch#compile_command(bang, args, count) abort
   call extend(request, {
         \ 'action': 'make',
         \ 'background': a:bang,
-        \ 'format': '%+I%.%#'
+        \ 'format': g:dispatch_format
         \ }, 'keep')
 
   if executable ==# '_'
