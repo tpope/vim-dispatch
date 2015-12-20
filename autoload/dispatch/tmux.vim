@@ -58,7 +58,12 @@ function! dispatch#tmux#make(request) abort
   elseif uname ==# 'Linux'
     let filter .= ' -u'
   endif
-  let filter .= " -e \"s/\r$//\" -e \"s/.*\r//\" -e \"s/\e\\[K//g\" -e \"s/.*\e\\[2K\e\\[0G//g\" -e \"s/\e\\[[0-9;]*m//g\" > ".a:request.file
+  let filter .= " -e \"s/\r$//\" -e \"s/.*\r//\""
+  let filter .= " -e \"s/\e\\[K//g\" "
+  let filter .= " -e \"s/.*\e\\[2K\e\\[0G//g\""
+  let filter .= " -e \"s/\e\\[[0-9;]*m//g\""
+  let filter .= " -e \"s/\017//g\""
+  let filter .= " > " . a:request.file . ""
   call system('tmux ' . cmd . '|tee ' . s:make_pane .
         \ (pipepane ? '|xargs -I {} tmux pipe-pane -t {} '.shellescape(filter) : ''))
 
