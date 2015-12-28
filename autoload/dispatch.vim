@@ -850,7 +850,12 @@ endfunction
 
 function! s:open_quickfix(request, copen) abort
   let was_qf = &buftype ==# 'quickfix'
-  execute 'botright' (a:copen ? 'copen' : 'cwindow')
+  if exists('g:dispatch_quickfix_height')
+    let height = get(g:, 'dispatch_quickfix_height', 10)
+    execute 'botright' (a:copen ? 'copen' . height : 'cwindow' . height)
+  else
+    execute 'botright' (a:copen ? 'copen' : 'cwindow')
+  endif
   if &buftype ==# 'quickfix' && !was_qf && a:copen != 1
     wincmd p
   endif
