@@ -25,7 +25,7 @@ function! dispatch#screen#spawn(command, request) abort
         \ . shellescape('exec ' . dispatch#isolate(['STY', 'WINDOW'],
         \ dispatch#set_title(a:request), a:command))
   silent execute '!' . escape(command, '!#%')
-  if a:request.background
+  if a:request.background || a:request.action !=# 'start' && !has('gui_running')
     silent !screen -X other
   endif
   return 1
