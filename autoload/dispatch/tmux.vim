@@ -26,7 +26,9 @@ function! dispatch#tmux#handle(request) abort
       let command .= ' -d'
     endif
     let command .= ' ' . shellescape('exec ' . dispatch#isolate(
-          \ ['TMUX', 'TMUX_PANE'], dispatch#prepare_start(a:request)))
+          \ ['TMUX', 'TMUX_PANE'],
+          \ dispatch#set_title(a:request),
+          \ dispatch#prepare_start(a:request)))
     call system(command)
     return 1
   endif
@@ -37,6 +39,7 @@ function! dispatch#tmux#make(request) abort
         \ && a:request.format !~# '%\\[er]'
   let session = get(g:, 'tmux_session', '')
   let script = dispatch#isolate(['TMUX', 'TMUX_PANE'],
+        \ dispatch#set_title(a:request),
         \ call('dispatch#prepare_make', [a:request] +
         \ (pipepane ? [a:request.expanded . '; echo $? > ' . a:request.file . '.complete'] : [])))
 
