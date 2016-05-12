@@ -18,6 +18,10 @@ function! dispatch#tmux#handle(request) abort
   endif
 
   if a:request.action ==# 'make'
+    if !get(a:request, 'background', 0) && empty(v:servername) &&
+          \ !empty(''.session) && session !=# system('tmux display-message -p "#S"')[0:-2]
+      return 0
+    endif
     return dispatch#tmux#make(a:request)
   elseif a:request.action ==# 'start'
     let command = 'tmux new-window -P -t '.shellescape(session.':')
