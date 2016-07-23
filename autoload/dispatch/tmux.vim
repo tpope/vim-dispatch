@@ -67,6 +67,7 @@ function! dispatch#tmux#make(request) abort
   let filter .= " -e \"s/\r$//\" -e \"s/.*\r//\""
   let filter .= " -e \"s/\e\\[K//g\" "
   let filter .= " -e \"s/.*\e\\[2K\e\\[0G//g\""
+  let filter .= " -e \"s/.*\e\\[?25h\e\\[0G//g\""
   let filter .= " -e \"s/\e\\[[0-9;]*m//g\""
   let filter .= " -e \"s/\017//g\""
   let filter .= " > " . a:request.file . ""
