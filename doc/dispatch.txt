@@ -36,8 +36,8 @@ COMMANDS                                        *dispatch-commands*
                                                 *dispatch-:Dispatch*
 :Dispatch[!] [options] {program} [arguments]
                         Find a compiler plugin that sets 'makeprg' to
-                        {command} and use its 'errorformat' to dispatch a
-                        |:Make| for the given {command} and [arguments].  If
+                        {program} and use its 'errorformat' to dispatch a
+                        |:Make| for the given {program} and [arguments].  If
                         no compiler plugin is found, the generic format
                         %+I%.%# is used.
 
