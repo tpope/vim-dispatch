@@ -47,10 +47,14 @@ function! dispatch#tmux#make(request) abort
         \ (pipepane ? [a:request.expanded . '; echo $? > ' . a:request.file . '.complete'] : [])))
 
   let title = shellescape(get(a:request, 'title', get(a:request, 'compiler', 'make')))
+
   if get(a:request, 'background', 0)
     let cmd = 'new-window -d -n '.title
   elseif has('gui_running') || empty($TMUX) || (!empty(''.session) && session !=# system('tmux display-message -p "#S"')[0:-2])
     let cmd = 'new-window -n '.title
+  elseif exists('g:dispatch_quickfix_height')
+    let height = get(g:, 'dispatch_quickfix_height', 10)
+    let cmd = "split-window -l " . height . " -d"
   else
     let cmd = 'split-window -l 10 -d'
   endif
