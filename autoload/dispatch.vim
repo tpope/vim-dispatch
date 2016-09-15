@@ -867,6 +867,16 @@ function! s:open_quickfix(request, copen) abort
       if has_key(a:request, 'compiler')
         call setbufvar(bufnr, 'current_compiler', a:request.compiler)
       endif
+      let t:dispatch_quickfix_winnr = winnr
+      if exists('#User#DispatchQuickfix')
+        try
+          let [save_mls, &modelines] = [&mls, 0]
+          doautocmd User DispatchQuickfix
+        finally
+          let &mls = save_mls
+        endtry
+      endif
+      break
     endif
   endfor
 endfunction
