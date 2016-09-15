@@ -836,6 +836,7 @@ function! s:cgetfile(request, all, copen) abort
     silent doautocmd QuickFixCmdPre cgetfile
     execute 'noautocmd cgetfile' fnameescape(request.file)
     silent doautocmd QuickFixCmdPost cgetfile
+    call s:open_quickfix(request, a:copen)
   catch '^E40:'
     return v:exception
   finally
@@ -845,7 +846,6 @@ function! s:cgetfile(request, all, copen) abort
     let &l:makeprg = makeprg
     call s:set_current_compiler(compiler)
   endtry
-  call s:open_quickfix(request, a:copen)
 endfunction
 
 function! s:open_quickfix(request, copen) abort
