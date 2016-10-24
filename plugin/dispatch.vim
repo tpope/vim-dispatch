@@ -35,6 +35,7 @@ if !exists('g:dispatch_handlers')
   let g:dispatch_handlers = [
         \ 'tmux',
         \ 'screen',
+        \ 'jobs',
         \ 'windows',
         \ 'iterm',
         \ 'x11',
