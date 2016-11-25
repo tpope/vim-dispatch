@@ -855,6 +855,7 @@ function! s:open_quickfix(request, copen) abort
   if &buftype ==# 'quickfix' && !was_qf && a:copen != 1
     wincmd p
   endif
+  silent doautocmd User dispatch-quickfix
   for winnr in range(1, winnr('$'))
     if getwinvar(winnr, '&buftype') ==# 'quickfix'
       call setwinvar(winnr, 'quickfix_title', ':' . a:request.expanded)
