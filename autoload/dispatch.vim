@@ -143,6 +143,12 @@ function! dispatch#callback(request) abort
   return ''
 endfunction
 
+function! dispatch#autowrite() abort
+  if &autowrite || &autowriteall
+    silent! wall
+  endif
+endfunction
+
 function! dispatch#prepare_start(request, ...) abort
   let exec = 'echo $$ > ' . a:request.file . '.pid; '
   if executable('perl')
@@ -314,6 +320,7 @@ function! dispatch#spawn(command, ...) abort
       let i += 1
     endwhile
   endif
+  call dispatch#autowrite()
   let request.file = tempname()
   let s:files[request.file] = request
   let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
@@ -568,9 +575,7 @@ function! dispatch#compile_command(bang, args, count) abort
   endif
   let request.title = get(request, 'title', get(request, 'compiler', 'make'))
 
-  if &autowrite || &autowriteall
-    silent! wall
-  endif
+  call dispatch#autowrite()
   cclose
   let request.file = tempname()
   let &errorfile = request.file
