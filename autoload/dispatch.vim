@@ -466,7 +466,6 @@ function! dispatch#command_complete(A, L, P) abort
   let len = matchend(cmd, '\S\+\s')
   if len >= 0 && P >= 0
     let args = matchstr(a:L, '\s\zs.*')
-    let [cmd, opts] = s:extract_opts(args)
     let compiler = get(opts, 'compiler', dispatch#compiler_for_program(cmd))
     let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
     try
@@ -474,7 +473,7 @@ function! dispatch#command_complete(A, L, P) abort
         let cwd = getcwd()
         execute cd fnameescape(opts.directory)
       endif
-      return s:compiler_complete(compiler, a:A, 'Make '.strpart(a:L, len), P+5)
+      return s:compiler_complete(compiler, a:A, 'Make '.strpart(cmd, len), P+5)
     finally
       if exists('cwd')
         execute cd fnameescape(cwd)
