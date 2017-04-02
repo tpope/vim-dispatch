@@ -41,3 +41,7 @@ if !exists('g:dispatch_handlers')
         \ 'headless',
         \ ]
 endif
+
+if !exists('g:dispatch_format')
+  let g:dispatch_format = '%+I%.%#'
+endif
