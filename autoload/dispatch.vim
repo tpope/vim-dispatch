@@ -858,7 +858,7 @@ function! s:open_quickfix(request, copen) abort
   try
     execute 'botright' (a:copen ? 'copen' : 'cwindow') height
     for winnr in &buftype == 'quickfix' ? [winnr()] : range(winnr('$'), 1, -1)
-      if getwinvar(winnr, '&buftype') ==# 'quickfix'
+      if getwinvar(winnr, '&buftype') ==# 'quickfix' && empty(getloclist(winnr))
         exe winnr.'wincmd w'
         exe 'lcd' fnameescape(a:request.directory)
         let w:quickfix_title = ':' . a:request.expanded
