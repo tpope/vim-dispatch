@@ -246,6 +246,8 @@ function! s:extract_opts(command) abort
       let opts.directory = fnamemodify(expand(val), ':p:s?[^:]\zs[\\/]$??')
     elseif index(['compiler', 'title', 'wait'], opt) >= 0
       let opts[opt] = substitute(val, '\\\(\s\)', '\1', 'g')
+    elseif opt ==# 'newbuf'
+      let opts[opt] = 1
     endif
     let command = substitute(command, '^-\w\+\%(=\%(\\.\|\S\)*\)\=\s*', '', '')
   endwhile
@@ -850,6 +852,10 @@ function! s:cgetfile(request, all, copen) abort
     call s:set_current_compiler(compiler)
   endtry
   call s:open_quickfix(request, a:copen)
+  if has_key(request, 'newbuf')
+    vnew
+	put =readfile(request.file)
+  endif
 endfunction
 
 function! s:open_quickfix(request, copen) abort
