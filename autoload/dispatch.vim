@@ -855,24 +855,29 @@ endfunction
 function! s:open_quickfix(request, copen) abort
   let was_qf = &buftype ==# 'quickfix'
   let height = get(g:, 'dispatch_quickfix_height', 10)
-  execute 'botright' (a:copen ? 'copen'.height : 'cwindow'.height)
-  if &buftype ==# 'quickfix' && !was_qf && a:copen != 1
-    wincmd p
-  endif
-  for winnr in range(1, winnr('$'))
-    if getwinvar(winnr, '&buftype') ==# 'quickfix'
-      call setwinvar(winnr, 'quickfix_title', ':' . a:request.expanded)
-      let bufnr = winbufnr(winnr)
-      call setbufvar(bufnr, '&efm', a:request.format)
-      call setbufvar(bufnr, 'dispatch', escape(a:request.expanded, '%#'))
-      if has_key(a:request, 'program')
-        call setbufvar(bufnr, '&makeprg', a:request.program)
+  try
+    execute 'botright' (a:copen ? 'copen' : 'cwindow') height
+    for winnr in &buftype == 'quickfix' ? [winnr()] : range(1, winnr('$'))
+      if getwinvar(winnr, '&buftype') ==# 'quickfix'
+        exe winnr.'wincmd w'
+        exe 'lcd' fnameescape(a:request.directory)
+        let w:quickfix_title = ':' . a:request.expanded
+        let b:dispatch = escape(a:request.expanded, '%#')
+        let &l:efm = a:request.format
+        if has_key(a:request, 'program')
+          let &l:makeprg = a:request.program
+        endif
+        if has_key(a:request, 'compiler')
+          let b:current_compiler = a:request.compiler
+        endif
+        break
       endif
-      if has_key(a:request, 'compiler')
-        call setbufvar(bufnr, 'current_compiler', a:request.compiler)
-      endif
+    endfor
+  finally
+    if &buftype ==# 'quickfix' && !was_qf && !a:copen
+      wincmd p
     endif
-  endfor
+  endtry
 endfunction
 
 " }}}1
