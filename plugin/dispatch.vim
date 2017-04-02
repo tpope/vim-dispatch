@@ -41,3 +41,11 @@ if !exists('g:dispatch_handlers')
         \ 'headless',
         \ ]
 endif
+
+augroup dispatch
+  autocmd!
+  autocmd FileType qf
+        \ if &buftype ==# 'quickfix' && empty(getloclist(winnr())) && get(w:, 'quickfix_title') =~# '^:noautocmd cgetfile' |
+        \   call dispatch#quickfix_init() |
+        \ endif
+augroup END

@@ -849,37 +849,27 @@ function! s:cgetfile(request, all, copen) abort
     let &l:makeprg = makeprg
     call s:set_current_compiler(compiler)
   endtry
-  call s:open_quickfix(request, a:copen)
+  let height = get(g:, 'dispatch_quickfix_height', 10)
+  execute 'botright' (a:copen ? 'copen' : 'cwindow') height
 endfunction
 
-function! s:open_quickfix(request, copen) abort
-  let was_qf = &buftype ==# 'quickfix'
-  let height = get(g:, 'dispatch_quickfix_height', 10)
-  try
-    execute 'botright' (a:copen ? 'copen' : 'cwindow') height
-    for winnr in &buftype == 'quickfix' ? [winnr()] : range(winnr('$'), 1, -1)
-      if getwinvar(winnr, '&buftype') ==# 'quickfix' && empty(getloclist(winnr))
-        exe winnr.'wincmd w'
-        let w:quickfix_title = ':' . a:request.expanded
-        let b:dispatch = dispatch#dir_opt(a:request.directory) .
-              \ escape(a:request.expanded, '%#')
-        let &l:efm = a:request.format
-        if has_key(a:request, 'program')
-          let &l:makeprg = a:request.program
-        endif
-        if has_key(a:request, 'compiler')
-          let b:current_compiler = a:request.compiler
-          let b:dispatch = '-compiler=' . a:request.compiler . ' ' . b:dispatch
-        endif
-        exe 'lcd' fnameescape(a:request.directory)
-        break
-      endif
-    endfor
-  finally
-    if &buftype ==# 'quickfix' && !was_qf && !a:copen
-      wincmd p
-    endif
-  endtry
+function! dispatch#quickfix_init() abort
+  let request = s:request(matchstr(w:quickfix_title, '^:noautocmd cgetfile \zs.*'))
+  if empty(request)
+    return
+  endif
+  let w:quickfix_title = ':' . request.expanded
+  let b:dispatch = dispatch#dir_opt(request.directory) .
+        \ escape(request.expanded, '%#')
+  let &l:efm = request.format
+  if has_key(request, 'program')
+    let &l:makeprg = request.program
+  endif
+  if has_key(request, 'compiler')
+    let b:current_compiler = request.compiler
+    let b:dispatch = '-compiler=' . request.compiler . ' ' . b:dispatch
+  endif
+  exe 'lcd' fnameescape(request.directory)
 endfunction
 
 " }}}1
