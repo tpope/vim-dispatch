@@ -860,16 +860,18 @@ function! s:open_quickfix(request, copen) abort
     for winnr in &buftype == 'quickfix' ? [winnr()] : range(winnr('$'), 1, -1)
       if getwinvar(winnr, '&buftype') ==# 'quickfix' && empty(getloclist(winnr))
         exe winnr.'wincmd w'
-        exe 'lcd' fnameescape(a:request.directory)
         let w:quickfix_title = ':' . a:request.expanded
-        let b:dispatch = escape(a:request.expanded, '%#')
+        let b:dispatch = dispatch#dir_opt(a:request.directory) .
+              \ escape(a:request.expanded, '%#')
         let &l:efm = a:request.format
         if has_key(a:request, 'program')
           let &l:makeprg = a:request.program
         endif
         if has_key(a:request, 'compiler')
           let b:current_compiler = a:request.compiler
+          let b:dispatch = '-compiler=' . a:request.compiler . ' ' . b:dispatch
         endif
+        exe 'lcd' fnameescape(a:request.directory)
         break
       endif
     endfor
