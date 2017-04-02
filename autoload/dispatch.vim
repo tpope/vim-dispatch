@@ -828,28 +828,31 @@ function! s:cgetfile(request, all, copen) abort
   let dir = getcwd()
   let modelines = &modelines
   try
-    let &modelines = 0
-    call s:set_current_compiler(get(request, 'compiler', ''))
-    exe cd fnameescape(request.directory)
-    if a:all
-      let &l:efm = '%+G%.%#'
-    else
-      let &l:efm = request.format
-    endif
-    let &l:makeprg = request.command
-    silent doautocmd QuickFixCmdPre cgetfile
-    execute 'noautocmd cgetfile' fnameescape(request.file)
-    silent doautocmd QuickFixCmdPost cgetfile
-  catch '^E40:'
-    return v:exception
+    try
+      let &modelines = 0
+      call s:set_current_compiler(get(request, 'compiler', ''))
+      exe cd fnameescape(request.directory)
+      if a:all
+        let &l:efm = '%+G%.%#'
+      else
+        let &l:efm = request.format
+      endif
+      let &l:makeprg = request.command
+      silent doautocmd QuickFixCmdPre cgetfile
+      execute 'noautocmd cgetfile' fnameescape(request.file)
+      silent doautocmd QuickFixCmdPost cgetfile
+    catch '^E40:'
+      return v:exception
+    finally
+      let &modelines = modelines
+      let &l:efm = efm
+      let &l:makeprg = makeprg
+      call s:set_current_compiler(compiler)
+    endtry
   finally
-    let &modelines = modelines
+    call s:open_quickfix(request, a:copen)
     exe cd fnameescape(dir)
-    let &l:efm = efm
-    let &l:makeprg = makeprg
-    call s:set_current_compiler(compiler)
   endtry
-  call s:open_quickfix(request, a:copen)
 endfunction
 
 function! s:open_quickfix(request, copen) abort
