@@ -857,7 +857,7 @@ function! s:open_quickfix(request, copen) abort
   let height = get(g:, 'dispatch_quickfix_height', 10)
   try
     execute 'botright' (a:copen ? 'copen' : 'cwindow') height
-    for winnr in &buftype == 'quickfix' ? [winnr()] : range(1, winnr('$'))
+    for winnr in &buftype == 'quickfix' ? [winnr()] : range(winnr('$'), 1, -1)
       if getwinvar(winnr, '&buftype') ==# 'quickfix'
         exe winnr.'wincmd w'
         exe 'lcd' fnameescape(a:request.directory)
