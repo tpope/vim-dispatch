@@ -21,7 +21,7 @@ function! dispatch#headless#handle(request) abort
   else
     let redir = &shellredir . ' ' . '/dev/null'
   endif
-  echomsg system(&shell.' '.&shellcmdflag.' '.shellescape(command).redir.' &')
+  call system(&shell.' '.&shellcmdflag.' '.shellescape(command).redir.' &')
   return !v:shell_error
 endfunction
 
