@@ -716,7 +716,7 @@ endfunction
 function! s:request(request) abort
   if type(a:request) == type({})
     return a:request
-  elseif type(a:request) == type(0) && a:request > 0
+  elseif type(a:request) == type(0) && a:request >= 0
     return get(s:makes, a:request-1, {})
   elseif type(a:request) == type('') && !empty(a:request)
     return get(s:files, a:request, {})
@@ -726,7 +726,7 @@ function! s:request(request) abort
 endfunction
 
 function! dispatch#request(...) abort
-  return a:0 ? s:request(a:1) : get(s:makes, -1, {})
+  return s:request(a:0 ? a:1 : 0)
 endfunction
 
 function! s:running(handler, pid) abort
@@ -812,7 +812,7 @@ function! dispatch#copen(bang) abort
   if empty(s:makes)
     return 'echoerr ' . string('No dispatches yet')
   endif
-  let request = s:makes[-1]
+  let request = dispatch#request()
   if !dispatch#completed(request) && filereadable(request.file . '.complete')
     let request.completed = 1
   endif
