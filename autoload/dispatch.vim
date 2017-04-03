@@ -861,13 +861,17 @@ function! dispatch#quickfix_init() abort
   let w:quickfix_title = ':' . request.expanded
   let b:dispatch = dispatch#dir_opt(request.directory) .
         \ escape(request.expanded, '%#')
-  let &l:efm = request.format
-  if has_key(request, 'program')
-    let &l:makeprg = request.program
-  endif
   if has_key(request, 'compiler')
-    let b:current_compiler = request.compiler
     let b:dispatch = '-compiler=' . request.compiler . ' ' . b:dispatch
+  endif
+  if has_key(request, 'program')
+    let &l:efm = request.format
+    let &l:makeprg = request.program
+    if has_key(request, 'compiler')
+      let b:current_compiler = request.compiler
+    else
+      unlet! b:current_compiler
+    endif
   endif
   exe 'lcd' fnameescape(request.directory)
 endfunction
