@@ -34,21 +34,21 @@ COMMANDS                                        *dispatch-commands*
                         what went wrong.
 
                                                 *dispatch-:Dispatch*
-:Dispatch[!] [options] {program} [arguments]
+:Dispatch[!] [options] {command} [arguments]
                         Find a compiler plugin that sets 'makeprg' to
-                        {program} and use its 'errorformat' to dispatch a
-                        |:Make| for the given {program} and [arguments].  If
+                        {command} and use its 'errorformat' to dispatch a
+                        |:Make| for the given {command} and [arguments].  If
                         no compiler plugin is found, the generic format
                         %+I%.%# is used.
 
                         :Dispatch picks a compiler by looking for either
-                        CompilerSet makeprg={program}\ [arguments] or
-                        CompilerSet makeprg={program} in compiler plugins.
-                        To force a given {program} to use a given {compiler},
+                        CompilerSet makeprg={command}\ [arguments] or
+                        CompilerSet makeprg={command} in compiler plugins.
+                        To force a given {command} to use a given {compiler},
                         create ~/.vim/after/compiler/{compiler}.vim and add to
                         it a line like the following: >
 
-                        " CompilerSet makeprg={program}
+                        " CompilerSet makeprg={command}
 <
                         If you need more control, *g:dispatch_compilers* can
                         be set to a dictionary with commands for keys and
@@ -61,22 +61,22 @@ COMMANDS                                        *dispatch-commands*
                               \ 'bundle exec': ''}
 <
                         You can optionally give one or more of the following
-                        options before {program}:
+                        options before {command}:
 
                         -compiler=... force use of a compiler plugin
                         -dir=...      run command in given directory
 
                                                 *b:dispatch*
-:Dispatch[!]            Invoke |:Dispatch| with the options, program, and
+:Dispatch[!]            Invoke |:Dispatch| with the options, command, and
                         arguments found in b:dispatch.  When b:dispatch is
                         absent, equivalent to |:Make|.
 
                                                 *dispatch-:FocusDispatch*
-:FocusDispatch [options] {program} [arguments]
+:FocusDispatch [options] {command} [arguments]
                         Set a global default command for |:Dispatch| with no
                         arguments.  Overrides |b:dispatch|.
 
-:FocusDispatch! [options] {program} [arguments]
+:FocusDispatch! [options] {command} [arguments]
                         Set a window local default command for |:Dispatch|
                         with no arguments.  Overrides |b:dispatch| and the
                         global default.
