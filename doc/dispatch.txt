@@ -68,8 +68,9 @@ COMMANDS                                        *dispatch-commands*
 
                                                 *b:dispatch*
 :Dispatch[!]            Invoke |:Dispatch| with the options, program, and
-                        arguments found in b:dispatch.  When b:dispatch is
-                        absent, equivalent to |:Make|.
+                        arguments found in b:dispatch.  In the quickfix
+                        window, this reruns the shown dispatch.  When no other
+                        default is found, equivalent to |:Make|.
 
                                                 *dispatch-:FocusDispatch*
 :FocusDispatch [options] {program} [arguments]
