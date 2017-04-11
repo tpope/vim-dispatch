@@ -850,7 +850,11 @@ function! s:cgetfile(request, all, copen) abort
     call s:set_current_compiler(compiler)
   endtry
   let height = get(g:, 'dispatch_quickfix_height', 10)
+  let was_qf = &buftype ==# 'quickfix' && empty(getloclist(0))
   execute 'botright' (a:copen ? 'copen' : 'cwindow') height
+  if !was_qf && !a:copen && &buftype ==# 'quickfix' && empty(getloclist(0))
+    wincmd p
+  endif
 endfunction
 
 function! dispatch#quickfix_init() abort
