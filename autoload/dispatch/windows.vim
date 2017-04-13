@@ -65,6 +65,7 @@ function! dispatch#windows#start(request) abort
           \ s:pid . pidfile .
           \ ' & ' . a:request.command .
           \ pause .
+          \ ' & cd . > ' . a:request.file.'.complete'
           \ ' & del ' . pidfile
   endif
 

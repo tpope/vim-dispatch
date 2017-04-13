@@ -172,20 +172,23 @@ function! dispatch#prepare_start(request, ...) abort
   let pause = "(printf '\e[1m--- Press ENTER to continue ---\e[0m\\n'; exec head -1)"
   if wait == 'always'
     let exec .= '; ' . pause
-  elseif wait !=# 'never'
+  elseif wait !=# 'never' && wait !=# 'make'
     let exec .= "; test ".status." = 0 -o ".status." = 130 || " . pause
   endif
+  if wait !=# 'make'
+    let exec .= '; touch ' .a:request.file . '.complete'
+  endif
   let callback = dispatch#callback(a:request)
-  let after = 'rm -f ' . a:request.file . '.pid' .
+  return exec .
+        \ '; rm -f ' . a:request.file . '.pid' .
         \ (empty(callback) ? '' : '; ' . callback)
-  return exec . '; ' . after
 endfunction
 
 function! dispatch#prepare_make(request, ...) abort
   let exec = a:0 ? a:1 : ('(' . a:request.expanded . '; echo ' .
         \ dispatch#status_var() . ' > ' . a:request.file . '.complete)' .
         \ dispatch#shellpipe(a:request.file))
-  return dispatch#prepare_start(a:request, exec, 'never')
+  return dispatch#prepare_start(a:request, exec, 'make')
 endfunction
 
 function! dispatch#set_title(request) abort
@@ -761,6 +764,9 @@ endfunction
 
 function! dispatch#pid(request) abort
   let request = s:request(a:request)
+  if dispatch#completed(request)
+    return 0
+  endif
   let file = request.file
   if !has_key(request, 'pid')
     if has('win32') && !executable('wmic')
@@ -779,12 +785,16 @@ function! dispatch#pid(request) abort
       let request.pid = 0
     endtry
   endif
-  if request.pid && getfsize(file.'.pid') > 0
+  let complete = filereadable(file.'.complete')
+  if !complete && request.pid && getfsize(file.'.pid') > 0
     if s:running(request.handler, request.pid)
       return request.pid
     else
       let request.pid = 0
       call delete(file.'.pid')
+      if !complete
+        call writefile([], file.'.complete')
+      endif
     endif
   endif
 endfunction
@@ -801,6 +811,7 @@ function! dispatch#complete(file) abort
       let status = readfile(request.file . '.complete', 1)[0]
     catch
       let status = -1
+      call writefile([-1], request.file . '.complete')
     endtry
     if status > 0
       let label = 'Failure:'
