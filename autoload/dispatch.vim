@@ -869,8 +869,6 @@ function! dispatch#quickfix_init() abort
     let b:dispatch = '-compiler=' . request.compiler . ' ' . b:dispatch
   endif
   if has_key(request, 'program')
-    let w:quickfix_title = substitute(w:quickfix_title,
-          \ '^:Dispatch \M'.escape(request.program, '\'), ':Make', '')
     let &l:efm = request.format
     let &l:makeprg = request.program
     if has_key(request, 'compiler')
