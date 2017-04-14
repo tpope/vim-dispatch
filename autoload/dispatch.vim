@@ -739,7 +739,7 @@ function! s:request(request) abort
     let i = len(s:makes)
     while i
       let i -= 1
-      if s:handler_id(s:makes[i]) ==# a:request
+      if s:makes[i].handler . '/' . dispatch#pid(s:makes[i]) ==# a:request
         return s:makes[i]
       endif
     endwhile
