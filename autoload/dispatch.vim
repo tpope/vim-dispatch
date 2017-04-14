@@ -735,6 +735,15 @@ function! s:request(request) abort
     return a:request
   elseif type(a:request) == type(0) && a:request >= 0
     return get(s:makes, a:request-1, {})
+  elseif type(a:request) == type('') && a:request =~# '^\w\+/\d\+$'
+    let i = len(s:makes)
+    while i
+      let i -= 1
+      if s:handler_id(s:makes[i]) ==# a:request
+        return s:makes[i]
+      endif
+    endwhile
+    return {}
   elseif type(a:request) == type('') && !empty(a:request)
     return get(s:files, a:request, {})
   else
@@ -850,6 +859,9 @@ function! s:cgetfile(request, all, copen) abort
     let &l:makeprg = request.command
     silent doautocmd QuickFixCmdPre cgetfile
     execute 'noautocmd cgetfile' fnameescape(request.file)
+    if exists(':chistory')
+      call setqflist([], 'r', {'title': ':Dispatch '.escape(request.expanded, '%#') . ' ' . s:postfix(request)})
+    endif
     silent doautocmd QuickFixCmdPost cgetfile
   catch '^E40:'
     return v:exception
@@ -869,14 +881,15 @@ function! s:cgetfile(request, all, copen) abort
 endfunction
 
 function! dispatch#quickfix_init() abort
-  let request = s:request(matchstr(w:quickfix_title, '^:noautocmd cgetfile \zs.*'))
+  let id = matchstr(w:quickfix_title, '^:noautocmd cgetfile \zs.*\|^:Dispatch.*(\zs\w\+/\d\+\ze)$')
+  let request = s:request(id)
   if empty(request)
     return
   endif
-  let w:quickfix_title = ':Dispatch ' . escape(request.expanded, '%#!') .
+  let w:quickfix_title = ':Dispatch ' . escape(request.expanded, '%#') .
         \ ' ' . s:postfix(request)
   let b:dispatch = dispatch#dir_opt(request.directory) .
-        \ escape(request.expanded, '%#!')
+        \ escape(request.expanded, '%#')
   if has_key(request, 'compiler')
     let b:dispatch = '-compiler=' . request.compiler . ' ' . b:dispatch
   endif
