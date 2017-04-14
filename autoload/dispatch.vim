@@ -195,7 +195,7 @@ function! dispatch#set_title(request) abort
         \ a:request.expanded)
 endfunction
 
-function! dispatch#isolate(keep, ...) abort
+function! dispatch#isolate(request, keep, ...) abort
   let keep = ['SHELL'] + a:keep
   let command = ['cd ' . shellescape(getcwd())]
   for line in split(system('env'), "\n")
@@ -209,7 +209,7 @@ function! dispatch#isolate(keep, ...) abort
     endif
   endfor
   let command += a:000
-  let temp = tempname()
+  let temp = type(a:request) == type({}) ? a:request.file . '.dispatch' : tempname()
   call writefile(command, temp)
   return 'env -i ' . join(map(copy(keep), 'v:val."=\"$". v:val ."\" "'), '') . &shell . ' ' . temp
 endfunction

@@ -51,7 +51,8 @@ function! dispatch#iterm#spawn(command, request, activate) abort
 endfunction
 
 function! dispatch#iterm#spawn2(command, request, activate) abort
-  let script = dispatch#isolate([], dispatch#set_title(a:request), a:command)
+  let script = dispatch#isolate(a:request, [],
+        \ dispatch#set_title(a:request), a:command)
   return s:osascript(
       \ 'if application "iTerm" is not running',
       \   'error',
@@ -71,7 +72,8 @@ function! dispatch#iterm#spawn2(command, request, activate) abort
 endfunction
 
 function! dispatch#iterm#spawn3(command, request, activate) abort
-  let script = dispatch#isolate([], dispatch#set_title(a:request), a:command)
+  let script = dispatch#isolate(a:request, [],
+        \ dispatch#set_title(a:request), a:command)
   return s:osascript(
       \ 'if application "iTerm" is not running',
       \   'error',

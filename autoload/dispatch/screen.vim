@@ -22,8 +22,8 @@ endfunction
 function! dispatch#screen#spawn(command, request) abort
   let command = 'screen -ln -fn -t '.dispatch#shellescape(a:request.title)
         \ . ' ' . &shell . ' ' . &shellcmdflag . ' '
-        \ . shellescape('exec ' . dispatch#isolate(['STY', 'WINDOW'],
-        \ dispatch#set_title(a:request), a:command))
+        \ . shellescape('exec ' . dispatch#isolate(a:request,
+        \ ['STY', 'WINDOW'], dispatch#set_title(a:request), a:command))
   silent execute '!' . escape(command, '!#%')
   if a:request.background || a:request.action !=# 'start' && !has('gui_running')
     silent !screen -X other
