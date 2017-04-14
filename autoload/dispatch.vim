@@ -839,6 +839,11 @@ function! dispatch#copen(bang) abort
   call s:cgetfile(request, a:bang, 1)
 endfunction
 
+function! s:is_quickfix(...) abort
+  let nr = a:0 ? a:1 : winnr()
+  return getwinvar(nr, '&buftype') ==# 'quickfix' && empty(getloclist(nr))
+endfunction
+
 function! s:cgetfile(request, all, copen) abort
   let request = s:request(a:request)
   let efm = &l:efm
@@ -873,9 +878,9 @@ function! s:cgetfile(request, all, copen) abort
     call s:set_current_compiler(compiler)
   endtry
   let height = get(g:, 'dispatch_quickfix_height', 10)
-  let was_qf = &buftype ==# 'quickfix' && empty(getloclist(0))
+  let was_qf = s:is_quickfix()
   execute 'botright' (a:copen ? 'copen' : 'cwindow') height
-  if !was_qf && !a:copen && &buftype ==# 'quickfix' && empty(getloclist(0))
+  if !was_qf && !a:copen && s:is_quickfix()
     wincmd p
   endif
 endfunction
