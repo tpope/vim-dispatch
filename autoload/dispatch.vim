@@ -764,15 +764,12 @@ endfunction
 
 function! dispatch#pid(request) abort
   let request = s:request(a:request)
-  if dispatch#completed(request)
-    return 0
-  endif
-  let file = request.file
   if !has_key(request, 'pid')
     if has('win32') && !executable('wmic')
       let request.pid = 0
       return 0
     endif
+    let file = request.file
     for i in range(50)
       if getfsize(file.'.pid') > 0 || filereadable(file.'.complete')
         break
@@ -785,18 +782,7 @@ function! dispatch#pid(request) abort
       let request.pid = 0
     endtry
   endif
-  let complete = filereadable(file.'.complete')
-  if !complete && request.pid && getfsize(file.'.pid') > 0
-    if s:running(request.handler, request.pid)
-      return request.pid
-    else
-      let request.pid = 0
-      call delete(file.'.pid')
-      if !complete
-        call writefile([], file.'.complete')
-      endif
-    endif
-  endif
+  return request.pid
 endfunction
 
 function! dispatch#completed(request) abort
