@@ -227,15 +227,18 @@ function! s:set_current_compiler(name) abort
   endif
 endfunction
 
+function! s:postfix(request) abort
+  let pid = dispatch#pid(a:request)
+  return '(' . a:request.handler.'/'.(!empty(pid) ? pid : '?') . ')'
+endfunction
+
 function! s:dispatch(request) abort
   for handler in g:dispatch_handlers
     let response = call('dispatch#'.handler.'#handle', [a:request])
     if !empty(response)
       redraw
       let a:request.handler = handler
-      let pid = dispatch#pid(a:request)
-      echo ':!'.a:request.expanded .
-            \ ' ('.handler.'/'.(!empty(pid) ? pid : '?').')'
+      echo ':!'.a:request.expanded s:postfix(a:request)
       return 1
     endif
   endfor
@@ -804,7 +807,7 @@ function! dispatch#complete(file) abort
     else
       let label = 'Complete:'
     endif
-    echo label request.command
+    echo label '!'.request.expanded s:postfix(request)
     if !request.background
       call s:cgetfile(request, 0, -status)
       redraw
@@ -870,9 +873,10 @@ function! dispatch#quickfix_init() abort
   if empty(request)
     return
   endif
-  let w:quickfix_title = ':Dispatch ' . request.expanded
+  let w:quickfix_title = ':Dispatch ' . escape(request.expanded, '%#!') .
+        \ ' ' . s:postfix(request)
   let b:dispatch = dispatch#dir_opt(request.directory) .
-        \ escape(request.expanded, '%#')
+        \ escape(request.expanded, '%#!')
   if has_key(request, 'compiler')
     let b:dispatch = '-compiler=' . request.compiler . ' ' . b:dispatch
   endif
