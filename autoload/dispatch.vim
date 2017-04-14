@@ -149,7 +149,18 @@ function! dispatch#autowrite() abort
   endif
 endfunction
 
+function! dispatch#status_var() abort
+  if &shellxquote ==# '"'
+    return '%ERRORLEVEL%'
+  elseif &shell =~# 'csh'
+    return '$status'
+  else
+    return '$?'
+  endif
+endfunction
+
 function! dispatch#prepare_start(request, ...) abort
+  let status = dispatch#status_var()
   let exec = 'echo $$ > ' . a:request.file . '.pid; '
   if executable('perl')
     let exec .= 'perl -e "select(undef,undef,undef,0.1)" 2>/dev/null; '
@@ -158,11 +169,11 @@ function! dispatch#prepare_start(request, ...) abort
   endif
   let exec .= a:0 ? a:1 : a:request.expanded
   let wait = a:0 > 1 ? a:1 : get(a:request, 'wait', 'error')
-  let pause = "(printf '\e[1m--- Press ENTER to continue ---\e[0m\\n' $?; exec head -1)"
+  let pause = "(printf '\e[1m--- Press ENTER to continue ---\e[0m\\n'; exec head -1)"
   if wait == 'always'
     let exec .= '; ' . pause
   elseif wait !=# 'never'
-    let exec .= "; test $? = 0 -o $? = 130 || " . pause
+    let exec .= "; test ".status." = 0 -o ".status." = 130 || " . pause
   endif
   let callback = dispatch#callback(a:request)
   let after = 'rm -f ' . a:request.file . '.pid' .
@@ -171,8 +182,9 @@ function! dispatch#prepare_start(request, ...) abort
 endfunction
 
 function! dispatch#prepare_make(request, ...) abort
-  let exec = a:0 ? a:1 : ('(' . a:request.expanded . '; echo $? > ' .
-        \ a:request.file . '.complete)' . dispatch#shellpipe(a:request.file))
+  let exec = a:0 ? a:1 : ('(' . a:request.expanded . '; echo ' .
+        \ dispatch#status_var() . ' > ' . a:request.file . '.complete)' .
+        \ dispatch#shellpipe(a:request.file))
   return dispatch#prepare_start(a:request, exec, 'never')
 endfunction
 
@@ -609,7 +621,8 @@ function! dispatch#compile_command(bang, args, count) abort
       if &shellxquote ==# '"'
         silent execute '!' . request.command sp '& echo \%ERRORLEVEL\% >' dest
       else
-        silent execute '!(' . request.command . '; echo $? > ' . dest . ')' sp
+        silent execute '!(' . request.command . '; echo'
+              \ dispatch#status_var()  '> ' . dest . ')' sp
       endif
       redraw!
     endif
