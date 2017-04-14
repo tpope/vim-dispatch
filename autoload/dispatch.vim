@@ -818,7 +818,7 @@ function! dispatch#complete(file) abort
     endif
     echo label '!'.request.expanded s:postfix(request)
     if !request.background
-      call s:cgetfile(request, 0, -status)
+      call s:cgetfile(request, 0, status)
       redraw
     endif
   endif
@@ -836,7 +836,7 @@ function! dispatch#copen(bang) abort
   if !dispatch#completed(request) && filereadable(request.file . '.complete')
     let request.completed = 1
   endif
-  call s:cgetfile(request, a:bang, 1)
+  call s:cgetfile(request, a:bang, -2)
 endfunction
 
 function! s:is_quickfix(...) abort
@@ -880,7 +880,7 @@ function! s:cgetfile(request, all, copen) abort
   let height = get(g:, 'dispatch_quickfix_height', 10)
   let was_qf = s:is_quickfix()
   execute 'botright' (a:copen ? 'copen' : 'cwindow') height
-  if !was_qf && !a:copen && s:is_quickfix()
+  if !was_qf && s:is_quickfix() && a:copen !=# -2
     wincmd p
   endif
 endfunction
