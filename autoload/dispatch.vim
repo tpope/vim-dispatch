@@ -316,8 +316,8 @@ function! dispatch#spawn(command, ...) abort
     let key = request.directory."\t".substitute(request.expanded, '\s*$', '', '')
     let i = 0
     while i < len(get(g:DISPATCH_STARTS, key, []))
-      let [handler, pid] = split(g:DISPATCH_STARTS[key][i], '@')
-      if !s:running(handler, pid)
+      let [handler, pid] = split(g:DISPATCH_STARTS[key][i], '[@/]')
+      if !s:running(pid, handler)
         call remove(g:DISPATCH_STARTS[key], i)
         continue
       endif
@@ -346,7 +346,7 @@ function! dispatch#spawn(command, ...) abort
         if !has_key(g:DISPATCH_STARTS, key)
           let g:DISPATCH_STARTS[key] = []
         endif
-        call add(g:DISPATCH_STARTS[key], request.handler.'@'.dispatch#pid(request))
+        call add(g:DISPATCH_STARTS[key], request.handler.'/'.dispatch#pid(request))
       endif
     else
       execute '!' . request.command
@@ -742,11 +742,11 @@ function! dispatch#request(...) abort
   return s:request(a:0 ? a:1 : 0)
 endfunction
 
-function! s:running(handler, pid) abort
+function! s:running(pid, ...) abort
   if empty(a:pid)
     return 0
-  elseif exists('*dispatch#'.a:handler.'#running')
-    return dispatch#{a:handler}#running(a:pid)
+  elseif a:0 && exists('*dispatch#'.a:1.'#running')
+    return dispatch#{a:1}#running(a:pid)
   elseif has('win32')
     let tasklist_cmd = 'tasklist /fi "pid eq '.a:pid.'"'
     if &shellxquote ==# '"'
