@@ -47,7 +47,6 @@ function! dispatch#windows#make(request) abort
           \ ' & ' . escape(a:request.expanded, '%#!') .
           \ ' > ' . a:request.file . ' 2>&1' .
           \ ' & echo \%ERRORLEVEL\% > ' . a:request.file . '.complete' .
-          \ ' & del ' . pidfile .
           \ ' & ' . dispatch#callback(a:request)
   endif
 

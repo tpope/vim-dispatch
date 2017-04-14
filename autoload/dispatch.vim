@@ -179,9 +179,7 @@ function! dispatch#prepare_start(request, ...) abort
     let exec .= '; touch ' .a:request.file . '.complete'
   endif
   let callback = dispatch#callback(a:request)
-  return exec .
-        \ '; rm -f ' . a:request.file . '.pid' .
-        \ (empty(callback) ? '' : '; ' . callback)
+  return exec . (empty(callback) ? '' : '; ' . callback)
 endfunction
 
 function! dispatch#prepare_make(request, ...) abort
