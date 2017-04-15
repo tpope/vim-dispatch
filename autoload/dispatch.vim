@@ -353,6 +353,7 @@ function! dispatch#spawn(command, ...) abort
         call add(g:DISPATCH_STARTS[key], request.handler.'/'.dispatch#pid(request))
       endif
     else
+      let request.handler = 'sync'
       execute '!' . request.command
     endif
   finally
@@ -618,6 +619,7 @@ function! dispatch#compile_command(bang, args, count) abort
     let s:files[request.file] = request
 
     if !s:dispatch(request)
+      let request.handler = 'sync'
       let after = 'call dispatch#complete('.request.id.')'
       redraw!
       let sp = dispatch#shellpipe(request.file)
