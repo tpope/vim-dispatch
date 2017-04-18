@@ -747,7 +747,7 @@ function! s:request(request) abort
     endwhile
     return {}
   elseif type(a:request) == type('') && !empty(a:request)
-    let id = matchstr(w:quickfix_title, '^:noautocmd cgetfile \zs.*\|^:Dispatch.*(\zs\w\+/\d\+\ze)$')
+    let id = matchstr(a:request, '^:noautocmd cgetfile \zs.*\|^:Dispatch.*(\zs\w\+/\d\+\ze)$')
     if empty(id)
       return get(s:files, a:request, {})
     else
