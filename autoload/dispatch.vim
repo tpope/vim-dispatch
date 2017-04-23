@@ -825,7 +825,7 @@ function! dispatch#complete(file) abort
     endif
     echo label '!'.request.expanded s:postfix(request)
     if !request.background
-      call s:cgetfile(request, 0, status)
+      call s:cwindow(request, 0, status)
       redraw
     endif
   endif
@@ -843,7 +843,7 @@ function! dispatch#copen(bang) abort
   if !dispatch#completed(request) && filereadable(request.file . '.complete')
     let request.completed = 1
   endif
-  call s:cgetfile(request, a:bang, -2)
+  call s:cwindow(request, a:bang, -2)
 endfunction
 
 function! s:is_quickfix(...) abort
@@ -851,7 +851,7 @@ function! s:is_quickfix(...) abort
   return getwinvar(nr, '&buftype') ==# 'quickfix' && empty(getloclist(nr))
 endfunction
 
-function! s:cgetfile(request, all, copen) abort
+function! s:cgetfile(request, ...) abort
   let request = s:request(a:request)
   let efm = &l:efm
   let makeprg = &l:makeprg
@@ -863,7 +863,7 @@ function! s:cgetfile(request, all, copen) abort
     let &modelines = 0
     call s:set_current_compiler(get(request, 'compiler', ''))
     exe cd fnameescape(request.directory)
-    if a:all
+    if a:0 && a:1
       let &l:efm = '%+G%.%#'
     else
       let &l:efm = request.format
@@ -884,6 +884,10 @@ function! s:cgetfile(request, all, copen) abort
     let &l:makeprg = makeprg
     call s:set_current_compiler(compiler)
   endtry
+endfunction
+
+function! s:cwindow(request, all, copen)
+  call s:cgetfile(a:request, a:all)
   let height = get(g:, 'dispatch_quickfix_height', 10)
   let was_qf = s:is_quickfix()
   execute 'botright' (a:copen ? 'copen' : 'cwindow') height
