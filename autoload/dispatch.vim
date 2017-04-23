@@ -620,7 +620,7 @@ function! dispatch#compile_command(bang, args, count) abort
 
     if !s:dispatch(request)
       let request.handler = 'sync'
-      let after = 'call dispatch#complete('.request.id.')'
+      let after = 'call DispatchComplete('.request.id.')'
       redraw!
       let sp = dispatch#shellpipe(request.file)
       let dest = request.file . '.complete'
