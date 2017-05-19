@@ -618,7 +618,11 @@ function! dispatch#compile_command(bang, args, count) abort
     let request.id = len(s:makes)
     let s:files[request.file] = request
 
-    if !s:dispatch(request)
+    call writefile([], request.file)
+
+    if s:dispatch(request)
+      call s:cgetfile(request)
+    else
       let request.handler = 'sync'
       let after = 'call DispatchComplete('.request.id.')'
       redraw!
