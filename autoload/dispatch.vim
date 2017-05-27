@@ -441,7 +441,7 @@ function! s:completion_filter(results, query) abort
 endfunction
 
 function! s:file_complete(A) abort
-  return map(split(glob(substitute(a:A, '\(.\@<=[\\/]\|$\)', '*\1', 'g')), "\n"),
+  return map(split(glob(substitute(a:A, '.\@<=\ze[\\/]\|$', '*', 'g')), "\n"),
         \ 'isdirectory(v:val) ? v:val . dispatch#slash() : v:val')
 endfunction
 
