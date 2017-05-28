@@ -149,6 +149,11 @@ This strategy fires if you're in MacVim with at least one iTerm window open,
 or if Vim is running in iTerm itself.  In the latter case, you can't use it
 for foreground |:Make| invocations.
 
+Vimproc ~
+
+This strategy works if you have vimproc.vim installed. It spawns process
+into background so you can't see it, though you can check it with |:Copen|.
+
 X11 ~
 
 Uses $TERMINAL, x-terminal-emulator, or xterm.  Used for |:Start| and, if
