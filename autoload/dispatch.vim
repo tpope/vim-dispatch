@@ -442,7 +442,7 @@ endfunction
 
 function! s:file_complete(A) abort
   return map(split(glob(substitute(a:A, '.\@<=\ze[\\/]\|$', '*', 'g')), "\n"),
-        \ 'isdirectory(v:val) ? v:val . dispatch#slash() : v:val')
+        \ 'fnameescape(isdirectory(v:val) ? v:val . dispatch#slash() : v:val)')
 endfunction
 
 function! s:compiler_complete(compiler, A, L, P) abort
@@ -477,12 +477,13 @@ function! s:compiler_complete(compiler, A, L, P) abort
 endfunction
 
 function! dispatch#command_complete(A, L, P) abort
-  let args = matchstr(a:L, '\s\zs.*')
+  let L = strpart(a:L, 0, a:P)
+  let args = matchstr(L, '\s\zs.*')
   let [cmd, opts] = s:extract_opts(args)
-  let P = a:P + len(cmd) - len(a:L)
+  let P = a:P + len(cmd) - len(L)
   let len = matchend(cmd, '\S\+\s')
   if len >= 0 && P >= 0
-    let args = matchstr(a:L, '\s\zs.*')
+    let args = matchstr(L, '\s\zs.*')
     let compiler = get(opts, 'compiler', dispatch#compiler_for_program(cmd))
     let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
     try
