@@ -58,16 +58,17 @@ function! dispatch#iterm#spawn2(command, request, activate) abort
       \   'error',
       \ 'end if') && s:osascript(
       \ 'tell application "iTerm"',
-      \   'tell the current terminal',
-      \     'set oldsession to the current session',
-      \     'tell (make new session)',
-      \       'set name to ' . s:escape(a:request.title),
-      \       'set title to ' . s:escape(a:request.command),
-      \       'exec command ' . s:escape(script),
-      \       a:request.background ? 'select oldsession' : '',
+      \   'tell current window',
+      \     'set newTab to (create tab with default profile)',
+      \     'tell application "MacVim"',
+      \       'activate',
       \     'end tell',
-      \   'end tell',
-      \   a:activate ? 'activate' : '',
+      \     'tell current session',
+      \       'set name to ' . s:escape(a:request.title),
+      \       'set title to ' . s:escape(a:request.title),
+      \       'write text ' . s:escape(script) . '; exit',
+      \       'end tell',
+      \     'end tell',
       \ 'end tell')
 endfunction
 
@@ -108,7 +109,6 @@ function! dispatch#iterm#activate2(pid) abort
         \   'error',
         \ 'end if') && s:osascript(
         \ 'tell application "iTerm"',
-        \   'activate',
         \   'tell the current terminal',
         \      'select session id "/dev/'.tty.'"',
         \   'end tell',
@@ -138,7 +138,8 @@ function! dispatch#iterm#activate3(pid) abort
 endfunction
 
 function! s:osascript(...) abort
-  call system('osascript'.join(map(copy(a:000), '" -e ".shellescape(v:val)'), ''))
+  let args = join(map(copy(a:000), '" -e ".shellescape(v:val)'), '')
+  call system('osascript'. args)
   return !v:shell_error
 endfunction
 
