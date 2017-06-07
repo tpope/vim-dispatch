@@ -149,6 +149,13 @@ This strategy fires if you're in MacVim with at least one iTerm window open,
 or if Vim is running in iTerm itself.  In the latter case, you can't use it
 for foreground |:Make| invocations.
 
+Vimshell ~
+
+Can be used if you have |vimshell.vim| installed.  Foreground spawns new
+unfocused vimshell buffer which shows you command output (almost) in real
+time.  It is also possible to start interactive commands (e.g. irb) but
+prefer using |:Start| for this.  Background builds are not supported.
+
 X11 ~
 
 Uses $TERMINAL, x-terminal-emulator, or xterm.  Used for |:Start| and, if
