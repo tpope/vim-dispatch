@@ -621,7 +621,7 @@ function! dispatch#compile_command(bang, args, count) abort
 
     call writefile([], request.file)
 
-    if s:dispatch(request)
+    if s:dispatch(request) && !get(request, 'background')
       call s:cgetfile(request)
     else
       let request.handler = 'sync'
