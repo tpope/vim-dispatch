@@ -48,7 +48,7 @@ function! dispatch#tmux#make(request) abort
         \  . ' > ' . a:request.file . '.complete'] : [])))
 
   let title = shellescape(get(a:request, 'title', get(a:request, 'compiler', 'make')))
-  let height = get(g:, 'dispatch_tmux_height', 10)
+  let height = get(g:, 'dispatch_tmux_height', get(g:, 'dispatch_quickfix_height', 10))
   if get(a:request, 'background', 0)
     let cmd = 'new-window -d -n '.title
   elseif has('gui_running') || empty($TMUX) || (!empty(''.session) && session !=# system('tmux display-message -p "#S"')[0:-2])
