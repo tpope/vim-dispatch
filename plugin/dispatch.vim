@@ -25,7 +25,7 @@ command! -bang -nargs=* -complete=customlist,dispatch#command_complete Spawn
 command! -bang -nargs=* -complete=customlist,dispatch#command_complete Start
       \ execute dispatch#start_command(<bang>0, <q-args>)
 
-command! -bang -bar Copen call dispatch#copen(<bang>0)
+command! -bang -count -bar Copen call dispatch#copen(<bang>0, <count>)
 
 function! DispatchComplete(id) abort
   return dispatch#complete(a:id)

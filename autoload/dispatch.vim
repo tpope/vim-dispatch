@@ -842,7 +842,12 @@ endfunction
 " }}}1
 " Quickfix window {{{1
 
-function! dispatch#copen(bang) abort
+function! dispatch#copen(bang, count) abort
+  if a:count != 0
+    let g:dispatch_quickfix_height = a:count
+  elseif has_key(g:, 'dispatch_quickfix_height')
+    unlet g:dispatch_quickfix_height
+  endif
   if empty(s:makes)
     return 'echoerr ' . string('No dispatches yet')
   endif
