@@ -287,7 +287,7 @@ function! dispatch#start_command(bang, command) abort
   if command =~# '^:\S'
     unlet! g:dispatch_last_start
     return s:wrapcd(get(opts, 'directory', getcwd()),
-          \ substitute(command, '\>', get(a:0 ? a:1 : {}, 'background', 0) ? '!' : '', ''))
+          \ substitute(command, '\>', get(opts, 'background', 0) ? '!' : '', ''))
   endif
   call dispatch#start(command, opts)
   return ''
