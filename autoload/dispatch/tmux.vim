@@ -66,7 +66,7 @@ function! dispatch#tmux#make(request) abort
   elseif uname ==# 'Linux'
     let filter .= ' -u'
   endif
-  let filter .= " -e \"s/\r$//\" -e \"s/.*\r//\""
+  let filter .= " -e \"s/\r\r*$//\" -e \"s/.*\r//\""
   let filter .= " -e \"s/\e\\[K//g\" "
   let filter .= " -e \"s/.*\e\\[2K\e\\[0G//g\""
   let filter .= " -e \"s/.*\e\\[?25h\e\\[0G//g\""
