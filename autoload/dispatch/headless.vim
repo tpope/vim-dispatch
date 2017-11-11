@@ -6,10 +6,13 @@ endif
 let g:autoloaded_dispatch_headless = 1
 
 function! dispatch#headless#handle(request) abort
-  if !a:request.background || &shell !~# 'sh'
+  if &shell !~# 'sh'
     return 0
   endif
   if a:request.action ==# 'make'
+    if !get(a:request, 'background', 0) && empty(v:servername)
+      return 0
+    endif
     let command = dispatch#prepare_make(a:request)
   elseif a:request.action ==# 'start'
     let command = dispatch#prepare_start(a:request)
