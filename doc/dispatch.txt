@@ -151,8 +151,9 @@ for foreground |:Make| invocations.
 
 X11 ~
 
-Uses $TERMINAL, x-terminal-emulator, or xterm.  Used for |:Start| and, if
-wmctrl installed to aid in switching the focus back, |:Start!|.
+Uses g:dispatch_terminal_exec, "$TERMINAL -e", or "xterm -e".  Used only for
+foreground |:Start| unless wmctrl is installed (which is used to switch the
+focus back to Vim).
 
 Headless ~
 
