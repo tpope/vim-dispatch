@@ -39,7 +39,7 @@ function! dispatch#x11#spawn(terminal, command, request) abort
   if a:request.background || a:request.action ==# 'make'
     let command = 'wmctrl -i -a '.v:windowid . ';' . command
   endif
-  call system(a:terminal . ' ' . dispatch#shellescape(a:terminal, &shell, &shellcmdflag, command). ' &')
+  call system(a:terminal . ' ' . dispatch#shellescape(&shell, &shellcmdflag, command). ' &')
   return 1
 endfunction
 
