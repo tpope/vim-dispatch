@@ -675,7 +675,7 @@ function! dispatch#focus(...) abort
     let compiler = s:expand_lnum(compiler, a:1)
     let [compiler, opts] = s:extract_opts(compiler)
     if compiler =~# '^:\S' && a:1 > 0
-      let compiler = substitute(compiler, ':\zs', a:1, 'g')
+      let compiler = substitute(compiler, '^:\zs', a:1, '')
     endif
     if has_key(opts, 'compiler') && opts.compiler != dispatch#compiler_for_program(compiler)
       let compiler = '-compiler=' . opts.compiler . ' ' . compiler
