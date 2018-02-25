@@ -876,10 +876,16 @@ function! s:cgetfile(request, ...) abort
       let &l:efm = request.format
     endif
     let &l:makeprg = request.command
+    let title = ':Dispatch '.escape(request.expanded, '%#') . ' ' . s:postfix(request)
     silent doautocmd QuickFixCmdPre cgetfile
-    execute 'noautocmd cgetfile' fnameescape(request.file)
+    if exists(':chistory') && getqflist({'title': 1}).title ==# title
+      call setqflist([], 'r')
+      execute 'noautocmd caddfile' fnameescape(request.file)
+    else
+      execute 'noautocmd cgetfile' fnameescape(request.file)
+    endif
     if exists(':chistory')
-      call setqflist([], 'r', {'title': ':Dispatch '.escape(request.expanded, '%#') . ' ' . s:postfix(request)})
+      call setqflist([], 'r', {'title': title})
     endif
     silent doautocmd QuickFixCmdPost cgetfile
   catch '^E40:'
