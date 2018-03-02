@@ -61,8 +61,8 @@ function! s:expand_lnum(string, ...) abort
   let old = v:lnum
   try
     let v:lnum = a:0 ? a:1 : 0
-    let v = substitute(v, '<\%(lnum\|line1\|line2\)>\('.s:flags.'\)',
-          \ v:lnum > 0 ? '\=fnamemodify(v:lnum, submatch(1))' : '', 'g')
+    let v = substitute(v, '<\%(lnum\|line1\|line2\)>'.s:flags,
+          \ v:lnum > 0 ? '\=fnamemodify(v:lnum, substitute(submatch(0), "^[^>]*>", "", ""))' : '', 'g')
     let sbeval = '\=escape(s:sandbox_eval(submatch(1)), "!#%")'
     let v = substitute(v, '`=\([^`]*\)`', sbeval, 'g')
     let v = substitute(v, '`-=\([^`]*\)`', v:lnum < 1 ? sbeval : '', 'g')
