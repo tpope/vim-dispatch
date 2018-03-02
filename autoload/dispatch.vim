@@ -878,7 +878,7 @@ function! s:cgetfile(request, ...) abort
     let &l:makeprg = request.command
     let title = ':Dispatch '.escape(request.expanded, '%#') . ' ' . s:postfix(request)
     silent doautocmd QuickFixCmdPre cgetfile
-    if exists(':chistory') && getqflist({'title': 1}).title ==# title
+    if exists(':chistory') && get(getqflist({'title': 1}), 'title', '') ==# title
       call setqflist([], 'r')
       execute 'noautocmd caddfile' fnameescape(request.file)
     else
