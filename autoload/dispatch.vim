@@ -554,6 +554,7 @@ function! dispatch#compile_command(bang, args, count) abort
   let [args, request] = s:extract_opts(args)
 
   if args =~# '^:\S'
+    call dispatch#autowrite()
     return s:wrapcd(get(request, 'directory', getcwd()),
           \ (a:count > 0 ? a:count : '').substitute(args[1:-1], '\>', (a:bang ? '!' : ''), ''))
   endif
