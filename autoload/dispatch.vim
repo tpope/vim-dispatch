@@ -73,6 +73,10 @@ function! s:expand_lnum(string, ...) abort
   endtry
 endfunction
 
+function! s:efm_lookup(key, ...) abort
+  return substitute(matchstr(','.(a:0 ? a:1 : &efm), '\C,%\\&' . a:key . '=\zs\%(\\.\|[^\,]\)*'), '\\\ze[\,]\|%\ze[%f]', '', 'g')
+endfunction
+
 function! s:escape_path(path) abort
   return substitute(fnameescape(a:path), '^\\\~', '\~', '')
 endfunction
@@ -569,6 +573,9 @@ function! dispatch#compile_command(bang, args, count) abort
 
   if executable ==# '_'
     let request.args = matchstr(args, '_\s*\zs.*')
+    if empty(request.args)
+      let request.args = s:expand_lnum(s:efm_lookup('default'))
+    endif
     let request.program = &makeprg
     if &makeprg =~# '\$\*'
       let request.command = substitute(&makeprg, '\$\*', request.args, 'g')
