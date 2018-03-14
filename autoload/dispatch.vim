@@ -706,10 +706,15 @@ function! dispatch#focus_command(bang, args, count) abort
   if has_key(opts, 'directory')
     let args = dispatch#dir_opt(opts.directory) . args
   endif
-  if empty(a:args) && a:bang
+  if empty(a:args) && a:bang && a:count < 0
     unlet! w:dispatch t:dispatch g:dispatch
     let [what, why] = dispatch#focus(a:count)
     echo 'Reverted default to ' . what
+  elseif empty(a:args) && a:bang && a:count > 0
+    unlet! w:dispatch t:dispatch g:dispatch
+    let [what, why] = dispatch#focus(a:count)
+    let g:dispatch = what
+    echo 'Set global focus to ' . what
   elseif empty(a:args)
     let [what, why] = dispatch#focus(a:count)
     echo a:count < 0 ? printf('%s is %s', why, what) : what
