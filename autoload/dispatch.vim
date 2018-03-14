@@ -868,6 +868,9 @@ endfunction
 
 function! s:cgetfile(request, ...) abort
   let request = s:request(a:request)
+  if !has_key(request, 'handler')
+    throw 'Bad request ' . string(request)
+  endif
   let efm = &l:efm
   let makeprg = &l:makeprg
   let compiler = get(b:, 'current_compiler', '')
