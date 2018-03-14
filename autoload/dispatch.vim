@@ -705,6 +705,18 @@ function! dispatch#focus(...) abort
   endif
 endfunction
 
+function! s:translate_focus(args) abort
+  if a:args ==# ':Dispatch'
+    return s:expand_lnum(dispatch#focus()[0], 0)
+  elseif a:args =~# '^:[.$]Dispatch$'
+    return dispatch#focus(line(a:args[1]))[0]
+  elseif a:args =~# '^:\d\+Dispatch$'
+    return dispatch#focus(+matchstr(a:args, '\d\+'))[0]
+  else
+    return a:args
+  endif
+endfunction
+
 function! dispatch#focus_command(bang, args, count) abort
   let [args, opts] = s:extract_opts(a:args)
   let args = escape(dispatch#expand(args), '#%')
@@ -722,12 +734,12 @@ function! dispatch#focus_command(bang, args, count) abort
     let [what, why] = dispatch#focus(a:count)
     echo a:count < 0 ? printf('%s is %s', why, what) : what
   elseif a:bang
-    let w:dispatch = args
+    let w:dispatch = s:translate_focus(a:args)
     let [what, why] = dispatch#focus(a:count)
     echo 'Set window local focus to ' . what
   else
+    let g:dispatch = s:translate_focus(a:args)
     unlet! w:dispatch t:dispatch
-    let g:dispatch = args
     let [what, why] = dispatch#focus(a:count)
     echo 'Set global focus to ' . what
   endif
