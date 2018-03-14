@@ -116,6 +116,24 @@ COMMANDS                                        *dispatch-commands*
                         than focusing an existing one.  The default is always
                         to spawn a new 'shell'.
 
+MAPS                                            *dispatch-maps*
+
+                                                *dispatch-m<CR>*
+m<CR>                   Equivalent to |:Make|<CR>.
+
+                                                *dispatch-m<Space>*
+m<Space>                Equivalent to |:Make|<Space>.
+
+                                                *dispatch-m!*
+m!                      Equivalent to |:Make!|.
+
+Use the g:nremap dictionary to override an individual map or set of maps with
+a common prefix.  For example, the following changes all "m" maps to "q" maps:
+>
+    let g:nremap = {"m": "q"}
+<
+Use an empty string as the value to disable the map or maps entirely.
+
 STRATEGIES                                      *dispatch-strategies*
 
 Strategies are listed in order of precedence.  The first available one is
