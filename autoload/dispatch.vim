@@ -509,6 +509,13 @@ function! dispatch#command_complete(A, L, P) abort
     let as = {'dir': 'directory'}
     let results = filter(['-compiler=', '-dir='],
           \ '!has_key(opts, get(as, v:val[1:-2], v:val[1:-2]))')
+  elseif a:A =~# '^:' && exists('*getcompletion')
+    let matches = matchlist(a:A, '^:\([.$]\|\d\+\)\=\(\a.*\)')
+    if len(matches)
+      let results = map(getcompletion(matches[2], 'command'), '":".matches[1]."".v:val')
+    else
+      let results = []
+    endif
   elseif a:A =~# '^\%(\w:\|\.\)\=[\/]'
     let results = s:file_complete(a:A)
   else
