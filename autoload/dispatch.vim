@@ -282,8 +282,10 @@ endfunction
 
 function! dispatch#start_command(bang, command) abort
   let command = a:command
-  if empty(command) && type(get(b:, 'start', [])) == type('')
+  if empty(command) && type(get(b:, 'start')) == type('')
     let command = b:start
+  elseif empty(command) && type(get(b:, 'Start')) == type('')
+    let command = b:Start
   endif
   let command = s:expand_lnum(command)
   let [command, opts] = s:extract_opts(command)
@@ -550,8 +552,10 @@ function! dispatch#compile_command(bang, args, count) abort
   else
     let args = '_'
     for vars in a:count < 0 ? [b:, g:, t:, w:] : [b:]
-      if has_key(vars, 'dispatch') && type(vars.dispatch) == type('')
+      if type(get(vars, 'dispatch')) == type('')
         let args = vars.dispatch
+      elseif type(get(vars, 'Dispatch')) == type('')
+        let args = vars.Dispatch
       endif
     endfor
   endif
