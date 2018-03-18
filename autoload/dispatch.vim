@@ -512,7 +512,7 @@ function! dispatch#command_complete(A, L, P) abort
   elseif a:A =~# '^:' && exists('*getcompletion')
     let matches = matchlist(a:A, '^:\([.$]\|\d\+\)\=\(\a.*\)')
     if len(matches)
-      let results = map(getcompletion(matches[2], 'command'), '":".matches[1]."".v:val')
+      let results = map(getcompletion(matches[2], 'command'), '":".matches[1].v:val')
     else
       let results = []
     endif
