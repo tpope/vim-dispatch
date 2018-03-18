@@ -81,8 +81,34 @@ function! s:expand_lnum(string, ...) abort
   endtry
 endfunction
 
-function! s:efm_lookup(key, ...) abort
-  return substitute(matchstr(','.(a:0 ? a:1 : &efm), '\C,%\\&' . a:key . '=\zs\%(\\.\|[^\,]\)*'), '\\\ze[\,]\|%\ze[%f]', '', 'g')
+function! s:efm_query(key, efm) abort
+  let matches = []
+  let efm = ',' . a:efm
+  let pattern = '\C,%\\&' . a:key . '=\zs\%(\\.\|[^\,]\)*'
+  let pos = 0
+  while 1
+    let match = matchstr(efm, pattern, pos)
+    let pos = match(efm, pattern, pos)
+    if pos < 0
+      return matches
+    endif
+    call add(matches, substitute(match, '\\\ze[\,]', '', 'g'))
+  endwhile
+endfunction
+
+function! s:efm_literal(key, ...) abort
+  return substitute(get(s:efm_query(a:key, a:0 ? a:1 : &errorformat), 0, ''), '%[%f]', '%', 'g')
+endfunction
+
+function! s:efm_to_regexp(pattern) abort
+  return '\c^\%(' . substitute(a:pattern,
+        \ '\(%\=\)\([%*\\.#^$[~]\)',
+        \ '\=empty(submatch(1)) ? "\\".submatch(2) : submatch(2)==#"#"?"*":submatch(2)',
+        \ 'g') . '\)$'
+endfunction
+
+function! s:efm_regexps(key, ...) abort
+  return map(s:efm_query(a:key, a:0 ? a:1 : &errorformat), 's:efm_to_regexp(v:val)')
 endfunction
 
 function! s:escape_path(path) abort
@@ -603,7 +629,7 @@ function! dispatch#compile_command(bang, args, count) abort
   if executable ==# '_'
     let request.args = matchstr(args, '_\s*\zs.*')
     if empty(request.args)
-      let request.args = s:expand_lnum(s:efm_lookup('default'))
+      let request.args = s:expand_lnum(s:efm_literal('default'))
     endif
     let request.program = &makeprg
     if &makeprg =~# '\$\*'
@@ -628,6 +654,19 @@ function! dispatch#compile_command(bang, args, count) abort
     let request.command = args
   endif
   let request.format = substitute(request.format, ',%-G%\.%#\%($\|,\@=\)', '', '')
+
+  for regexp in s:efm_regexps('terminal', request.format)
+    if has_key(request, 'args') && request.args =~# regexp
+      let title = request.compiler
+      if regexp =~# '\\\@<!\\ze'
+        let title .= ' ' . matchstr(request.args, regexp)
+      endif
+      let title = get(request, 'title', title)
+      return 'Start' . (a:bang ? '!' : '') .
+            \ ' -title=' . escape(title, '\ ') .
+            \ ' ' . request.command
+    endif
+  endfor
 
   if empty(request.compiler)
     unlet request.compiler
