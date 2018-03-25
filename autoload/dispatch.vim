@@ -373,20 +373,22 @@ endfunction
 
 let g:dispatch_compilers = get(g:, 'dispatch_compilers', {})
 
-function! dispatch#compiler_for_program(args) abort
+function! s:compiler_split(args) abort
   let remove = keys(filter(copy(g:dispatch_compilers), 'empty(v:val)'))
   let pattern = '\%('.join(map(remove, 'substitute(escape(v:val, ".*^$~[]\\"), "\\w\\zs$", " ", "")'), '\s*\|').'\)'
   let args = substitute(a:args, '\s\+', ' ', 'g')
+  let prefix = matchstr(args, '^\s*'.pattern.'*')
   let args = substitute(args, '^\s*'.pattern.'*', '', '')
   for [command, plugin] in items(g:dispatch_compilers)
     if strpart(args.' ', 0, len(command)+1) ==# command.' ' && !empty(plugin)
           \ && !empty(findfile('compiler/'.plugin.'.vim', escape(&rtp, ' ')))
-      return plugin
+      return [plugin, prefix, command, args[len(command) : -1]]
     endif
   endfor
-  let program = fnamemodify(matchstr(args, '\S\+'), ':t')
-  if program ==# 'make'
-    return 'make'
+  let program = matchstr(args, '\S\+')
+  let rest = matchstr(args, '\s.*')
+  if fnamemodify(program, ':t') ==# 'make'
+    return ['make', prefix, program, rest]
   endif
   let plugins = map(reverse(split(globpath(escape(&rtp, ' '), 'compiler/*.vim'), "\n")), '[fnamemodify(v:val, ":t:r"), readfile(v:val)]')
   for [plugin, lines] in plugins
@@ -396,18 +398,22 @@ function! dispatch#compiler_for_program(args) abort
             \ '\\\(.\)', '\1', 'g'),
             \ ' \=["'']\=\%(%\|\$\*\|--\w\@!\).*', '', '')
       if !empty(full) && strpart(args.' ', 0, len(full)+1) ==# full.' '
-        return plugin
+        return [plugin, prefix, full, args[len(full) : -1]]
       endif
     endfor
   endfor
   for [plugin, lines] in plugins
     for line in lines
-      if matchstr(line, '\<CompilerSet\s\+makeprg=\zs[[:alnum:]_.-]\+') ==# program
-        return plugin
+      if matchstr(line, '\<CompilerSet\s\+makeprg=\zs[[:alnum:]_.-]\+') ==# fnamemodify(program, ':t')
+        return [plugin, prefix, program, rest]
       endif
     endfor
   endfor
-  return ''
+  return ['', prefix, program, rest]
+endfunction
+
+function! dispatch#compiler_for_program(args) abort
+  return get(s:compiler_split(a:args), 0, '')
 endfunction
 
 function! dispatch#compiler_options(compiler) abort
@@ -487,7 +493,6 @@ function! dispatch#command_complete(A, L, P) abort
   let P = a:P + len(cmd) - len(L)
   let len = matchend(cmd, '\S\+\s')
   if len >= 0 && P >= 0
-    let args = matchstr(L, '\s\zs.*')
     let compiler = get(opts, 'compiler', dispatch#compiler_for_program(cmd))
     let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
     try
@@ -599,9 +604,14 @@ function! dispatch#compile_command(bang, args, count) abort
     let request.format = &errorformat
     let request.compiler = s:current_compiler()
   else
-    let request.compiler = get(request, 'compiler', dispatch#compiler_for_program(args))
+    let [compiler, prefix, program, rest] = s:compiler_split(args)
+    let request.compiler = get(request, 'compiler', compiler)
     if !empty(request.compiler)
       call extend(request,dispatch#compiler_options(request.compiler))
+      if request.compiler ==# compiler
+        let request.program = prefix . program
+        let request.args = rest[1:-1]
+      endif
     endif
     let request.command = args
   endif
