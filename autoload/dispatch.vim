@@ -941,7 +941,7 @@ function! s:cgetfile(request, ...) abort
   endtry
 endfunction
 
-function! s:cwindow(request, all, copen)
+function! s:cwindow(request, all, copen) abort
   call s:cgetfile(a:request, a:all)
   let height = get(g:, 'dispatch_quickfix_height', 10)
   let was_qf = s:is_quickfix()
