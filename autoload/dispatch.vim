@@ -642,7 +642,7 @@ function! dispatch#compile_command(bang, args, count) abort
     call writefile([], request.file)
 
     if s:dispatch(request)
-      if !get(request, 'background')
+      if !get(request, 'background') && exists(':chistory')
         call s:cgetfile(request)
       endif
     else
