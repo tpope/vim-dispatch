@@ -173,6 +173,13 @@ Except for Tmux, which uses |VimResized|, all strategies require either |job|
 support plus a file system with FIFOs (basically everything but Windows) or
 |clientserver| support to do foreground makes.
 
+Job ~
+
+Uses Vim 8's job support to update the quickfix list in real time.
+Experimental.  Opt out with
+>
+    let g:dispatch_experimental = 0
+<
 Tmux ~
 
 Foreground makes open in a small split at the bottom.  The closure of the
