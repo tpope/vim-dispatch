@@ -641,9 +641,14 @@ function! dispatch#compile_command(bang, args, count) abort
 
     call writefile([], request.file)
 
-    if s:dispatch(request)
+    let result = s:dispatch(request)
+    if result
       if !get(request, 'background') && exists(':chistory')
         call s:cgetfile(request)
+        if result is 2
+          exe 'botright copen' get(g:, 'dispatch_quickfix_height', '')
+          wincmd p
+        endif
       endif
     else
       let request.handler = 'sync'
