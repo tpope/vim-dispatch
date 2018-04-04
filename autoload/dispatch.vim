@@ -585,8 +585,11 @@ function! dispatch#compile_command(bang, args, count) abort
 
   if args =~# '^:\S'
     call dispatch#autowrite()
+    if a:count
+      let args = substitute(args, '^:[%0]\=\ze\a', ':' . a:count, '')
+    endif
     return s:wrapcd(get(request, 'directory', getcwd()),
-          \ (a:count > 0 ? a:count : '').substitute(args[1:-1], '\>', (a:bang ? '!' : ''), ''))
+          \ substitute(args[1:-1], '\>', (a:bang ? '!' : ''), ''))
   endif
 
   let executable = matchstr(args, '\S\+')
