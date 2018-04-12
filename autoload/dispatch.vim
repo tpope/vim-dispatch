@@ -8,6 +8,14 @@ let g:autoloaded_dispatch = 1
 
 " Utility {{{1
 
+function! dispatch#tempname() abort
+  let temp = tempname()
+  if has('win32')
+    return fnamemodify(fnamemodify(temp, ':h'), ':p').fnamemodify(temp, ':t')
+  endif
+  return temp
+endfunction
+
 function! dispatch#uniq(list) abort
   let i = 0
   let seen = {}
@@ -214,7 +222,7 @@ function! dispatch#isolate(request, keep, ...) abort
     endif
   endfor
   let command += a:000
-  let temp = type(a:request) == type({}) ? a:request.file . '.dispatch' : tempname()
+  let temp = type(a:request) == type({}) ? a:request.file . '.dispatch' : dispatch#tempname()
   call writefile(command, temp)
   return 'env -i ' . join(map(copy(keep), 'v:val."=\"$". v:val ."\" "'), '') . &shell . ' ' . temp
 endfunction
@@ -341,7 +349,7 @@ function! dispatch#spawn(command, ...) abort
     endwhile
   endif
   call dispatch#autowrite()
-  let request.file = tempname()
+  let request.file = dispatch#tempname()
   let s:files[request.file] = request
   let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
   try
@@ -624,7 +632,7 @@ function! dispatch#compile_command(bang, args, count) abort
 
   call dispatch#autowrite()
   cclose
-  let request.file = tempname()
+  let request.file = dispatch#tempname()
   let &errorfile = request.file
 
   let efm = &l:efm
