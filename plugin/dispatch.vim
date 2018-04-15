@@ -16,8 +16,9 @@ command! -bang -nargs=* -range=-1 -complete=customlist,dispatch#command_complete
       \ execute dispatch#focus_command(<bang>0, <q-args>,
       \   <count> < 0 || <line1> == <line2> ? <count> : 0)
 
-command! -bang -nargs=* -complete=customlist,dispatch#make_complete Make
-      \ Dispatch<bang> _ <args>
+command! -bang -nargs=* -range=-1 -complete=customlist,dispatch#make_complete Make
+      \ execute dispatch#compile_command(<bang>0, '_ ' . <q-args>,
+      \   <count> < 0 || <line1> == <line2> ? <count> : 0)
 
 command! -bang -nargs=* -complete=customlist,dispatch#command_complete Spawn
       \ execute dispatch#spawn_command(<bang>0, <q-args>)

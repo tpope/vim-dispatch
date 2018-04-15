@@ -589,6 +589,7 @@ function! dispatch#compile_command(bang, args, count) abort
     let args = a:args
   else
     let args = '_'
+    let default_dispatch = 1
     if type(get(b:, 'dispatch')) == type('')
       let args = b:dispatch
     endif
@@ -628,7 +629,10 @@ function! dispatch#compile_command(bang, args, count) abort
 
   if executable ==# '_'
     let request.args = matchstr(args, '_\s*\zs.*')
-    if empty(request.args)
+    if a:count >= 0 || exists('default_dispatch')
+      let request.args = s:expand_lnum(s:efm_literal('buffer'), a:count < 0 ? 0 : a:count) .
+            \ substitute(request.args, '^\ze.', ' ', '')
+    elseif empty(request.args)
       let request.args = s:expand_lnum(s:efm_literal('default'))
     endif
     let request.program = &makeprg
@@ -758,12 +762,16 @@ function! dispatch#focus(...) abort
     let [compiler, why] = [g:dispatch, 'Global focus']
   elseif exists('b:dispatch')
     let [compiler, why] = [b:dispatch, 'Buffer default']
-  elseif !empty(&l:makeprg)
-    return [':Make', 'Buffer default']
   else
-    return [':Make', 'Global default']
+    let [compiler, why] = ['_', (len(&l:makeprg) ? 'Buffer' : 'Global') . ' default']
   endif
   if haslnum
+    if compiler ==# '_'
+      let task = s:efm_literal('buffer')
+      if len(task)
+        let compiler .= ' ' . task
+      endif
+    endif
     let compiler = s:expand_lnum(compiler, a:1)
     let [compiler, opts] = s:extract_opts(compiler)
     if compiler =~# '^:[[:alpha:]]' && a:1 > 0
@@ -776,6 +784,14 @@ function! dispatch#focus(...) abort
       let compiler = '-dir=' .
             \ s:escape_path(fnamemodify(opts.directory, ':~:.')) .
             \ ' ' . compiler
+    endif
+  elseif compiler ==# '_'
+    let task = s:efm_literal('buffer')
+    if empty(task)
+      let task = s:efm_literal('default')
+    endif
+    if len(task)
+      let compiler .= ' ' . task
     endif
   endif
   if compiler =~# '^_\>'
