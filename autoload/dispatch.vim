@@ -289,10 +289,10 @@ endfunction
 function! s:extract_opts(command) abort
   let command = a:command
   let opts = {}
-  while command =~# '^-\%(\w\+\)\%([= ]\|$\)'
-    let opt = matchstr(command, '^-\zs\w\+')
-    if command =~# '^-\w\+='
-      let val = matchstr(command, '^-\w\+=\zs\%(\\.\|\S\)*')
+  while command =~# '^\%(-\|++\)\%(\w\+\)\%([= ]\|$\)'
+    let opt = matchstr(command, '\zs\w\+')
+    if command =~# '^\%(-\|++\)\w\+='
+      let val = matchstr(command, '\w\+=\zs\%(\\.\|\S\)*')
     else
       let val = 1
     endif
@@ -301,7 +301,7 @@ function! s:extract_opts(command) abort
     elseif index(['compiler', 'title', 'wait'], opt) >= 0
       let opts[opt] = substitute(val, '\\\(\s\)', '\1', 'g')
     endif
-    let command = substitute(command, '^-\w\+\%(=\%(\\.\|\S\)*\)\=\s*', '', '')
+    let command = substitute(command, '^\%(-\|++\)\w\+\%(=\%(\\.\|\S\)*\)\=\s*', '', '')
   endwhile
   return [command, opts]
 endfunction
