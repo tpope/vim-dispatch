@@ -94,9 +94,9 @@ endfunction
 
 function! dispatch#iterm#activate(pid) abort
   if dispatch#iterm#is_modern_version()
-    return dispatch#iterm#activate3(pid)
+    return dispatch#iterm#activate3(a:pid)
   else
-    return dispatch#iterm#activate2(pid)
+    return dispatch#iterm#activate2(a:pid)
   endif
 endfunction
 
