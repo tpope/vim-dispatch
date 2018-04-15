@@ -872,7 +872,11 @@ function! dispatch#pid(request) abort
 endfunction
 
 function! dispatch#completed(request) abort
-  return get(s:request(a:request), 'completed', 0)
+  let request = s:request(a:request)
+  if get(request, 'background', 0)
+    return filereadable(request.file . '.complete')
+  endif
+  return get(request, 'completed', 0)
 endfunction
 
 function! dispatch#complete(file) abort
