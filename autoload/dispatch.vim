@@ -1003,4 +1003,3 @@ function! dispatch#quickfix_init() abort
 endfunction
 
 " }}}1
-
