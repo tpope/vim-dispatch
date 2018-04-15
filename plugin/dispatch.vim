@@ -3,7 +3,7 @@
 " Version:      1.5
 " GetLatestVimScripts: 4504 1 :AutoInstall: dispatch.vim
 
-if exists("g:loaded_dispatch") || v:version < 700 || &cp
+if exists("g:loaded_dispatch") || v:version < 700 || &compatible
   finish
 endif
 let g:loaded_dispatch = 1

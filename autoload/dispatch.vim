@@ -36,7 +36,7 @@ endfunction
 function! dispatch#shellescape(...) abort
   let args = []
   for arg in a:000
-    if arg =~ '^[A-Za-z0-9_/.-]\+$'
+    if arg =~# '^[A-Za-z0-9_/.-]\+$'
       let args += [arg]
     elseif &shell =~# 'c\@<!sh'
       let args += [substitute(shellescape(arg), '\\\n', '\n', 'g')]
@@ -61,7 +61,7 @@ endfunction
 
 function! s:sandbox_eval(string) abort
   sandbox execute 'let v = '.a:string
-  return v
+  execute 'return v'
 endfunction
 
 function! s:expand_lnum(string, ...) abort
@@ -182,7 +182,7 @@ function! dispatch#prepare_start(request, ...) abort
   let exec .= a:0 ? a:1 : a:request.expanded
   let wait = a:0 > 1 ? a:1 : get(a:request, 'wait', 'error')
   let pause = "(printf '\e[1m--- Press ENTER to continue ---\e[0m\\n'; exec head -1)"
-  if wait == 'always'
+  if wait ==# 'always'
     let exec .= '; ' . pause
   elseif wait !=# 'never' && wait !=# 'make'
     let exec .= "; test ".status." = 0 -o ".status." = 130 || " . pause
@@ -265,7 +265,7 @@ function! s:extract_opts(command) abort
   let opts = {}
   while command =~# '^-\%(\w\+\)\%([= ]\|$\)'
     let opt = matchstr(command, '^-\zs\w\+')
-    if command =~ '^-\w\+='
+    if command =~# '^-\w\+='
       let val = matchstr(command, '^-\w\+=\zs\%(\\.\|\S\)*')
     else
       let val = 1
@@ -387,9 +387,10 @@ function! s:compiler_split(args) abort
   let args = substitute(a:args, '\s\+', ' ', 'g')
   let prefix = matchstr(args, '^\s*'.pattern.'*')
   let args = substitute(args, '^\s*'.pattern.'*', '', '')
+  let rtp = escape(&runtimepath, ' ')
   for [command, plugin] in items(g:dispatch_compilers)
     if strpart(args.' ', 0, len(command)+1) ==# command.' ' && !empty(plugin)
-          \ && !empty(findfile('compiler/'.plugin.'.vim', escape(&rtp, ' ')))
+          \ && !empty(findfile('compiler/'.plugin.'.vim', rtp))
       return [plugin, prefix, command, args[len(command) : -1]]
     endif
   endfor
@@ -398,7 +399,7 @@ function! s:compiler_split(args) abort
   if fnamemodify(program, ':t') ==# 'make'
     return ['make', prefix, program, rest]
   endif
-  let plugins = map(reverse(split(globpath(escape(&rtp, ' '), 'compiler/*.vim'), "\n")), '[fnamemodify(v:val, ":t:r"), readfile(v:val)]')
+  let plugins = map(reverse(split(globpath(rtp, 'compiler/*.vim'), "\n")), '[fnamemodify(v:val, ":t:r"), readfile(v:val)]')
   for [plugin, lines] in plugins
     for line in lines
       let full = substitute(substitute(
@@ -432,9 +433,9 @@ function! dispatch#compiler_options(compiler) abort
   try
     if a:compiler ==# 'make'
       if &makeprg !=# 'make'
-        setlocal efm&
+        setlocal errorformat&
       endif
-      return {'program': 'make', 'format': &efm}
+      return {'program': 'make', 'format': &errorformat}
     endif
     let &l:makeprg = ''
     execute 'compiler '.fnameescape(a:compiler)
@@ -467,7 +468,7 @@ function! s:compiler_complete(compiler, A, L, P) abort
   let compiler = empty(a:compiler) ? 'make' : a:compiler
 
   let fn = ''
-  for file in findfile('compiler/'.compiler.'.vim', escape(&rtp, ' '), -1)
+  for file in findfile('compiler/'.compiler.'.vim', escape(&runtimepath, ' '), -1)
     for line in readfile(file)
       let fn = matchstr(line, '-complete=custom\%(list\)\=,\zs\%(s:\)\@!\S\+')
       if !empty(fn)
@@ -517,7 +518,7 @@ function! dispatch#command_complete(A, L, P) abort
   elseif a:A =~# '^-dir='
     let results = map(filter(s:file_complete(a:A[5:-1]), 'isdirectory(v:val)'), '"-dir=".v:val')
   elseif a:A =~# '^-compiler='
-    let results = map(reverse(split(globpath(escape(&rtp, ' '), 'compiler/*.vim'), "\n")), '"-compiler=".fnamemodify(v:val, ":t:r")')
+    let results = map(reverse(split(globpath(escape(&runtimepath, ' '), 'compiler/*.vim'), "\n")), '"-compiler=".fnamemodify(v:val, ":t:r")')
   elseif a:A =~# '^-'
     let as = {'dir': 'directory'}
     let results = filter(['-compiler=', '-dir='],
