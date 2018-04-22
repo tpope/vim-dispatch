@@ -57,9 +57,20 @@ nmap <script> <SID>:.    :<C-R>=getcmdline() =~ ',' ? "\0250" : ""<CR>
 call s:map('n', 'm<CR>', '<SID>:.Make<CR>')
 call s:map('n', 'm<Space>', '<SID>:.Make<Space>')
 call s:map('n', 'm!', '<SID>:.Make!')
+call s:map('n', 'd<CR>', '<SID>:.Dispatch<CR>')
+call s:map('n', 'd<Space>', '<SID>:.Dispatch<Space>')
+call s:map('n', 'd!', '<SID>:.Dispatch!')
 
 function! DispatchComplete(id) abort
   return dispatch#complete(a:id)
+endfunction
+
+function! s:hijack_netrw_maps() abort
+  let rhs = maparg('d', 'n')
+  if len(rhs)
+    exe 'nnoremap <buffer> <silent> d' rhs
+    exe 'nnoremap <buffer> <silent> dd' rhs
+  endif
 endfunction
 
 if !exists('g:dispatch_handlers')
@@ -79,4 +90,5 @@ augroup dispatch
         \ if &buftype ==# 'quickfix' && empty(getloclist(winnr())) && get(w:, 'quickfix_title') =~# '^:noautocmd cgetfile\>\|^:\d*Dispatch\>' |
         \   call dispatch#quickfix_init() |
         \ endif
+  autocmd FileType netrw call s:hijack_netrw_maps()
 augroup END
