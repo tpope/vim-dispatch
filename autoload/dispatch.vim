@@ -1068,7 +1068,7 @@ endfunction
 
 function! dispatch#quickfix_init() abort
   let request = s:request(w:quickfix_title)
-  if empty(request)
+  if !has_key(request, 'handler')
     return
   endif
   let w:quickfix_title = ':Dispatch ' . escape(request.expanded, '%#') .
