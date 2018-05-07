@@ -274,10 +274,10 @@ function! s:dispatch(request) abort
   for handler in g:dispatch_handlers
     let response = call('dispatch#'.handler.'#handle', [a:request])
     if !empty(response)
-      redraw
       let a:request.handler = handler
+      redraw
       echo ':!'.a:request.expanded s:postfix(a:request)
-      return 1
+      return response
     endif
   endfor
   return 0
