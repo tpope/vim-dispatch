@@ -124,14 +124,14 @@ COMMANDS                                        *dispatch-commands*
 
 MAPS                                            *dispatch-maps*
 
-                                                *dispatch-d<CR>*
-d<CR>                   Equivalent to |:Dispatch|<CR>.
+                                                *dispatch-`<CR>*
+`<CR>                   Equivalent to |:Dispatch|<CR>.
 
-                                                *dispatch-d<Space>*
-d<Space>                Equivalent to |:Dispatch|<Space>.
+                                                *dispatch-`<Space>*
+`<Space>                Equivalent to |:Dispatch|<Space>.
 
-                                                *dispatch-d!*
-d!                      Equivalent to |:Dispatch!|.
+                                                *dispatch-`!*
+`!                      Equivalent to |:Dispatch!|.
 
                                                 *dispatch-m<CR>*
 m<CR>                   Equivalent to |:Make|<CR>.
