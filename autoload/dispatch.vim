@@ -206,7 +206,7 @@ function! dispatch#prepare_start(request, ...) abort
     let exec .= 'sleep 1; '
   endif
   let exec .= a:0 ? a:1 : a:request.expanded
-  let wait = a:0 > 1 ? a:1 : get(a:request, 'wait', 'error')
+  let wait = a:0 > 1 ? a:2 : get(a:request, 'wait', 'error')
   let pause = "(printf '\e[1m--- Press ENTER to continue ---\e[0m\\n'; exec head -1)"
   if wait ==# 'always'
     let exec .= '; ' . pause
