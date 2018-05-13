@@ -57,12 +57,15 @@ nmap <script> <SID>:.    :<C-R>=getcmdline() =~ ',' ? "\0250" : ""<CR>
 call s:map('n', 'm<CR>', '<SID>:.Make<CR>')
 call s:map('n', 'm<Space>', '<SID>:.Make<Space>')
 call s:map('n', 'm!', '<SID>:.Make!')
+call s:map('n', 'ym<CR>', '<SID>:.Make<CR>')
+call s:map('n', 'ym<Space>', '<SID>:.Make<Space>')
+call s:map('n', 'ym!', '<SID>:.Make!')
 call s:map('n', '`<CR>', '<SID>:.Dispatch<CR>')
 call s:map('n', '`<Space>', '<SID>:.Dispatch<Space>')
 call s:map('n', '`!', '<SID>:.Dispatch!')
-call s:map('n', 'd<CR>', '<SID>:.Dispatch<CR>')
-call s:map('n', 'd<Space>', '<SID>:.Dispatch<Space>')
-call s:map('n', 'd!', '<SID>:.Dispatch!')
+call s:map('n', 'yd<CR>', '<SID>:.Dispatch<CR>')
+call s:map('n', 'yd<Space>', '<SID>:.Dispatch<Space>')
+call s:map('n', 'yd!', '<SID>:.Dispatch!')
 
 function! DispatchComplete(id) abort
   return dispatch#complete(a:id)
