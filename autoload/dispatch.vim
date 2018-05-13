@@ -869,7 +869,7 @@ function! s:request(request) abort
     let i = len(s:makes)
     while i
       let i -= 1
-      if s:makes[i].handler . '/' . dispatch#pid(s:makes[i]) ==# a:request
+      if get(s:makes[i], 'handler') . '/' . dispatch#pid(s:makes[i]) ==# a:request
         return s:makes[i]
       endif
     endwhile
@@ -1068,7 +1068,7 @@ endfunction
 
 function! dispatch#quickfix_init() abort
   let request = s:request(w:quickfix_title)
-  if !has_key(request, 'handler')
+  if empty(request)
     return
   endif
   let w:quickfix_title = ':Dispatch ' . escape(request.expanded, '%#') .
