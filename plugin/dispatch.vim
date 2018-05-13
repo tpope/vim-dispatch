@@ -71,14 +71,6 @@ function! DispatchComplete(id) abort
   return dispatch#complete(a:id)
 endfunction
 
-function! s:hijack_netrw_maps() abort
-  let rhs = maparg('d', 'n')
-  if len(rhs)
-    exe 'nnoremap <buffer> <silent> d' rhs
-    exe 'nnoremap <buffer> <silent> dd' rhs
-  endif
-endfunction
-
 if !exists('g:dispatch_handlers')
   let g:dispatch_handlers = [
         \ 'tmux',
@@ -96,5 +88,4 @@ augroup dispatch
         \ if &buftype ==# 'quickfix' && empty(getloclist(winnr())) && get(w:, 'quickfix_title') =~# '^:noautocmd cgetfile\>\|^:\d*Dispatch\>' |
         \   call dispatch#quickfix_init() |
         \ endif
-  autocmd FileType netrw call s:hijack_netrw_maps()
 augroup END
