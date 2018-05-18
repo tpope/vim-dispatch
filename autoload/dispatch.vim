@@ -201,7 +201,7 @@ function! dispatch#prepare_start(request, ...) abort
   let status = dispatch#status_var()
   let exec = 'echo $$ > ' . a:request.file . '.pid; '
   if executable('perl')
-    let exec .= 'perl -e "select(undef,undef,undef,0.1)" 2>/dev/null; '
+    let exec .= 'sync; perl -e "select(undef,undef,undef,0.1)" 2>/dev/null; '
   else
     let exec .= 'sleep 1; '
   endif
