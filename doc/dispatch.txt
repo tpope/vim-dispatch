@@ -124,23 +124,24 @@ COMMANDS                                        *dispatch-commands*
 
 MAPS                                            *dispatch-maps*
 
-                                                *dispatch-`<CR>*
-`<CR>                   Equivalent to |:Dispatch|<CR>.
+The following convenience maps are provided.
 
-                                                *dispatch-`<Space>*
-`<Space>                Equivalent to |:Dispatch|<Space>.
-
-                                                *dispatch-`!*
-`!                      Equivalent to |:Dispatch!|.
-
-                                                *dispatch-m<CR>*
-m<CR>                   Equivalent to |:Make|<CR>.
-
-                                                *dispatch-m<Space>*
-m<Space>                Equivalent to |:Make|<Space>.
-
-                                                *dispatch-m!*
-m!                      Equivalent to |:Make!|.
+*m<CR>*                   |:Make|<CR>
+*m<Space>*                |:Make|<Space>
+*m!*                      |:Make|!
+*m?*                      Show 'makeprg'
+*`<CR>*                   |:Dispatch|<CR>
+*`<Space>*                |:Dispatch|<Space>
+*`!*                      |:Dispatch|!
+*`?*                      |:FocusDispatch|<CR>
+*'<CR>*                   |:Start|<CR>
+*'<Space>*                |:Start|<Space>
+*'!*                      |:Start|!
+*'?*                      Show |b:start|
+*g'<CR>*                  |:Spawn|<CR>
+*g'<Space>*               |:Spawn|<Space>
+*g'!*                     |:Spawn|!
+*g'?*                     Show 'shell'
 
 Use the g:nremap dictionary to override an individual map or set of maps with
 a common prefix.  For example, the following changes all "m" maps to "q" maps:
