@@ -155,11 +155,15 @@ STRATEGIES                                      *dispatch-strategies*
 Strategies are listed in order of precedence.  The first available one is
 used.  Some strategies only provide for a subset of tasks.
 
+Except for Tmux, which uses |VimResized|, all strategies require either |job|
+support plus a file system with FIFOs (basically everything but Windows) or
+|clientserver| support to do foreground makes.
+
 Tmux ~
 
 Foreground makes open in a small split at the bottom.  The closure of the
 pane triggers a |VimResized| event which loads the results into the quickfix
-list.  (All other strategies use the GUI subsystem to get this to work.)
+list.
 
 The tmux strategy can be used from the GUI as well.  Either start Vim from
 inside of tmux or assign g:tmux_session.  This will use a new window for
@@ -169,7 +173,7 @@ Tmux 1.6 or newer is required.
 
 GNU Screen ~
 
-Not used for foreground |:Make| invocations unless you're in GUI Vim.
+A new window is always used, since splits in GNU Screen are awkward.
 
 Windows ~
 
@@ -180,8 +184,7 @@ stealing.
 iTerm ~
 
 This strategy fires if you're in MacVim with at least one iTerm window open,
-or if Vim is running in iTerm itself.  In the latter case, you can't use it
-for foreground |:Make| invocations.
+or if Vim is running in iTerm itself.
 
 X11 ~
 
