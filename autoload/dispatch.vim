@@ -172,6 +172,10 @@ function! dispatch#vim_executable() abort
   return s:vim
 endfunction
 
+function! dispatch#has_callback() abort
+  return has('clientserver') && !empty(v:servername)
+endfunction
+
 function! dispatch#callback(request) abort
   if has('clientserver') && !empty(v:servername) && has_key(s:request(a:request), 'id')
     return dispatch#shellescape(dispatch#vim_executable()) .

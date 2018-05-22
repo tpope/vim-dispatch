@@ -10,7 +10,7 @@ function! dispatch#iterm#handle(request) abort
     return 0
   endif
   if a:request.action ==# 'make'
-    if !get(a:request, 'background', 0) && !has('gui_running')
+    if !get(a:request, 'background', 0) && !dispatch#has_callback()
       return 0
     endif
     let exec = dispatch#prepare_make(a:request)

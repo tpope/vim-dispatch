@@ -18,7 +18,7 @@ function! dispatch#tmux#handle(request) abort
   endif
 
   if a:request.action ==# 'make'
-    if !get(a:request, 'background', 0) && empty(v:servername) &&
+    if !get(a:request, 'background', 0) && !dispatch#has_callback() &&
           \ !empty(''.session) && session !=# system('tmux display-message -p "#S"')[0:-2]
       return 0
     endif

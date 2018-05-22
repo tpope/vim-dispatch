@@ -23,7 +23,7 @@ function! dispatch#x11#handle(request) abort
     return 0
   endif
   if a:request.action ==# 'make'
-    if !get(a:request, 'background', 0) && empty(v:servername)
+    if !get(a:request, 'background', 0) && !dispatch#has_callback()
       return 0
     endif
     return dispatch#x11#spawn(terminal, dispatch#prepare_make(a:request), a:request)
