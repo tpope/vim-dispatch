@@ -55,22 +55,24 @@ endfunction
 
 nmap <script> <SID>:.    :<C-R>=getcmdline() =~ ',' ? "\0250" : ""<CR>
 
-call s:map('n', 'm<CR>',      '<SID>:.Make<CR>')
-call s:map('n', 'm<Space>',   '<SID>:.Make<Space>')
-call s:map('n', 'm!',         '<SID>:.Make!')
-call s:map('n', 'm?',         ':<C-U>echo ":Dispatch" &makeprg<CR>')
-call s:map('n', '`<CR>',      '<SID>:.Dispatch<CR>')
-call s:map('n', '`<Space>',   '<SID>:.Dispatch<Space>')
-call s:map('n', '`!',         '<SID>:.Dispatch!')
-call s:map('n', '`?',         '<SID>:.FocusDispatch<CR>')
-call s:map('n', '''<CR>',     '<SID>:.Start<CR>')
-call s:map('n', '''<Space>',  '<SID>:.Start<Space>')
-call s:map('n', '''!',        '<SID>:.Start!')
-call s:map('n', '''?',        ':<C-U>echo ":Start" get(b:,"start",&shell)<CR>')
-call s:map('n', 'g''<CR>',    '<SID>:.Spawn<CR>')
-call s:map('n', 'g''<Space>', '<SID>:.Spawn<Space>')
-call s:map('n', 'g''!',       '<SID>:.Spawn!')
-call s:map('n', 'g''?',       ':<C-U>echo ":Spawn" &shell<CR>')
+if !exists("g:dispatch_no_mappings") || !g:dispatch_no_mappings
+  call s:map('n', 'm<CR>',    '<SID>:.Make<CR>')
+  call s:map('n', 'm<Space>',   '<SID>:.Make<Space>')
+  call s:map('n', 'm!',     '<SID>:.Make!')
+  call s:map('n', 'm?',     ':<C-U>echo ":Dispatch" &makeprg<CR>')
+  call s:map('n', '`<CR>',    '<SID>:.Dispatch<CR>')
+  call s:map('n', '`<Space>',   '<SID>:.Dispatch<Space>')
+  call s:map('n', '`!',     '<SID>:.Dispatch!')
+  call s:map('n', '`?',     '<SID>:.FocusDispatch<CR>')
+  call s:map('n', '''<CR>',   '<SID>:.Start<CR>')
+  call s:map('n', '''<Space>',  '<SID>:.Start<Space>')
+  call s:map('n', '''!',    '<SID>:.Start!')
+  call s:map('n', '''?',    ':<C-U>echo ":Start" get(b:,"start",&shell)<CR>')
+  call s:map('n', 'g''<CR>',  '<SID>:.Spawn<CR>')
+  call s:map('n', 'g''<Space>', '<SID>:.Spawn<Space>')
+  call s:map('n', 'g''!',     '<SID>:.Spawn!')
+  call s:map('n', 'g''?',     ':<C-U>echo ":Spawn" &shell<CR>')
+endif
 
 function! DispatchComplete(id) abort
   return dispatch#complete(a:id)
