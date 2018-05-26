@@ -1091,6 +1091,9 @@ endfunction
 function! s:cwindow(request, all, copen) abort
   call s:cgetfile(a:request, a:all)
   let height = get(g:, 'dispatch_quickfix_height', 10)
+  if height <= 0
+    return
+  endif
   let was_qf = s:is_quickfix()
   execute 'botright' (a:copen ? 'copen' : 'cwindow') height
   if !was_qf && s:is_quickfix() && a:copen !=# -2
