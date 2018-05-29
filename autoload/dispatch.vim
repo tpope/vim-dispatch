@@ -641,7 +641,7 @@ function! dispatch#compile_command(bang, args, count) abort
 
   if args =~# '^:\S'
     call dispatch#autowrite()
-    if a:count
+    if a:count > 0
       let args = substitute(args, '^:[%0]\=\ze\a', ':' . a:count, '')
     endif
     return s:wrapcd(get(request, 'directory', getcwd()),
