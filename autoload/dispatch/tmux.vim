@@ -126,5 +126,5 @@ endfunction
 
 augroup dispatch_tmux
   autocmd!
-  autocmd VimResized * nested if !has('gui_running') | call dispatch#tmux#poll() | endif
+  autocmd VimResized * nested if !dispatch#has_callback() | call dispatch#tmux#poll() | endif
 augroup END
