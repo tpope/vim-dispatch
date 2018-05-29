@@ -172,7 +172,7 @@ function! dispatch#vim_executable() abort
   return s:vim
 endfunction
 
-function dispatch#has_callback() abort
+function! dispatch#has_callback() abort
   if has('clientserver') && !empty(v:servername)
     return 1
   elseif !exists('*job_start') && !exists('*jobstart')
