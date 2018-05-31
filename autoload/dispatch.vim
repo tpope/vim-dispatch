@@ -379,6 +379,9 @@ function! dispatch#spawn(command, ...) abort
         \ 'expanded': dispatch#expand(command),
         \ 'title': '',
         \ }, a:0 ? a:1 : {})
+  if empty(a:command)
+    call extend(request, {'wait': 'never'}, 'keep')
+  endif
   let g:dispatch_last_start = request
   if empty(request.title)
     let request.title = substitute(fnamemodify(matchstr(request.command, '\%(\\.\|\S\)\+'), ':t:r'), '\\\(\s\)', '\1', 'g')
