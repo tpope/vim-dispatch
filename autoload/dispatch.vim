@@ -632,6 +632,9 @@ function! dispatch#compile_command(bang, args, count) abort
         let args = vars.dispatch
       endif
     endfor
+    if a:count < 0 && type(get(b:, 'Dispatch')) == type('')
+      let args = b:Dispatch
+    endif
   endif
 
   if args =~# '^!'
@@ -780,7 +783,9 @@ endfunction
 
 function! dispatch#focus(...) abort
   let haslnum = a:0 && a:1 >= 0
-  if exists('w:Dispatch') && !haslnum
+  if exists('b:Dispatch') && !haslnum
+    let [compiler, why] = [b:Dispatch, 'Buffer local focus']
+  elseif exists('w:Dispatch') && !haslnum
     let [compiler, why] = [w:Dispatch, 'Window local focus']
   elseif exists('w:dispatch') && !haslnum
     let [compiler, why] = [w:dispatch, 'Window local focus']
