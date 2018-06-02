@@ -49,12 +49,12 @@ function! dispatch#tmux#make(request) abort
 
   let title = shellescape(get(a:request, 'title', get(a:request, 'compiler', 'make')))
   let height = get(g:, 'dispatch_tmux_height', get(g:, 'dispatch_quickfix_height', 10))
-  if get(a:request, 'background', 0)
+  if get(a:request, 'background', 0) || (height <= 0 && dispatch#has_callback())
     let cmd = 'new-window -d -n '.title
   elseif has('gui_running') || empty($TMUX) || (!empty(''.session) && session !=# system('tmux display-message -p "#S"')[0:-2])
     let cmd = 'new-window -n '.title
   else
-    let cmd = 'split-window -l '.height.' -d'
+    let cmd = 'split-window -l '.(height < 0 ? -height : height).' -d'
   endif
 
   let cmd .= ' ' . dispatch#shellescape('-P', '-t', session.':', 'exec ' . script)
