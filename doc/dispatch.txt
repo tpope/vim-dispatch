@@ -148,7 +148,8 @@ a common prefix.  For example, the following changes all "m" maps to "q" maps:
 >
     let g:nremap = {"m": "q"}
 <
-Use an empty string as the value to disable the map or maps entirely.
+Use an empty string as the dictionary value to disable the map or maps for
+that dictionary key entirely.
 
 STRATEGIES                                      *dispatch-strategies*
 
