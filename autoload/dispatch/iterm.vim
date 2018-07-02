@@ -64,7 +64,7 @@ function! dispatch#iterm#spawn2(command, request, activate) abort
       \       'set name to ' . s:escape(a:request.title),
       \       'set title to ' . s:escape(a:request.command),
       \       'exec command ' . s:escape(script),
-      \       a:request.background ? 'select oldsession' : '',
+      \       a:request.background || !has('gui_running') ? 'select oldsession' : '',
       \     'end tell',
       \   'end tell',
       \   a:activate ? 'activate' : '',
@@ -86,7 +86,7 @@ function! dispatch#iterm#spawn3(command, request, activate) abort
       \       'set name to ' . s:escape(a:request.title),
       \       'set title to ' . s:escape(a:request.command),
       \     'end tell',
-      \     a:request.background ? 'select oldtab' : '',
+      \     a:request.background || !has('gui_running') ? 'select oldtab' : '',
       \   'end tell',
       \   a:activate ? 'activate' : '',
       \ 'end tell')
