@@ -794,17 +794,20 @@ function! dispatch#focus(...) abort
   elseif exists('b:dispatch')
     let [compiler, why] = [b:dispatch, 'Buffer default']
   else
-    let [compiler, why] = ['_', (len(&l:makeprg) ? 'Buffer' : 'Global') . ' default']
+    let [compiler, why] = ['--', (len(&l:makeprg) ? 'Buffer' : 'Global') . ' default']
   endif
   if haslnum
-    if compiler ==# '_'
+    let [compiler, opts] = s:extract_opts(compiler)
+    if compiler ==# '--'
       let task = s:efm_literal('buffer')
+      if empty(task)
+        let task = s:efm_literal('default')
+      endif
       if len(task)
         let compiler .= ' ' . task
       endif
     endif
     let compiler = s:expand_lnum(compiler, a:1)
-    let [compiler, opts] = s:extract_opts(compiler)
     if compiler =~# '^:[[:alpha:]]' && a:1 > 0
       let compiler = substitute(compiler, '^:\zs', a:1, '')
     endif
@@ -816,7 +819,7 @@ function! dispatch#focus(...) abort
             \ s:escape_path(fnamemodify(opts.directory, ':~:.')) .
             \ ' ' . compiler
     endif
-  elseif compiler ==# '_'
+  elseif compiler ==# '--'
     let task = s:efm_literal('buffer')
     if empty(task)
       let task = s:efm_literal('default')
