@@ -831,21 +831,16 @@ function! dispatch#focus(...) abort
   endif
 endfunction
 
-function! s:translate_focus(args) abort
-  if a:args ==# ':Dispatch'
-    return s:expand_lnum(dispatch#focus()[0], 0)
-  elseif a:args =~# '^:[.$]Dispatch$'
-    return dispatch#focus(line(a:args[1]))[0]
-  elseif a:args =~# '^:\d\+Dispatch$'
-    return dispatch#focus(+matchstr(a:args, '\d\+'))[0]
-  else
-    return a:args
-  endif
-endfunction
-
 function! dispatch#focus_command(bang, args, count) abort
   let [args, opts] = s:extract_opts(a:args)
-  let args = escape(dispatch#expand(s:translate_focus(a:args)), '%#')
+  if args ==# ':Dispatch'
+    let args = s:expand_lnum(dispatch#focus()[0], a:count)
+  elseif args =~# '^:[.$]Dispatch$'
+    let args = dispatch#focus(line(a:args[1]))[0]
+  elseif args =~# '^:\d\+Dispatch$'
+    let args = dispatch#focus(+matchstr(a:args, '\d\+'))[0]
+  endif
+  let args = escape(dispatch#expand(args), '%#')
   if has_key(opts, 'compiler')
     let args = '-compiler=' . opts.compiler . ' ' . args
   endif
