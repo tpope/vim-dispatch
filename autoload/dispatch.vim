@@ -856,7 +856,7 @@ endfunction
 
 function! dispatch#focus_command(bang, args, count) abort
   let [args, opts] = s:extract_opts(a:args)
-  let args = escape(dispatch#expand(args), '#%')
+  let args = escape(dispatch#expand(s:translate_focus(a:args)), '%#')
   if has_key(opts, 'compiler')
     let args = '-compiler=' . opts.compiler . ' ' . args
   endif
@@ -871,12 +871,12 @@ function! dispatch#focus_command(bang, args, count) abort
     let [what, why] = dispatch#focus(a:count)
     echo a:count < 0 ? printf('%s is %s', why, what) : what
   elseif a:bang
-    let w:Dispatch = s:translate_focus(a:args)
+    let w:Dispatch = args
     unlet! w:dispatch
     let [what, why] = dispatch#focus(a:count)
     echo 'Set window local focus to ' . what
   else
-    let g:Dispatch = s:translate_focus(a:args)
+    let g:Dispatch = args
     unlet! w:Dispatch t:Dispatch w:dispatch t:dispatch g:dispatch
     let [what, why] = dispatch#focus(a:count)
     echo 'Set global focus to ' . what
