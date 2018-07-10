@@ -857,8 +857,8 @@ function! dispatch#focus(...) abort
       let compiler .= ' ' . task
     endif
   endif
-  if compiler =~# '^_\>'
-    return [':Make' . compiler[1:-1], why]
+  if compiler =~# '^--\S\@!'
+    return [':Make' . compiler[2:-1], why]
   elseif compiler =~# '^!'
     return [':Start ' . compiler[1:-1], why]
   elseif compiler =~# '^:\S'
