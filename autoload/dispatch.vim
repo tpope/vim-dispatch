@@ -628,8 +628,6 @@ function! dispatch#compile_command(bang, args, count) abort
     for vars in a:count < 0 ? [g:, t:, w:] : []
       if type(get(vars, 'Dispatch')) == type('')
         let args = vars.Dispatch
-      elseif type(get(vars, 'dispatch')) == type('')
-        let args = vars.dispatch
       endif
     endfor
     if a:count < 0 && type(get(b:, 'Dispatch')) == type('')
@@ -787,16 +785,10 @@ function! dispatch#focus(...) abort
     let [compiler, why] = [b:Dispatch, 'Buffer local focus']
   elseif exists('w:Dispatch') && !haslnum
     let [compiler, why] = [w:Dispatch, 'Window local focus']
-  elseif exists('w:dispatch') && !haslnum
-    let [compiler, why] = [w:dispatch, 'Window local focus']
   elseif exists('t:Dispatch') && !haslnum
     let [compiler, why] = [t:Dispatch, 'Tab local focus']
-  elseif exists('t:dispatch') && !haslnum
-    let [compiler, why] = [t:dispatch, 'Tab local focus']
   elseif exists('g:Dispatch') && !haslnum
     let [compiler, why] = [g:Dispatch, 'Global focus']
-  elseif exists('g:dispatch') && !haslnum
-    let [compiler, why] = [g:dispatch, 'Global focus']
   elseif exists('b:dispatch')
     let [compiler, why] = [b:dispatch, 'Buffer default']
   else
@@ -864,7 +856,7 @@ function! dispatch#focus_command(bang, args, count) abort
     let args = dispatch#dir_opt(opts.directory) . args
   endif
   if empty(a:args) && a:bang
-    unlet! w:Dispatch t:Dispatch g:Dispatch w:dispatch t:dispatch g:dispatch
+    unlet! w:Dispatch t:Dispatch g:Dispatch
     let [what, why] = dispatch#focus(a:count)
     echo 'Reverted default to ' . what
   elseif empty(a:args)
@@ -872,12 +864,11 @@ function! dispatch#focus_command(bang, args, count) abort
     echo a:count < 0 ? printf('%s is %s', why, what) : what
   elseif a:bang
     let w:Dispatch = args
-    unlet! w:dispatch
     let [what, why] = dispatch#focus(a:count)
     echo 'Set window local focus to ' . what
   else
     let g:Dispatch = args
-    unlet! w:Dispatch t:Dispatch w:dispatch t:dispatch g:dispatch
+    unlet! w:Dispatch t:Dispatch
     let [what, why] = dispatch#focus(a:count)
     echo 'Set global focus to ' . what
   endif
