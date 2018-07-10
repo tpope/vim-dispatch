@@ -876,6 +876,17 @@ function! dispatch#focus_command(bang, args, count) abort
   return ''
 endfunction
 
+function! dispatch#make_focus(count) abort
+  let task = ''
+  if a:count >= 0
+    let task = s:expand_lnum(s:efm_literal('buffer'), a:count)
+  endif
+  if empty(task)
+    let task = s:efm_literal('default')
+  endif
+  return &l:makeprg . (empty(task) ? '' : ' ' . task)
+endfunction
+
 " }}}1
 " Requests {{{1
 
