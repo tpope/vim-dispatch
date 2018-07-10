@@ -638,9 +638,9 @@ function! dispatch#compile_command(bang, args, count) abort
     return 'Start' . (a:bang ? '!' : '') . ' ' . args[1:-1]
   endif
 
-  let args = s:expand_lnum(args, a:count < 0 ? 0 : a:count)
-
   let [args, request] = s:extract_opts(args)
+
+  let args = s:expand_lnum(args, a:count < 0 ? 0 : a:count)
 
   if args =~# '^:\S'
     call dispatch#autowrite()
