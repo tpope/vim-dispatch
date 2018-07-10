@@ -882,7 +882,7 @@ function! dispatch#make_focus(count) abort
     let task = s:expand_lnum(s:efm_literal('buffer'), a:count)
   endif
   if empty(task)
-    let task = s:efm_literal('default')
+    let task = s:expand_lnum(s:efm_literal('default'), 0)
   endif
   return &l:makeprg . (empty(task) ? '' : ' ' . task)
 endfunction
