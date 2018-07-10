@@ -862,6 +862,10 @@ function! dispatch#focus_command(bang, args, count) abort
   elseif empty(a:args)
     let [what, why] = dispatch#focus(a:count)
     echo a:count < 0 ? printf('%s is %s', why, what) : what
+  elseif a:count >= 0
+    let b:Dispatch = args
+    let [what, why] = dispatch#focus(a:count)
+    echo 'Set buffer local focus to ' . what
   elseif a:bang
     let w:Dispatch = args
     unlet! b:Dispatch
