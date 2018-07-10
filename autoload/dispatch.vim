@@ -623,10 +623,12 @@ function! dispatch#compile_command(bang, args, count) abort
     let args = '_'
     let default_dispatch = 1
     if type(get(b:, 'dispatch')) == type('')
+      unlet! default_dispatch
       let args = b:dispatch
     endif
     for vars in a:count < 0 ? [g:, t:, w:, b:] : []
       if type(get(vars, 'Dispatch')) == type('')
+        unlet! default_dispatch
         let args = vars.Dispatch
       endif
     endfor
@@ -658,23 +660,26 @@ function! dispatch#compile_command(bang, args, count) abort
         \ }, 'keep')
 
   if executable ==# '_'
-    let request.args = matchstr(args, '_\s*\zs.*')
-    if a:count >= 0 || exists('default_dispatch')
-      let request.args = s:expand_lnum(s:efm_literal('buffer'), a:count < 0 ? 0 : a:count) .
-            \ substitute(request.args, '^\ze.', ' ', '')
-    elseif empty(request.args)
-      let request.args = s:expand_lnum(s:efm_literal('default'))
-    endif
-    let request.program = &makeprg
-    if &makeprg =~# '\$\*'
-      let request.command = substitute(&makeprg, '\$\*', request.args, 'g')
-    elseif empty(request.args)
-      let request.command = &makeprg
-    else
-      let request.command = &makeprg . ' ' . request.args
-    endif
     let request.format = &errorformat
     let request.compiler = s:current_compiler()
+    let request.program = &makeprg
+    let request.args = matchstr(args, '_\s*\zs.*')
+    if a:count >= 0 || exists('default_dispatch')
+      let prefix = s:expand_lnum(s:efm_literal('buffer', request.format), a:count < 0 ? 0 : a:count)
+      if len(prefix)
+        let request.args = prefix . substitute(request.args, '^\ze.', ' ', '')
+      endif
+    endif
+    if empty(request.args)
+      let request.args = s:expand_lnum(s:efm_literal('default', request.format))
+    endif
+    if request.program =~# '\$\*'
+      let request.command = substitute(request.program, '\$\*', request.args, 'g')
+    elseif empty(request.args)
+      let request.command = request.program
+    else
+      let request.command = request.program . ' ' . request.args
+    endif
   else
     let [compiler, prefix, program, rest] = s:compiler_split(args)
     let request.compiler = get(request, 'compiler', compiler)
