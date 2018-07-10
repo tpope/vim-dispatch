@@ -625,14 +625,11 @@ function! dispatch#compile_command(bang, args, count) abort
     if type(get(b:, 'dispatch')) == type('')
       let args = b:dispatch
     endif
-    for vars in a:count < 0 ? [g:, t:, w:] : []
+    for vars in a:count < 0 ? [g:, t:, w:, b:] : []
       if type(get(vars, 'Dispatch')) == type('')
         let args = vars.Dispatch
       endif
     endfor
-    if a:count < 0 && type(get(b:, 'Dispatch')) == type('')
-      let args = b:Dispatch
-    endif
   endif
 
   if args =~# '^!'
