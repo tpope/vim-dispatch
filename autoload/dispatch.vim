@@ -560,12 +560,16 @@ function! dispatch#command_complete(A, L, P) abort
   let P = a:P + len(cmd) - len(L)
   let len = matchend(cmd, '\S\+\s')
   if len >= 0 && P >= 0
-    let compiler = get(opts, 'compiler', dispatch#compiler_for_program(cmd))
     let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
     try
       if get(opts, 'directory', getcwd()) !=# getcwd()
         let cwd = getcwd()
         execute cd fnameescape(opts.directory)
+      endif
+      if has_key(opts, 'compiler')
+        let compiler = opts.compiler
+      else
+        let compiler = cmd =~# '^--\S\@!' ? s:current_compiler() : dispatch#compiler_for_program(cmd)
       endif
       return s:compiler_complete(compiler, a:A, 'Make '.strpart(cmd, len), P+5)
     finally
@@ -620,7 +624,7 @@ function! dispatch#compile_command(bang, args, count) abort
   if !empty(a:args)
     let args = a:args
   else
-    let args = '_'
+    let args = '--'
     let default_dispatch = 1
     if type(get(b:, 'dispatch')) == type('')
       unlet! default_dispatch
@@ -659,11 +663,15 @@ function! dispatch#compile_command(bang, args, count) abort
         \ 'format': '%+I%.%#'
         \ }, 'keep')
 
-  if executable ==# '_'
-    let request.format = &errorformat
-    let request.compiler = s:current_compiler()
-    let request.program = &makeprg
-    let request.args = matchstr(args, '_\s*\zs.*')
+  if executable ==# '_' || executable ==# '--'
+    if has_key(request, 'compiler')
+      call extend(request, dispatch#compiler_options(request.compiler))
+    else
+      let request.compiler = s:current_compiler()
+      let request.program = &makeprg
+      let request.format = &errorformat
+    endif
+    let request.args = matchstr(args, '\s\+\zs.*')
     if a:count >= 0 || exists('default_dispatch')
       let prefix = s:expand_lnum(s:efm_literal('buffer', request.format), a:count < 0 ? 0 : a:count)
       if len(prefix)
@@ -847,6 +855,18 @@ function! dispatch#focus_command(bang, args, count) abort
     let args = dispatch#focus(line(a:args[1]))[0]
   elseif args =~# '^:\d\+Dispatch$'
     let args = dispatch#focus(+matchstr(a:args, '\d\+'))[0]
+  elseif args =~# '^--\S\@!' && !has_key(opts, 'compiler')
+    let args = matchstr(args, '\s\+\zs.*')
+    if empty(args)
+      let args = s:efm_literal('default')
+    endif
+    if &makeprg =~# '\$\*'
+      let args = substitute(&makeprg, '\$\*', args, 'g')
+    elseif empty(args)
+      let args = &makeprg
+    else
+      let args = &makeprg . ' ' . args
+    endif
   endif
   let args = escape(dispatch#expand(args), '%#')
   if has_key(opts, 'compiler')

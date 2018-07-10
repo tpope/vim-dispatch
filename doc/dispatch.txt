@@ -66,6 +66,9 @@ COMMANDS                                        *dispatch-commands*
                         -compiler=... force use of a compiler plugin
                         -dir=...      run command in given directory
 
+:Dispatch[!] [options] -- [arguments]
+                        This is equivalent to |:Make| but accepts options.
+
                                                 *b:dispatch*
 :Dispatch[!]            Invoke |:Dispatch| with the options, program, and
                         arguments found in b:dispatch.  In the quickfix
