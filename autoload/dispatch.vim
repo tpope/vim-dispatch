@@ -33,6 +33,16 @@ function! dispatch#uniq(list) abort
   return a:list
 endfunction
 
+function! dispatch#fnameescape(file) abort
+  if exists('*fnameescape')
+    return fnameescape(a:file)
+  elseif a:file ==# '-'
+    return '\-'
+  else
+    return substitute(escape(a:file, " \t\n*?[{`$\\%#'\"|!<"), '^[+>]', '\\&', '')
+  endif
+endfunction
+
 function! dispatch#shellescape(...) abort
   let args = []
   for arg in a:000
@@ -112,7 +122,7 @@ function! s:efm_regexps(key, ...) abort
 endfunction
 
 function! s:escape_path(path) abort
-  return substitute(fnameescape(a:path), '^\\\~', '\~', '')
+  return substitute(dispatch#fnameescape(a:path), '^\\\~', '\~', '')
 endfunction
 
 function! dispatch#dir_opt(...) abort
@@ -122,8 +132,8 @@ endfunction
 
 function! dispatch#cd_helper(dir) abort
   let back = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
-  let back .= ' ' . fnameescape(getcwd())
-  return 'let g:dispatch_back = '.string(back).'|lcd '.fnameescape(a:dir)
+  let back .= ' ' . dispatch#fnameescape(getcwd())
+  return 'let g:dispatch_back = '.string(back).'|lcd '.dispatch#fnameescape(a:dir)
 endfunction
 
 function! s:wrapcd(dir, cmd) abort
@@ -413,7 +423,7 @@ function! dispatch#spawn(command, ...) abort
   try
     if request.directory !=# getcwd()
       let cwd = getcwd()
-      execute cd fnameescape(request.directory)
+      execute cd dispatch#fnameescape(request.directory)
     endif
     if s:dispatch(request)
       if get(request, 'manage')
@@ -428,7 +438,7 @@ function! dispatch#spawn(command, ...) abort
     endif
   finally
     if exists('cwd')
-      execute cd fnameescape(cwd)
+      execute cd dispatch#fnameescape(cwd)
     endif
   endtry
   return request
@@ -496,7 +506,7 @@ function! dispatch#compiler_options(compiler) abort
       return {'program': 'make', 'format': &errorformat}
     endif
     let &l:makeprg = ''
-    execute 'compiler '.fnameescape(a:compiler)
+    execute 'compiler '.dispatch#fnameescape(a:compiler)
     let options = {'format': &errorformat}
     if !empty(&l:makeprg)
       let options.program = &l:makeprg
@@ -519,7 +529,7 @@ endfunction
 
 function! s:file_complete(A) abort
   return map(split(glob(substitute(a:A, '.\@<=\ze[\\/]\|$', '*', 'g')), "\n"),
-        \ 'fnameescape(isdirectory(v:val) ? v:val . dispatch#slash() : v:val)')
+        \ 'dispatch#fnameescape(isdirectory(v:val) ? v:val . dispatch#slash() : v:val)')
 endfunction
 
 function! s:compiler_complete(format, compiler, A, L, P) abort
@@ -570,7 +580,7 @@ function! dispatch#command_complete(A, L, P) abort
     try
       if get(opts, 'directory', getcwd()) !=# getcwd()
         let cwd = getcwd()
-        execute cd fnameescape(opts.directory)
+        execute cd dispatch#fnameescape(opts.directory)
       endif
       if has_key(opts, 'compiler')
         let compiler = opts.compiler
@@ -585,7 +595,7 @@ function! dispatch#command_complete(A, L, P) abort
       return s:compiler_complete(efm, compiler, a:A, 'Make '.strpart(cmd, len), P+5)
     finally
       if exists('cwd')
-        execute cd fnameescape(cwd)
+        execute cd dispatch#fnameescape(cwd)
       endif
     endtry
   elseif a:A =~# '^-dir='
@@ -751,7 +761,7 @@ function! dispatch#compile_command(bang, args, count) abort
     let request.directory = get(request, 'directory', getcwd())
     if request.directory !=# getcwd()
       let cwd = getcwd()
-      execute cd fnameescape(request.directory)
+      execute cd dispatch#fnameescape(request.directory)
     endif
     let request.expanded = get(request, 'expanded', dispatch#expand(request.command))
     call extend(s:makes, [request])
@@ -790,7 +800,7 @@ function! dispatch#compile_command(bang, args, count) abort
     let &l:makeprg = makeprg
     call s:set_current_compiler(compiler)
     if exists('cwd')
-      execute cd fnameescape(cwd)
+      execute cd dispatch#fnameescape(cwd)
     endif
   endtry
   execute after
@@ -1101,7 +1111,7 @@ function! s:cgetfile(request, ...) abort
   try
     let &modelines = 0
     call s:set_current_compiler(get(request, 'compiler', ''))
-    exe cd fnameescape(request.directory)
+    exe cd dispatch#fnameescape(request.directory)
     if a:0 && a:1
       let &l:efm = '%+G%.%#'
     else
@@ -1112,9 +1122,9 @@ function! s:cgetfile(request, ...) abort
     silent doautocmd QuickFixCmdPre cgetfile
     if exists(':chistory') && get(getqflist({'title': 1}), 'title', '') ==# title
       call setqflist([], 'r')
-      execute 'noautocmd caddfile' fnameescape(request.file)
+      execute 'noautocmd caddfile' dispatch#fnameescape(request.file)
     else
-      execute 'noautocmd cgetfile' fnameescape(request.file)
+      execute 'noautocmd cgetfile' dispatch#fnameescape(request.file)
     endif
     if exists(':chistory')
       call setqflist([], 'r', {'title': title})
@@ -1124,7 +1134,7 @@ function! s:cgetfile(request, ...) abort
     return v:exception
   finally
     let &modelines = modelines
-    exe cd fnameescape(dir)
+    exe cd dispatch#fnameescape(dir)
     let &l:efm = efm
     let &l:makeprg = makeprg
     call s:set_current_compiler(compiler)
@@ -1165,7 +1175,7 @@ function! dispatch#quickfix_init() abort
       unlet! b:current_compiler
     endif
   endif
-  exe 'lcd' fnameescape(request.directory)
+  exe 'lcd' dispatch#fnameescape(request.directory)
 endfunction
 
 " }}}1
