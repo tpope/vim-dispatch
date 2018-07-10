@@ -522,20 +522,26 @@ function! s:file_complete(A) abort
         \ 'fnameescape(isdirectory(v:val) ? v:val . dispatch#slash() : v:val)')
 endfunction
 
-function! s:compiler_complete(compiler, A, L, P) abort
+function! s:compiler_complete(format, compiler, A, L, P) abort
   let compiler = empty(a:compiler) ? 'make' : a:compiler
 
-  let fn = ''
-  for file in findfile('compiler/'.compiler.'.vim', escape(&runtimepath, ' '), -1)
-    for line in readfile(file)
-      let fn = matchstr(line, '-complete=custom\%(list\)\=,\zs\%(s:\)\@!\S\+')
-      if !empty(fn)
-        break
-      endif
+  let fn = s:efm_literal('completion', a:format)
+  if empty(fn)
+    let fn = s:efm_literal('complete', a:format)
+  endif
+  if empty(fn)
+    for file in findfile('compiler/'.compiler.'.vim', escape(&runtimepath, ' '), -1)
+      for line in readfile(file)
+        let fn = matchstr(line, '\C-complete=\zscustom\%(list\)\=,\%(s:\)\@!\S\+')
+        if !empty(fn)
+          break
+        endif
+      endfor
     endfor
-  endfor
+  endif
+  let fn = substitute(fn, '\C^custom\%(list\)\=,', '', '')
 
-  if !empty(fn)
+  if fn =~# '[#A-Z]' && exists('*' . fn)
     let results = call(fn, [a:A, a:L, a:P])
   elseif exists('*CompilerComplete_' . compiler)
     let results = call('CompilerComplete_' . compiler, [a:A, a:L, a:P])
@@ -568,10 +574,15 @@ function! dispatch#command_complete(A, L, P) abort
       endif
       if has_key(opts, 'compiler')
         let compiler = opts.compiler
+        let efm = get(dispatch#compiler_options(compiler), 'format', '')
+      elseif cmd !~# '^--\S\@!'
+        let compiler = dispatch#compiler_for_program(cmd)
+        let efm = get(dispatch#compiler_options(compiler), 'format', '')
       else
-        let compiler = cmd =~# '^--\S\@!' ? s:current_compiler() : dispatch#compiler_for_program(cmd)
+        let compiler = s:current_compiler()
+        let efm = &errorformat
       endif
-      return s:compiler_complete(compiler, a:A, 'Make '.strpart(cmd, len), P+5)
+      return s:compiler_complete(efm, compiler, a:A, 'Make '.strpart(cmd, len), P+5)
     finally
       if exists('cwd')
         execute cd fnameescape(cwd)
@@ -608,7 +619,7 @@ function! dispatch#make_complete(A, L, P) abort
   try
     let &modelines = 0
     silent doautocmd QuickFixCmdPre dispatch-make-complete
-    return s:compiler_complete(s:current_compiler(), a:A, a:L, a:P)
+    return s:compiler_complete(&errorformat, s:current_compiler(), a:A, a:L, a:P)
   finally
     silent doautocmd QuickFixCmdPost dispatch-make-complete
     let &modelines = modelines
