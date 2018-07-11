@@ -750,6 +750,7 @@ function! dispatch#compile_command(bang, args, count) abort
   let request.file = dispatch#tempname()
   let &errorfile = request.file
 
+  let lnum = v:lnum
   let efm = &l:efm
   let makeprg = &l:makeprg
   let compiler = get(b:, 'current_compiler', '')
@@ -759,6 +760,7 @@ function! dispatch#compile_command(bang, args, count) abort
   try
     let &modelines = 0
     call s:set_current_compiler(get(request, 'compiler', ''))
+    let v:lnum = a:count > 0 ? a:count : 0
     let &l:efm = request.format
     let &l:makeprg = request.command
     silent doautocmd QuickFixCmdPre dispatch-make
@@ -799,6 +801,7 @@ function! dispatch#compile_command(bang, args, count) abort
     endif
   finally
     silent doautocmd QuickFixCmdPost dispatch-make
+    let v:lnum = lnum
     let &modelines = modelines
     let &l:efm = efm
     let &l:makeprg = makeprg
