@@ -57,7 +57,7 @@ function! dispatch#shellescape(...) abort
   return join(args, ' ')
 endfunction
 
-let s:flags = '<\=\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)*'
+let s:flags = '<\=\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)*\%(:S\)\='
 let s:expandable = '\\*\%(<\w\+>\|%\|#\d*\)' . s:flags
 function! dispatch#expand(string) abort
   return substitute(a:string, s:expandable, '\=s:expand(submatch(0))', 'g')
@@ -65,8 +65,12 @@ endfunction
 
 function! s:expand(string) abort
   let slashes = len(matchstr(a:string, '^\%(\\\\\)*'))
-  sandbox let v = repeat('\', slashes/2) . expand(a:string[slashes : -1])
-  return v
+  sandbox let v = repeat('\', slashes/2) . expand(substitute(a:string[slashes : -1], ':S$', '', ''))
+  if a:string =~# ':S$'
+    return dispatch#shellescape(v)
+  else
+    return v
+  endif
 endfunction
 
 function! s:sandbox_eval(string) abort
