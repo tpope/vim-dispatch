@@ -47,7 +47,7 @@ function! dispatch#tmux#make(request) abort
         \ (pipepane ? [a:request.expanded . '; echo ' . dispatch#status_var()
         \  . ' > ' . a:request.file . '.complete'] : [])))
 
-  let title = shellescape(get(a:request, 'title', get(a:request, 'compiler', 'make')))
+  let title = shellescape(a:request.title)
   let height = get(g:, 'dispatch_tmux_height', get(g:, 'dispatch_quickfix_height', 10))
   if get(a:request, 'background', 0) || (height <= 0 && dispatch#has_callback())
     let cmd = 'new-window -d -n '.title

@@ -68,8 +68,7 @@ function! dispatch#windows#start(request) abort
           \ ' & del ' . pidfile
   endif
 
-  let title = get(a:request, 'title', matchstr(a:request.command, '\S\+'))
-  return dispatch#windows#spawn(title, exec, a:request.background)
+  return dispatch#windows#spawn(a:request.title, exec, a:request.background)
 endfunction
 
 function! dispatch#windows#activate(pid) abort
