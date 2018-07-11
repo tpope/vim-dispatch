@@ -29,9 +29,9 @@ endfunction
 
 function! dispatch#windows#spawn(title, exec, background) abort
   let extra = a:background ? ' /min' : ''
-  silent execute '!start /min cmd.exe /cstart ' .
+  silent execute dispatch#bang('start /min cmd.exe /cstart ' .
         \ '"' . substitute(a:title, '"', '', 'g') . '"' . extra . ' ' .
-        \ &shell . ' ' . &shellcmdflag . ' ' . s:escape(a:exec)
+        \ &shell . ' ' . &shellcmdflag . ' ' . s:escape(a:exec))
   return 1
 endfunction
 
@@ -44,9 +44,9 @@ function! dispatch#windows#make(request) abort
     let pidfile = a:request.file.'.pid'
     let exec =
           \ s:pid . pidfile .
-          \ ' & ' . escape(a:request.expanded, '%#!') .
+          \ ' & ' . a:request.expanded .
           \ ' > ' . a:request.file . ' 2>&1' .
-          \ ' & echo \%ERRORLEVEL\% > ' . a:request.file . '.complete' .
+          \ ' & echo %ERRORLEVEL% > ' . a:request.file . '.complete' .
           \ ' & ' . dispatch#callback(a:request)
   endif
 
@@ -62,7 +62,7 @@ function! dispatch#windows#start(request) abort
           \ get(a:request, 'wait'), ' || pause')
     let exec =
           \ s:pid . pidfile .
-          \ ' & ' . a:request.command .
+          \ ' & ' . a:request.expanded .
           \ pause .
           \ ' & cd . > ' . a:request.file.'.complete' .
           \ ' & del ' . pidfile

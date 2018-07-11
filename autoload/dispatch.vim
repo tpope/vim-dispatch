@@ -57,8 +57,17 @@ function! dispatch#shellescape(...) abort
   return join(args, ' ')
 endfunction
 
+let s:var = '\%(<\%(cword\|cWORD\|cexpr\|cfile\|sfile\|slnum\|afile\|abuf\|amatch' . (has('clientserver') ? '\|client' : '') . '\)>\|%\|##\=\|#<\=\d\+\)'
+function! dispatch#escape(string) abort
+  return substitute(a:string, s:var, '\\&', 'g')
+endfunction
+
+function! dispatch#bang(string) abort
+  return '!' . substitute(a:string, '!\|' . s:var, '\\&', 'g')
+endfunction
+
 let s:flags = '<\=\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)*\%(:S\)\='
-let s:expandable = '\\*\%(<\w\+>\|%\|#\d*\)' . s:flags
+let s:expandable = '\\*' . s:var . s:flags
 function! dispatch#expand(string) abort
   return substitute(a:string, s:expandable, '\=s:expand(submatch(0))', 'g')
 endfunction
@@ -89,7 +98,7 @@ function! s:expand_lnum(string, ...) abort
     let v:lnum = a:0 ? a:1 : 0
     let v = substitute(v, '<\%(lnum\|line1\|line2\)>'.s:flags,
           \ v:lnum > 0 ? '\=fnamemodify(v:lnum, substitute(submatch(0), "^[^>]*>", "", ""))' : '', 'g')
-    let sbeval = '\=escape(s:sandbox_eval(submatch(1)), "!#%")'
+    let sbeval = '\=dispatch#escape(s:sandbox_eval(submatch(1)))'
     let v = substitute(v, '`=\([^`]*\)`', sbeval, 'g')
     let v = substitute(v, '`-=\([^`]*\)`', v:lnum < 1 ? sbeval : '', 'g')
     let v = substitute(v, '`+=\([^`]*\)`', v:lnum > 0 ? sbeval : '', 'g')
@@ -452,7 +461,7 @@ function! dispatch#spawn(command, ...) abort
       endif
     else
       let request.handler = 'sync'
-      execute '!' . request.command
+      execute dispatch#bang(request.expanded)
     endif
   finally
     if exists('cwd')
@@ -775,7 +784,7 @@ function! dispatch#compile_command(bang, args, count) abort
       let cwd = getcwd()
       execute cd dispatch#fnameescape(request.directory)
     endif
-    let request.expanded = get(request, 'expanded', dispatch#expand(request.command))
+    let request.expanded = dispatch#expand(request.command)
     call extend(s:makes, [request])
     let request.id = len(s:makes)
     let s:files[request.file] = request
@@ -798,10 +807,10 @@ function! dispatch#compile_command(bang, args, count) abort
       let sp = dispatch#shellpipe(request.file)
       let dest = request.file . '.complete'
       if &shellxquote ==# '"'
-        silent execute '!' . request.command sp '& echo \%ERRORLEVEL\% >' dest
+        silent execute dispatch#bang(request.expanded . ' ' . sp . ' & echo %ERRORLEVEL% > ' . dest)
       else
-        silent execute '!(' . request.command . '; echo'
-              \ dispatch#status_var()  '> ' . dest . ')' sp
+        silent execute '(' . dispatch#bang('(' . request.expanded . '; echo ' .
+              \ dispatch#status_var() . ' > ' . dest . ')' . ' ' . sp)
       endif
       redraw!
     endif
@@ -896,7 +905,7 @@ function! dispatch#focus_command(bang, args, count) abort
     endif
     let args = s:build_make(&makeprg, args)
   endif
-  let args = escape(dispatch#expand(args), '%#')
+  let args = dispatch#escape(dispatch#expand(args))
   if has_key(opts, 'compiler')
     let args = '-compiler=' . opts.compiler . ' ' . args
   endif
@@ -1124,8 +1133,8 @@ function! s:cgetfile(request, ...) abort
     else
       let &l:efm = request.format
     endif
-    let &l:makeprg = request.command
-    let title = ':Dispatch '.escape(request.expanded, '%#') . ' ' . s:postfix(request)
+    let &l:makeprg = dispatch#escape(request.expanded)
+    let title = ':Dispatch '.dispatch#escape(request.expanded) . ' ' . s:postfix(request)
     silent doautocmd QuickFixCmdPre cgetfile
     if exists(':chistory') && get(getqflist({'title': 1}), 'title', '') ==# title
       call setqflist([], 'r')
@@ -1166,10 +1175,10 @@ function! dispatch#quickfix_init() abort
   if empty(request)
     return
   endif
-  let w:quickfix_title = ':Dispatch ' . escape(request.expanded, '%#') .
+  let w:quickfix_title = ':Dispatch ' . dispatch#escape(request.expanded) .
         \ ' ' . s:postfix(request)
   let b:dispatch = dispatch#dir_opt(request.directory) .
-        \ escape(request.expanded, '%#')
+        \ dispatch#escape(request.expanded)
   if has_key(request, 'compiler')
     let b:dispatch = '-compiler=' . request.compiler . ' ' . b:dispatch
   endif

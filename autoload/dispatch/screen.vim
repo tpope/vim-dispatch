@@ -24,7 +24,7 @@ function! dispatch#screen#spawn(command, request) abort
         \ . ' ' . &shell . ' ' . &shellcmdflag . ' '
         \ . shellescape('exec ' . dispatch#isolate(a:request,
         \ ['STY', 'WINDOW'], dispatch#set_title(a:request), a:command))
-  silent execute '!' . escape(command, '!#%')
+  silent execute dispatch#bang(command)
   if (a:request.background || a:request.action !=# 'start') && !has('gui_running') && !has('nvim')
     silent !screen -X other
   endif
