@@ -99,6 +99,16 @@ function! s:expand_lnum(string, ...) abort
   endtry
 endfunction
 
+function! s:build_make(program, args) abort
+  if a:program =~# '\$\*'
+    return substitute(a:program, '\$\*', a:args, 'g')
+  elseif empty(a:args)
+    return a:program
+  else
+    return a:program . ' ' . a:args
+  endif
+endfunction
+
 function! s:efm_query(key, efm) abort
   let matches = []
   let efm = ',' . a:efm
@@ -708,13 +718,7 @@ function! dispatch#compile_command(bang, args, count) abort
     if empty(request.args)
       let request.args = s:expand_lnum(s:efm_literal('default', request.format))
     endif
-    if request.program =~# '\$\*'
-      let request.command = substitute(request.program, '\$\*', request.args, 'g')
-    elseif empty(request.args)
-      let request.command = request.program
-    else
-      let request.command = request.program . ' ' . request.args
-    endif
+    let request.command = s:build_make(request.program, request.args)
   else
     let [compiler, prefix, program, rest] = s:compiler_split(args)
     let request.compiler = get(request, 'compiler', compiler)
@@ -890,13 +894,7 @@ function! dispatch#focus_command(bang, args, count) abort
     if empty(args)
       let args = s:efm_literal('default')
     endif
-    if &makeprg =~# '\$\*'
-      let args = substitute(&makeprg, '\$\*', args, 'g')
-    elseif empty(args)
-      let args = &makeprg
-    else
-      let args = &makeprg . ' ' . args
-    endif
+    let args = s:build_make(&makeprg, args)
   endif
   let args = escape(dispatch#expand(args), '%#')
   if has_key(opts, 'compiler')
@@ -938,7 +936,7 @@ function! dispatch#make_focus(count) abort
   if empty(task)
     let task = s:expand_lnum(s:efm_literal('default'), 0)
   endif
-  return &l:makeprg . (empty(task) ? '' : ' ' . task)
+  return s:build_make(&makeprg, task)
 endfunction
 
 " }}}1
