@@ -78,6 +78,10 @@ function! s:sandbox_eval(string) abort
   execute 'return v'
 endfunction
 
+function! s:command_lnum(string, lnum) abort
+  return a:lnum > 0 ? substitute(a:string, '^:[%0]\=\ze\a', ':' . a:lnum, '') : a:string
+endfunction
+
 function! s:expand_lnum(string, ...) abort
   let v = a:string
   let old = v:lnum
@@ -673,9 +677,7 @@ function! dispatch#compile_command(bang, args, count) abort
 
   if args =~# '^:\S'
     call dispatch#autowrite()
-    if a:count > 0
-      let args = substitute(args, '^:[%0]\=\ze\a', ':' . a:count, '')
-    endif
+    let args = s:command_lnum(args, a:count)
     return s:wrapcd(get(request, 'directory', getcwd()),
           \ substitute(args[1:-1], '\>', (a:bang ? '!' : ''), ''))
   endif
@@ -844,8 +846,8 @@ function! dispatch#focus(...) abort
       endif
     endif
     let compiler = s:expand_lnum(compiler, a:1)
-    if compiler =~# '^:[[:alpha:]]' && a:1 > 0
-      let compiler = substitute(compiler, '^:\zs', a:1, '')
+    if compiler =~# '^:'
+      let compiler = s:command_lnum(compiler, a:1)
     endif
     if has_key(opts, 'compiler') && opts.compiler != dispatch#compiler_for_program(compiler)
       let compiler = '-compiler=' . opts.compiler . ' ' . compiler
