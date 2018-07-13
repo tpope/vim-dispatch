@@ -809,7 +809,7 @@ function! dispatch#compile_command(bang, args, count) abort
       if &shellxquote ==# '"'
         silent execute dispatch#bang(request.expanded . ' ' . sp . ' & echo %ERRORLEVEL% > ' . dest)
       else
-        silent execute '(' . dispatch#bang('(' . request.expanded . '; echo ' .
+        silent execute dispatch#bang('(' . request.expanded . '; echo ' .
               \ dispatch#status_var() . ' > ' . dest . ')' . ' ' . sp)
       endif
       redraw!
