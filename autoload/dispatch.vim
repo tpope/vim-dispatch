@@ -68,13 +68,19 @@ endfunction
 
 let s:flags = '<\=\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)*\%(:S\)\='
 let s:expandable = '\\*' . s:var . s:flags
-function! dispatch#expand(string) abort
-  return substitute(a:string, s:expandable, '\=s:expand(submatch(0))', 'g')
+function! dispatch#expand(string, ...) abort
+  let string = substitute(a:string, s:expandable, '\=s:expand(submatch(0))', 'g')
+  if a:0
+    let string = s:expand_lnum(string, a:1, 0)
+  endif
+  return string
 endfunction
 
 function! s:expand(string) abort
-  let slashes = len(matchstr(a:string, '^\%(\\\\\)*'))
-  sandbox let v = repeat('\', slashes/2) . expand(substitute(a:string[slashes : -1], ':S$', '', ''))
+  if a:string =~# '^\'
+    return a:string[1:-1]
+  endif
+  sandbox let v = expand(substitute(a:string, ':S$', '', ''))
   if a:string =~# ':S$'
     return dispatch#shellescape(v)
   else
@@ -91,14 +97,14 @@ function! s:command_lnum(string, lnum) abort
   return a:lnum > 0 ? substitute(a:string, '^:[%0]\=\ze\a', ':' . a:lnum, '') : a:string
 endfunction
 
-function! s:expand_lnum(string, ...) abort
+function! s:expand_lnum(string, lnum, escape) abort
   let v = a:string
   let old = v:lnum
   try
-    let v:lnum = a:0 ? a:1 : 0
+    let v:lnum = a:lnum
     let v = substitute(v, '<\%(lnum\|line1\|line2\)>'.s:flags,
           \ v:lnum > 0 ? '\=fnamemodify(v:lnum, substitute(submatch(0), "^[^>]*>", "", ""))' : '', 'g')
-    let sbeval = '\=dispatch#escape(s:sandbox_eval(submatch(1)))'
+    let sbeval = '\=' . (a:escape ? 'dispatch#escape' : '') . '(s:sandbox_eval(submatch(1)))'
     let v = substitute(v, '`=\([^`]*\)`', sbeval, 'g')
     let v = substitute(v, '`-=\([^`]*\)`', v:lnum < 1 ? sbeval : '', 'g')
     let v = substitute(v, '`+=\([^`]*\)`', v:lnum > 0 ? sbeval : '', 'g')
@@ -373,7 +379,6 @@ function! s:extract_opts(command) abort
 endfunction
 
 function! dispatch#spawn_command(bang, command) abort
-  let command = s:expand_lnum(a:command)
   let [command, opts] = s:extract_opts(a:command)
   let opts.background = a:bang
   call dispatch#spawn(command, opts)
@@ -385,7 +390,6 @@ function! dispatch#start_command(bang, command) abort
   if empty(command) && type(get(b:, 'start')) == type('')
     let command = b:start
   endif
-  let command = s:expand_lnum(command)
   let [command, opts] = s:extract_opts(command)
   let opts.background = a:bang
   if command =~# '^:\S'
@@ -413,7 +417,7 @@ function! dispatch#spawn(command, ...) abort
         \ 'background': 0,
         \ 'command': command,
         \ 'directory': getcwd(),
-        \ 'expanded': dispatch#expand(command),
+        \ 'expanded': dispatch#expand(command, 0),
         \ 'title': '',
         \ }, a:0 ? a:1 : {})
   if empty(a:command)
@@ -692,8 +696,6 @@ function! dispatch#compile_command(bang, args, count) abort
 
   let [args, request] = s:extract_opts(args)
 
-  let args = s:expand_lnum(args, a:count < 0 ? 0 : a:count)
-
   if args =~# '^:\S'
     call dispatch#autowrite()
     let args = s:command_lnum(args, a:count)
@@ -719,13 +721,13 @@ function! dispatch#compile_command(bang, args, count) abort
     endif
     let request.args = matchstr(args, '\s\+\zs.*')
     if a:count >= 0 || exists('default_dispatch')
-      let prefix = s:expand_lnum(s:efm_literal('buffer', request.format), a:count < 0 ? 0 : a:count)
+      let prefix = s:efm_literal('buffer', request.format)
       if len(prefix)
         let request.args = prefix . substitute(request.args, '^\ze.', ' ', '')
       endif
     endif
     if empty(request.args)
-      let request.args = s:expand_lnum(s:efm_literal('default', request.format))
+      let request.args = s:efm_literal('default', request.format)
     endif
     let request.command = s:build_make(request.program, request.args)
   else
@@ -777,14 +779,14 @@ function! dispatch#compile_command(bang, args, count) abort
     call s:set_current_compiler(get(request, 'compiler', ''))
     let v:lnum = a:count > 0 ? a:count : 0
     let &l:efm = request.format
-    let &l:makeprg = request.command
+    let &l:makeprg = s:expand_lnum(request.command, v:lnum, 1)
     silent doautocmd QuickFixCmdPre dispatch-make
     let request.directory = get(request, 'directory', getcwd())
     if request.directory !=# getcwd()
       let cwd = getcwd()
       execute cd dispatch#fnameescape(request.directory)
     endif
-    let request.expanded = dispatch#expand(request.command)
+    let request.expanded = dispatch#expand(request.command, v:lnum)
     call extend(s:makes, [request])
     let request.id = len(s:makes)
     let s:files[request.file] = request
@@ -858,9 +860,10 @@ function! dispatch#focus(...) abort
         let compiler .= ' ' . task
       endif
     endif
-    let compiler = s:expand_lnum(compiler, a:1)
     if compiler =~# '^:'
       let compiler = s:command_lnum(compiler, a:1)
+    else
+      let compiler = dispatch#expand(compiler, a:1)
     endif
     if has_key(opts, 'compiler') && opts.compiler != dispatch#compiler_for_program(compiler)
       let compiler = '-compiler=' . opts.compiler . ' ' . compiler
@@ -893,7 +896,8 @@ endfunction
 function! dispatch#focus_command(bang, args, count) abort
   let [args, opts] = s:extract_opts(a:args)
   if args ==# ':Dispatch'
-    let args = s:expand_lnum(dispatch#focus()[0], a:count)
+    let args = dispatch#focus()[0]
+    let args = args =~# '^:' ? args : dispatch#expand(args, 0)
   elseif args =~# '^:[.$]Dispatch$'
     let args = dispatch#focus(line(a:args[1]))[0]
   elseif args =~# '^:\d\+Dispatch$'
@@ -904,8 +908,11 @@ function! dispatch#focus_command(bang, args, count) abort
       let args = s:efm_literal('default')
     endif
     let args = s:build_make(&makeprg, args)
+    let args = dispatch#expand(args, 0)
+  else
+    let args = args =~# '^:' ? args : dispatch#expand(args, 0)
   endif
-  let args = dispatch#escape(dispatch#expand(args))
+  let args = dispatch#escape(args)
   if has_key(opts, 'compiler')
     let args = '-compiler=' . opts.compiler . ' ' . args
   endif
@@ -940,10 +947,10 @@ endfunction
 function! dispatch#make_focus(count) abort
   let task = ''
   if a:count >= 0
-    let task = s:expand_lnum(s:efm_literal('buffer'), a:count)
+    let task = dispatch#expand(s:efm_literal('buffer'), a:count)
   endif
   if empty(task)
-    let task = s:expand_lnum(s:efm_literal('default'), 0)
+    let task = dispatch#expand(s:efm_literal('default'), 0)
   endif
   return s:build_make(&makeprg, task)
 endfunction
