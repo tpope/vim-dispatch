@@ -67,7 +67,7 @@ function! dispatch#bang(string) abort
 endfunction
 
 let s:flags = '<\=\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)*\%(:S\)\='
-let s:expandable = '\\*' . s:var . s:flags
+let s:expandable = '\\*\%(`[+-]\==[^`]*`\|' . s:var . s:flags . '\)'
 function! dispatch#expand(string, ...) abort
   let string = substitute(a:string, s:expandable, '\=s:expand(submatch(0))', 'g')
   if a:0
@@ -77,7 +77,9 @@ function! dispatch#expand(string, ...) abort
 endfunction
 
 function! s:expand(string) abort
-  if a:string =~# '^\'
+  if a:string =~# '^\\*`'
+    return a:string
+  elseif a:string =~# '^\'
     return a:string[1:-1]
   endif
   sandbox let v = expand(substitute(a:string, ':S$', '', ''))
