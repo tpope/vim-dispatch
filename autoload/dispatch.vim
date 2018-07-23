@@ -226,7 +226,7 @@ endfunction
 function! dispatch#has_callback() abort
   if has('clientserver') && !empty(v:servername)
     return 1
-  elseif !exists('*job_start') && !exists('*jobstart')
+  elseif !exists('*job_start') && !exists('*jobstart') || !get(g:, 'dispatch_fifo_callback', 1)
     return 0
   endif
   if !exists('s:has_temp_fifo')
