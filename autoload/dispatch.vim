@@ -424,7 +424,7 @@ function! dispatch#spawn(command, ...) abort
         \ 'background': 0,
         \ 'command': command,
         \ 'directory': getcwd(),
-        \ 'expanded': dispatch#expand(command, 0),
+        \ 'expanded': dispatch#expand(command, -1),
         \ 'title': '',
         \ }, a:0 ? a:1 : {})
   if empty(a:command)
@@ -792,7 +792,7 @@ function! dispatch#compile_command(bang, args, count, ...) abort
       let cwd = getcwd()
       execute cd dispatch#fnameescape(request.directory)
     endif
-    let request.expanded = dispatch#expand(request.command, v:lnum)
+    let request.expanded = dispatch#expand(request.command, a:count)
     call extend(s:makes, [request])
     let request.id = len(s:makes)
     let s:files[request.file] = request
@@ -902,7 +902,7 @@ function! dispatch#focus_command(bang, args, count, ...) abort
   let [args, opts] = s:extract_opts(a:args)
   if args ==# ':Dispatch'
     let args = dispatch#focus()[0]
-    let args = args =~# '^:' ? args : dispatch#expand(args, 0)
+    let args = args =~# '^:' ? args : dispatch#expand(args, -1)
   elseif args =~# '^:[.$]Dispatch$'
     let args = dispatch#focus(line(a:args[1]))[0]
   elseif args =~# '^:\d\+Dispatch$'
@@ -915,7 +915,7 @@ function! dispatch#focus_command(bang, args, count, ...) abort
     let args = s:build_make(&makeprg, args)
     let args = dispatch#expand(args, 0)
   else
-    let args = args =~# '^:' ? args : dispatch#expand(args, 0)
+    let args = args =~# '^:' ? args : dispatch#expand(args, -1)
   endif
   let args = dispatch#escape(args)
   if has_key(opts, 'compiler')
@@ -955,7 +955,7 @@ function! dispatch#make_focus(count) abort
     let task = dispatch#expand(s:efm_literal('buffer'), a:count)
   endif
   if empty(task)
-    let task = dispatch#expand(s:efm_literal('default'), 0)
+    let task = dispatch#expand(s:efm_literal('default'), a:count)
   endif
   return s:build_make(&makeprg, task)
 endfunction
