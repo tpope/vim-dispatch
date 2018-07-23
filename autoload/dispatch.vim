@@ -66,7 +66,7 @@ function! dispatch#bang(string) abort
   return '!' . substitute(a:string, '!\|' . s:var, '\\&', 'g')
 endfunction
 
-function! s:expand(expr) abort
+function! s:expand(expr, dispatch_opts) abort
   if a:expr =~# '^\\\+`[-+]\=='
     return a:expr[1:-1]
   elseif a:expr =~# '^`='
@@ -75,6 +75,7 @@ function! s:expand(expr) abort
   elseif a:expr =~# '^`[-+]='
     return ''
   endif
+  call extend(l:, a:dispatch_opts)
   sandbox let v = expand(substitute(a:expr, ':S$', '', ''))
   if a:expr =~# ':S$'
     let v = shellescape(v)
@@ -89,10 +90,15 @@ endfunction
 let s:flags = '<\=\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)*\%(:S\)\='
 let s:expandable = '\\*\%(`[+-]\==[^`]*`\|' . s:var . s:flags . '\)'
 function! dispatch#expand(string, ...) abort
+  let opts = {}
+  if a:0 && a:1 > 0
+    let opts['l#'] = a:1
+    let opts._l = a:1
+  endif
   let lnum = v:lnum
   try
-    let v:lnum = a:0 && a:1 > 0 ? a:1 : 0
-    let string = substitute(a:string, s:expandable, '\=s:expand(submatch(0))', 'g')
+    let v:lnum = get(opts, 'l#', 0)
+    let string = substitute(a:string, s:expandable, '\=s:expand(submatch(0), opts)', 'g')
   finally
     let v:lnum = lnum
   endtry
