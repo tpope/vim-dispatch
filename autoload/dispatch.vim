@@ -69,7 +69,13 @@ endfunction
 let s:flags = '<\=\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)*\%(:S\)\='
 let s:expandable = '\\*\%(`[+-]\==[^`]*`\|' . s:var . s:flags . '\)'
 function! dispatch#expand(string, ...) abort
-  let string = substitute(a:string, s:expandable, '\=s:expand(submatch(0))', 'g')
+  let lnum = v:lnum
+  try
+    let v:lnum = a:0 && a:1 > 0 ? a:1 : 0
+    let string = substitute(a:string, s:expandable, '\=s:expand(submatch(0))', 'g')
+  finally
+    let v:lnum = lnum
+  endtry
   if a:0
     let string = s:expand_lnum(string, a:1, 0)
   endif
