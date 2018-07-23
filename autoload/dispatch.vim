@@ -66,6 +66,23 @@ function! dispatch#bang(string) abort
   return '!' . substitute(a:string, '!\|' . s:var, '\\&', 'g')
 endfunction
 
+function! s:expand(expr) abort
+  if a:expr =~# '^\\\+`[-+]\=='
+    return a:expr[1:-1]
+  elseif a:expr =~# '^`='
+    sandbox let v = eval(a:expr[2:-2])
+    return v
+  elseif a:expr =~# '^`[-+]='
+    return ''
+  endif
+  sandbox let v = expand(substitute(a:expr, ':S$', '', ''))
+  if a:expr =~# ':S$'
+    return dispatch#shellescape(v)
+  else
+    return v
+  endif
+endfunction
+
 let s:flags = '<\=\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)*\%(:S\)\='
 let s:expandable = '\\*\%(`[+-]\==[^`]*`\|' . s:var . s:flags . '\)'
 function! dispatch#expand(string, ...) abort
@@ -76,50 +93,11 @@ function! dispatch#expand(string, ...) abort
   finally
     let v:lnum = lnum
   endtry
-  if a:0
-    let string = s:expand_lnum(string, a:1, 0)
-  endif
   return string
-endfunction
-
-function! s:expand(string) abort
-  if a:string =~# '^\\*`'
-    return a:string
-  elseif a:string =~# '^\'
-    return a:string[1:-1]
-  endif
-  sandbox let v = expand(substitute(a:string, ':S$', '', ''))
-  if a:string =~# ':S$'
-    return dispatch#shellescape(v)
-  else
-    return v
-  endif
-endfunction
-
-function! s:sandbox_eval(string) abort
-  sandbox execute 'let v = '.a:string
-  execute 'return v'
 endfunction
 
 function! s:command_lnum(string, lnum) abort
   return a:lnum > 0 ? substitute(a:string, '^:[%0]\=\ze\a', ':' . a:lnum, '') : a:string
-endfunction
-
-function! s:expand_lnum(string, lnum, escape) abort
-  let v = a:string
-  let old = v:lnum
-  try
-    let v:lnum = a:lnum
-    let v = substitute(v, '<\%(lnum\|line1\|line2\)>'.s:flags,
-          \ v:lnum > 0 ? '\=fnamemodify(v:lnum, substitute(submatch(0), "^[^>]*>", "", ""))' : '', 'g')
-    let sbeval = '\=' . (a:escape ? 'dispatch#escape' : '') . '(s:sandbox_eval(submatch(1)))'
-    let v = substitute(v, '`=\([^`]*\)`', sbeval, 'g')
-    let v = substitute(v, '`-=\([^`]*\)`', v:lnum < 1 ? sbeval : '', 'g')
-    let v = substitute(v, '`+=\([^`]*\)`', v:lnum > 0 ? sbeval : '', 'g')
-    return substitute(v, '^\s\+\|\s\+$', '', 'g')
-  finally
-    let v:lnum = old
-  endtry
 endfunction
 
 function! s:build_make(program, args) abort
@@ -785,7 +763,7 @@ function! dispatch#compile_command(bang, args, count, ...) abort
     call s:set_current_compiler(get(request, 'compiler', ''))
     let v:lnum = a:count > 0 ? a:count : 0
     let &l:efm = request.format
-    let &l:makeprg = s:expand_lnum(request.command, v:lnum, 1)
+    let &l:makeprg = request.command
     silent doautocmd QuickFixCmdPre dispatch-make
     let request.directory = get(request, 'directory', getcwd())
     if request.directory !=# getcwd()
