@@ -405,7 +405,6 @@ function! dispatch#spawn(command, ...) abort
         \ 'background': 0,
         \ 'command': command,
         \ 'directory': getcwd(),
-        \ 'expanded': dispatch#expand(command, -1),
         \ 'title': '',
         \ }, a:0 ? a:1 : {})
   if empty(a:command)
@@ -415,33 +414,37 @@ function! dispatch#spawn(command, ...) abort
   if empty(request.title)
     let request.title = substitute(fnamemodify(matchstr(request.command, '\%(\\.\|\S\)\+'), ':t:r'), '\\\(\s\)', '\1', 'g')
   endif
-  if get(request, 'manage')
-    let key = request.directory."\t".substitute(request.expanded, '\s*$', '', '')
-    let i = 0
-    while i < len(get(g:DISPATCH_STARTS, key, []))
-      let [handler, pid] = split(g:DISPATCH_STARTS[key][i], '[@/]')
-      if !s:running(pid, handler)
-        call remove(g:DISPATCH_STARTS[key], i)
-        continue
-      endif
-      try
-        if request.background || dispatch#{handler}#activate(pid)
-          let request.handler = handler
-          let request.pid = pid
-          return request
-        endif
-      catch
-      endtry
-      let i += 1
-    endwhile
-  endif
-  call dispatch#autowrite()
-  let request.file = dispatch#tempname()
-  let s:files[request.file] = request
   let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
   try
     if request.directory !=# getcwd()
       let cwd = getcwd()
+      execute cd dispatch#fnameescape(request.directory)
+    endif
+    let request.expanded = dispatch#expand(request.command, -1)
+    if get(request, 'manage')
+      let key = request.directory."\t".substitute(request.expanded, '\s*$', '', '')
+      let i = 0
+      while i < len(get(g:DISPATCH_STARTS, key, []))
+        let [handler, pid] = split(g:DISPATCH_STARTS[key][i], '[@/]')
+        if !s:running(pid, handler)
+          call remove(g:DISPATCH_STARTS[key], i)
+          continue
+        endif
+        try
+          if request.background || dispatch#{handler}#activate(pid)
+            let request.handler = handler
+            let request.pid = pid
+            return request
+          endif
+        catch
+        endtry
+        let i += 1
+      endwhile
+    endif
+    call dispatch#autowrite()
+    let request.file = dispatch#tempname()
+    let s:files[request.file] = request
+    if exists('cwd')
       execute cd dispatch#fnameescape(request.directory)
     endif
     if s:dispatch(request)
