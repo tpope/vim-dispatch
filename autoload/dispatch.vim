@@ -77,9 +77,12 @@ function! s:expand(expr) abort
   endif
   sandbox let v = expand(substitute(a:expr, ':S$', '', ''))
   if a:expr =~# ':S$'
-    return dispatch#shellescape(v)
-  else
+    let v = dispatch#shellescape(v)
+  endif
+  if len(v) && len(expand(matchstr(a:expr, '^[%#][^:]*\%(:p:h\)\=\|^[^:]\+')))
     return v
+  else
+    return a:expr
   endif
 endfunction
 
