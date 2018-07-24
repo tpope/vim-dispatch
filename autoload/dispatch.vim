@@ -6,7 +6,7 @@ endif
 
 let g:autoloaded_dispatch = 1
 
-" Utility {{{1
+" Section: Utility
 
 function! dispatch#tempname() abort
   let temp = tempname()
@@ -363,8 +363,7 @@ function! s:dispatch(request) abort
   return 0
 endfunction
 
-" }}}1
-" :Start, :Spawn {{{1
+" Section: :Start, :Spawn
 
 function! s:extract_opts(command) abort
   let command = a:command
@@ -483,8 +482,7 @@ function! dispatch#spawn(command, ...) abort
   return request
 endfunction
 
-" }}}1
-" :Dispatch, :Make {{{1
+" Section: :Dispatch, :Make
 
 let g:dispatch_compilers = get(g:, 'dispatch_compilers', {})
 
@@ -839,8 +837,7 @@ function! dispatch#compile_command(bang, args, count, ...) abort
   return ''
 endfunction
 
-" }}}1
-" :FocusDispatch {{{1
+" Section: :FocusDispatch
 
 function! dispatch#focus(...) abort
   let haslnum = a:0 && a:1 >= 0
@@ -963,8 +960,7 @@ function! dispatch#make_focus(count) abort
   return s:build_make(&makeprg, task)
 endfunction
 
-" }}}1
-" Requests {{{1
+" Section: Requests
 
 function! s:file(request) abort
   if type(a:request) == type('')
@@ -1078,8 +1074,7 @@ function! dispatch#complete(file) abort
   return ''
 endfunction
 
-" }}}1
-" :AbortDispatch {{{1
+" Section: :AbortDispatch
 
 function! dispatch#abort_command(bang, query, ...) abort
   let i = len(s:makes) - 1
@@ -1109,8 +1104,7 @@ function! dispatch#abort_command(bang, query, ...) abort
   return 'call dispatch#complete('.request.id.')'
 endfunction
 
-" }}}1
-" Quickfix window {{{1
+" Section: Quickfix window
 
 function! dispatch#copen(bang) abort
   if empty(s:makes)
@@ -1207,4 +1201,4 @@ function! dispatch#quickfix_init() abort
   exe 'lcd' dispatch#fnameescape(request.directory)
 endfunction
 
-" }}}1
+" Section: End
