@@ -386,14 +386,14 @@ function! s:extract_opts(command) abort
   return [command, opts]
 endfunction
 
-function! dispatch#spawn_command(bang, command) abort
+function! dispatch#spawn_command(bang, command, ...) abort
   let [command, opts] = s:extract_opts(a:command)
   let opts.background = a:bang
   call dispatch#spawn(command, opts)
   return ''
 endfunction
 
-function! dispatch#start_command(bang, command) abort
+function! dispatch#start_command(bang, command, ...) abort
   let command = a:command
   if empty(command) && type(get(b:, 'start')) == type('')
     let command = b:start
@@ -680,7 +680,7 @@ if !exists('s:makes')
   let s:files = {}
 endif
 
-function! dispatch#compile_command(bang, args, count) abort
+function! dispatch#compile_command(bang, args, count, ...) abort
   if !empty(a:args)
     let args = a:args
   else
@@ -901,7 +901,7 @@ function! dispatch#focus(...) abort
   endif
 endfunction
 
-function! dispatch#focus_command(bang, args, count) abort
+function! dispatch#focus_command(bang, args, count, ...) abort
   let [args, opts] = s:extract_opts(a:args)
   if args ==# ':Dispatch'
     let args = dispatch#focus()[0]
@@ -1081,7 +1081,7 @@ endfunction
 " }}}1
 " :AbortDispatch {{{1
 
-function! dispatch#abort_command(bang, query) abort
+function! dispatch#abort_command(bang, query, ...) abort
   let i = len(s:makes) - 1
   while i >= 0
     let request = s:makes[i]
