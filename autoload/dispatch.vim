@@ -1161,8 +1161,6 @@ function! s:cgetfile(request, ...) abort
       call setqflist([], 'r', {'title': title})
     endif
     silent doautocmd QuickFixCmdPost cgetfile
-  catch '^E40:'
-    return v:exception
   finally
     let &modelines = modelines
     exe cd dispatch#fnameescape(dir)
