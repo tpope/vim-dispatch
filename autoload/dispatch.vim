@@ -366,13 +366,24 @@ function! s:extract_opts(command, ...) abort
   return [command, extend(opts, a:0 ? a:1 : {})]
 endfunction
 
+function! s:make_focus(count) abort
+  let task = ''
+  if a:count >= 0
+    let task = s:efm_literal('buffer')
+  endif
+  if empty(task)
+    let task = s:efm_literal('default')
+  endif
+  return s:build_make(&makeprg, task)
+endfunction
+
 function! dispatch#spawn_command(bang, command, count, ...) abort
   let [command, opts] = s:extract_opts(a:command)
   if empty(command) && a:count >= 0
     if type(get(b:, 'dispatch')) == type('')
       let command = b:dispatch
     else
-      let command = dispatch#make_focus(a:count)
+      let command = s:make_focus(a:count)
     endif
     call extend(opts, {'wait': 'always'}, 'keep')
     let [command, opts] = s:extract_opts(command, opts)
@@ -942,14 +953,7 @@ function! dispatch#focus_command(bang, args, count, ...) abort
 endfunction
 
 function! dispatch#make_focus(count) abort
-  let task = ''
-  if a:count >= 0
-    let task = dispatch#expand(s:efm_literal('buffer'), a:count)
-  endif
-  if empty(task)
-    let task = dispatch#expand(s:efm_literal('default'), a:count)
-  endif
-  return s:build_make(&makeprg, task)
+  return dispatch#expand(s:make_focus(a:count))
 endfunction
 
 " Section: Requests
