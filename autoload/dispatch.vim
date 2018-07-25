@@ -372,7 +372,7 @@ function! dispatch#spawn_command(bang, command, count, ...) abort
     if type(get(b:, 'dispatch')) == type('')
       let command = b:dispatch
     else
-      let command = dispatch#make_focus()
+      let command = dispatch#make_focus(a:count)
     endif
     call extend(opts, {'wait': 'always'}, 'keep')
     let [command, opts] = s:extract_opts(command, opts)
