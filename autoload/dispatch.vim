@@ -346,7 +346,7 @@ endfunction
 
 " Section: :Start, :Spawn
 
-function! s:extract_opts(command) abort
+function! s:extract_opts(command, ...) abort
   let command = a:command
   let opts = {}
   while command =~# '^\%(-\|++\)\%(\w\+\)\%([= ]\|$\)'
@@ -363,7 +363,7 @@ function! s:extract_opts(command) abort
     endif
     let command = substitute(command, '^\%(-\|++\)\w\+\%(=\%(\\.\|\S\)*\)\=\s*', '', '')
   endwhile
-  return [command, opts]
+  return [command, extend(opts, a:0 ? a:1 : {})]
 endfunction
 
 function! dispatch#spawn_command(bang, command, ...) abort
@@ -374,11 +374,11 @@ function! dispatch#spawn_command(bang, command, ...) abort
 endfunction
 
 function! dispatch#start_command(bang, command, ...) abort
-  let command = a:command
+  let [command, opts] = s:extract_opts(a:command)
   if empty(command) && type(get(b:, 'start')) == type('')
     let command = b:start
+    let [command, opts] = s:extract_opts(command, opts)
   endif
-  let [command, opts] = s:extract_opts(command)
   let opts.background = a:bang
   if command =~# '^:\S'
     unlet! g:dispatch_last_start
@@ -663,9 +663,9 @@ if !exists('s:makes')
 endif
 
 function! dispatch#compile_command(bang, args, count, ...) abort
-  if !empty(a:args)
-    let args = a:args
-  else
+  let [args, request] = s:extract_opts(a:args)
+
+  if empty(args)
     let args = '--'
     let default_dispatch = 1
     if type(get(b:, 'dispatch')) == type('')
@@ -678,13 +678,12 @@ function! dispatch#compile_command(bang, args, count, ...) abort
         let args = vars.Dispatch
       endif
     endfor
+    let [args, request] = s:extract_opts(args, request)
   endif
 
   if args =~# '^!'
     return 'Start' . (a:bang ? '!' : '') . ' ' . args[1:-1]
   endif
-
-  let [args, request] = s:extract_opts(args)
 
   if args =~# '^:\S'
     call dispatch#autowrite()

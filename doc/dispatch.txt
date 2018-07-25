@@ -70,7 +70,7 @@ COMMANDS                                        *dispatch-commands*
                         This is equivalent to |:Make| but accepts options.
 
                                                 *b:dispatch*
-:Dispatch[!]            Invoke |:Dispatch| with the options, program, and
+:Dispatch[!] [options]  Invoke |:Dispatch| with the options, program, and
                         arguments found in b:dispatch.  In the quickfix
                         window, this reruns the shown dispatch.  When no other
                         default is found, equivalent to |:Make|.
@@ -115,7 +115,7 @@ COMMANDS                                        *dispatch-commands*
                         previous :Start invocation, do nothing.
 
                                                 *b:start*
-:Start[!]               With no arguments, |:Start| the options and command
+:Start[!] [options]     With no arguments, |:Start| the options and command
                         given by |b:start|.  If not set, falls back to
                         'shell'.
 
