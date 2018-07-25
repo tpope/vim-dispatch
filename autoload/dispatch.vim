@@ -366,10 +366,19 @@ function! s:extract_opts(command, ...) abort
   return [command, extend(opts, a:0 ? a:1 : {})]
 endfunction
 
-function! dispatch#spawn_command(bang, command, ...) abort
+function! dispatch#spawn_command(bang, command, count, ...) abort
   let [command, opts] = s:extract_opts(a:command)
+  if empty(command) && a:count >= 0
+    if type(get(b:, 'dispatch')) == type('')
+      let command = b:dispatch
+    else
+      let command = dispatch#make_focus()
+    endif
+    call extend(opts, {'wait': 'always'}, 'keep')
+    let [command, opts] = s:extract_opts(command, opts)
+  endif
   let opts.background = a:bang
-  call dispatch#spawn(command, opts)
+  call dispatch#spawn(command, opts, a:count)
   return ''
 endfunction
 
@@ -420,7 +429,7 @@ function! dispatch#spawn(command, ...) abort
       let cwd = getcwd()
       execute cd dispatch#fnameescape(request.directory)
     endif
-    let request.expanded = dispatch#expand(request.command, -1)
+    let request.expanded = dispatch#expand(request.command, a:0 > 1 ? a:2 : -1)
     if get(request, 'manage')
       let key = request.directory."\t".substitute(request.expanded, '\s*$', '', '')
       let i = 0
