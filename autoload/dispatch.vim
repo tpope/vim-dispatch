@@ -953,7 +953,12 @@ function! dispatch#focus_command(bang, args, count, ...) abort
 endfunction
 
 function! dispatch#make_focus(count) abort
-  return dispatch#expand(s:make_focus(a:count), a:count)
+  let cmd = s:make_focus(a:count)
+  if a:count >= 0
+    return dispatch#expand(cmd, a:count)
+  else
+    return cmd
+  endif
 endfunction
 
 " Section: Requests
