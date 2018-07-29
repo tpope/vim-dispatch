@@ -377,14 +377,18 @@ function! s:make_focus(count) abort
   return s:build_make(&makeprg, task)
 endfunction
 
+function! s:focus(count) abort
+  if type(get(b:, 'dispatch')) == type('')
+    return b:dispatch
+  else
+    return s:make_focus(a:count)
+  endif
+endfunction
+
 function! dispatch#spawn_command(bang, command, count, ...) abort
   let [command, opts] = s:extract_opts(a:command)
   if empty(command) && a:count >= 0
-    if type(get(b:, 'dispatch')) == type('')
-      let command = b:dispatch
-    else
-      let command = s:make_focus(a:count)
-    endif
+    let command = s:focus(a:count)
     call extend(opts, {'wait': 'always'}, 'keep')
     let [command, opts] = s:extract_opts(command, opts)
   endif
@@ -393,8 +397,13 @@ function! dispatch#spawn_command(bang, command, count, ...) abort
   return ''
 endfunction
 
-function! dispatch#start_command(bang, command, ...) abort
+function! dispatch#start_command(bang, command, count, ...) abort
   let [command, opts] = s:extract_opts(a:command)
+  if empty(command) && a:count >= 0
+    let command = s:focus(a:count)
+    call extend(opts, {'wait': 'always'}, 'keep')
+    let [command, opts] = s:extract_opts(command, opts)
+  endif
   if empty(command) && type(get(b:, 'start')) == type('')
     let command = b:start
     let [command, opts] = s:extract_opts(command, opts)
