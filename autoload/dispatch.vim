@@ -57,7 +57,7 @@ function! dispatch#shellescape(...) abort
   return join(args, ' ')
 endfunction
 
-let s:var = '\%(<\%(cword\|cWORD\|cexpr\|cfile\|sfile\|slnum\|afile\|abuf\|amatch' . (has('clientserver') ? '\|client' : '') . '\)>\|%\|##\=\|#<\=\d\+\)'
+let s:var = '\%(<\%(cword\|cWORD\|cexpr\|cfile\|sfile\|slnum\|afile\|abuf\|amatch' . (has('clientserver') ? '\|client' : '') . '\)>\|%\|#<\=\d\+\|##\=\)'
 function! dispatch#escape(string) abort
   return substitute(a:string, s:var, '\\&', 'g')
 endfunction
