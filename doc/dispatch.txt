@@ -153,14 +153,10 @@ The following convenience maps are provided.
 *g'!*                     |:Spawn|!
 *g'?*                     Show 'shell'
 
-Use the g:nremap dictionary to override an individual map or set of maps with
-a common prefix.  For example, the following changes all "m" maps to "q" maps:
+These can be disabled with
 >
-    let g:nremap = {"m": "q"}
+        let g:dispatch_no_maps = 1
 <
-Use an empty string as the dictionary value to disable the map or maps for
-that dictionary key entirely.
-
 STRATEGIES                                      *dispatch-strategies*
 
 Strategies are listed in order of precedence.  The first available one is
