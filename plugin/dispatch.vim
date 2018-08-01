@@ -74,10 +74,10 @@ if !get(g:, 'dispatch_no_maps')
   call s:map('n', 'g''<Space>', '<SID>:.Spawn<Space>')
   call s:map('n', 'g''!',       '<SID>:.Spawn!')
   call s:map('n', 'g''?',       ':<C-U>echo ":Spawn" &shell<CR>')
-  call s:map('n', 'g`<CR>',    '<SID>:.Spawn<CR>')
-  call s:map('n', 'g`<Space>', '<SID>:.Spawn<Space>')
-  call s:map('n', 'g`!',       '<SID>:.Spawn!')
-  call s:map('n', 'g`?',       ':<C-U>echo ":Spawn" &shell<CR>')
+  call s:map('n', 'g`<CR>',     '<SID>:.Spawn<CR>')
+  call s:map('n', 'g`<Space>',  '<SID>:.Spawn<Space>')
+  call s:map('n', 'g`!',        '<SID>:.Spawn!')
+  call s:map('n', 'g`?',        ':<C-U>echo ":Spawn" &shell<CR>')
 endif
 
 function! DispatchComplete(id) abort
