@@ -1097,11 +1097,11 @@ function! dispatch#complete(file) abort
     else
       let label = 'Complete:'
     endif
-    echo label '!'.request.expanded s:postfix(request)
     if !request.background && !get(request, 'aborted')
       call s:cwindow(request, 0, status)
-      redraw
+      redraw!
     endif
+    echo label '!'.request.expanded s:postfix(request)
   endif
   return ''
 endfunction
