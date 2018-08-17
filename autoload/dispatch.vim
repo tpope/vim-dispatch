@@ -1129,7 +1129,7 @@ function! dispatch#abort_command(bang, query, ...) abort
     return 'echoerr '.string('No pid file')
   endif
   if exists('*dispatch#'.get(request, 'handler').'#kill')
-    return dispatch#{request.handler}#kill(pid)
+    return dispatch#{request.handler}#kill(pid, a:bang)
   elseif has('win32')
     call system('taskkill /PID ' . (a:bang ? '/F ' : '') . pid)
   else
