@@ -264,16 +264,24 @@ endfunction
 function! dispatch#status_var() abort
   if &shellxquote ==# '"'
     return '%ERRORLEVEL%'
-  elseif &shell =~# 'csh'
+  elseif &shell =~# 'csh\|fish'
     return '$status'
   else
     return '$?'
   endif
 endfunction
 
+function! s:subshell(cmds) abort
+  if &shell =~# 'fish'
+    return 'begin; ' . a:cmds . '; end'
+  else
+    return '(' . a:cmds . ')'
+  endif
+endfunction
+
 function! dispatch#prepare_start(request, ...) abort
   let status = dispatch#status_var()
-  let exec = 'echo $$ > ' . a:request.file . '.pid; '
+  let exec = 'echo ' . (&shell =~# 'fish' ? '%self' : '$$') . ' > ' . a:request.file . '.pid; '
   if executable('perl')
     let exec .= 'sync; perl -e "select(undef,undef,undef,0.1)" 2>/dev/null; '
   else
@@ -281,11 +289,12 @@ function! dispatch#prepare_start(request, ...) abort
   endif
   let exec .= a:0 ? a:1 : a:request.expanded
   let wait = a:0 > 1 ? a:2 : get(a:request, 'wait', 'error')
-  let pause = "(printf '\e[1m--- Press ENTER to continue ---\e[0m\\n'; exec head -1)"
+  let pause = s:subshell("printf '\e[1m--- Press ENTER to continue ---\e[0m\\n'; exec head -1")
   if wait ==# 'always'
     let exec .= '; ' . pause
   elseif wait !=# 'never' && wait !=# 'make'
-    let exec .= "; test ".status." = 0 -o ".status." = 130 || " . pause
+    let exec .= "; test ".status." = 0 -o ".status." = 130" .
+          \ (&shell =~# 'fish' ? '; or ' : ' || ') . pause
   endif
   if wait !=# 'make'
     let exec .= '; touch ' .a:request.file . '.complete'
@@ -295,9 +304,9 @@ function! dispatch#prepare_start(request, ...) abort
 endfunction
 
 function! dispatch#prepare_make(request, ...) abort
-  let exec = a:0 ? a:1 : ('(' . a:request.expanded . '; echo ' .
-        \ dispatch#status_var() . ' > ' . a:request.file . '.complete)' .
-        \ dispatch#shellpipe(a:request.file))
+  let exec = a:0 ? a:1 : s:subshell(a:request.expanded . '; echo ' .
+        \ dispatch#status_var() . ' > ' . a:request.file . '.complete') .
+        \ dispatch#shellpipe(a:request.file)
   return dispatch#prepare_start(a:request, exec, 'make')
 endfunction
 
