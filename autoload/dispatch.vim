@@ -313,7 +313,7 @@ function! dispatch#isolate(request, keep, ...) abort
   let command = ['cd ' . shellescape(getcwd())]
   for line in split(system('env'), "\n")
     let var = matchstr(line, '^\w\+\ze=')
-    if !empty(var) && var !=# '_' && index(keep, var) < 0
+    if !empty(var) && var !~# '^\%(_\|SHLVL\|PWD\)$' && index(keep, var) < 0
       if &shell =~# 'csh'
         let command += split('setenv '.var.' '.shellescape(eval('$'.var)), "\n")
       else
