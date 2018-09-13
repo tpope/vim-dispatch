@@ -897,21 +897,22 @@ function! dispatch#focus(...) abort
   else
     let [compiler, why] = ['--', (len(&l:makeprg) ? 'Buffer' : 'Global') . ' default']
   endif
-  if haslnum
+  if haslnum || !a:0
+    let lnum = a:0 ? a:1 : -1
     let [compiler, opts] = s:extract_opts(compiler)
     if compiler ==# '--'
-      let task = s:efm_literal('buffer', &errorformat, a:1)
+      let task = s:efm_literal('buffer', &errorformat, lnum)
       if empty(task)
-        let task = s:efm_literal('default', &errorformat, a:1)
+        let task = s:efm_literal('default', &errorformat, lnum)
       endif
       if len(task)
         let compiler .= ' ' . task
       endif
     endif
     if compiler =~# '^:'
-      let compiler = s:command_lnum(compiler, a:1)
+      let compiler = s:command_lnum(compiler, lnum)
     else
-      let compiler = dispatch#expand(compiler, a:1)
+      let compiler = dispatch#expand(compiler, lnum)
     endif
     if has_key(opts, 'compiler') && opts.compiler != dispatch#compiler_for_program(compiler)
       let compiler = '-compiler=' . opts.compiler . ' ' . compiler
@@ -945,7 +946,6 @@ function! dispatch#focus_command(bang, args, count, ...) abort
   let [args, opts] = s:extract_opts(a:args)
   if args ==# ':Dispatch'
     let args = dispatch#focus()[0]
-    let args = args =~# '^:' ? args : dispatch#expand(args, -1)
   elseif args =~# '^:[.$]Dispatch$'
     let args = dispatch#focus(line(a:args[1]))[0]
   elseif args =~# '^:\d\+Dispatch$'
