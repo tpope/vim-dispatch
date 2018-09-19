@@ -91,7 +91,7 @@ COMMANDS                                        *dispatch-commands*
 :FocusDispatch          Show the task that would run when calling |:Dispatch|
                         with no arguments.
 
-:0Dispatch[!] [options] Provida a range to |:Dispatch| skips any focused task
+:0Dispatch[!] [options] Provide a range to |:Dispatch| skips any focused task
                         and forces |b:dispatch|.
 
                                                 *dispatch-:AbortDispatch*
