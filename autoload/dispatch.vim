@@ -436,7 +436,7 @@ function! dispatch#start_command(bang, command, count, ...) abort
     return s:wrapcd(get(opts, 'directory', getcwd()),
           \ substitute(command, '\>', get(opts, 'background', 0) ? '!' : '', ''))
   endif
-  call dispatch#start(command, opts)
+  call dispatch#start(command, opts, a:count)
   return ''
 endfunction
 
@@ -446,7 +446,7 @@ if type(get(g:, 'DISPATCH_STARTS')) != type({})
 endif
 
 function! dispatch#start(command, ...) abort
-  return dispatch#spawn(a:command, extend({'manage': 1}, a:0 ? a:1 : {}))
+  return dispatch#spawn(a:command, extend({'manage': 1}, a:0 ? a:1 : {}), a:0 > 1 ? a:2 : -1)
 endfunction
 
 function! dispatch#spawn(command, ...) abort
