@@ -89,10 +89,10 @@ if !exists('g:dispatch_handlers')
         \ 'tmux',
         \ 'job',
         \ 'screen',
+        \ 'terminal',
         \ 'windows',
         \ 'iterm',
         \ 'x11',
-        \ 'terminal',
         \ 'headless',
         \ ]
 endif
