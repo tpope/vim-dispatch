@@ -27,8 +27,8 @@ function! dispatch#terminal#handle(request) abort
         \ 'term_finish': (a:request.background ? 'open' : 'close'),
         \ }
   let buf_id = term_start([&shell, &shellcmdflag, a:request.expanded], options)
-  silent exec 'tab sbuffer ' . buf_id
-  if !a:request.background | wincmd p | endif
+  silent exec 'tab sbuffer' . buf_id
+  if a:request.background | tabprevious | endif
 
   let job = term_getjob(buf_id)
   let a:request.pid = job_info(job).process
