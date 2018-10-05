@@ -51,18 +51,16 @@ function! dispatch#terminal#activate(pid) abort
   if index(keys(s:waiting), a:pid) >= 0
     let request = s:waiting[a:pid]
     let buf_id = bufnr(request.title)
-    let [opened_tab, opened_window] = s:find_open_window(buf_id)
 
-    if buf_id && opened_tab
-      silent exec ':tabnext ' . opened_tab
+    if buf_id > 0
+      let pre = &switchbuf
 
-      if opened_window
-        silent exec opened_window . 'wincmd w'
-      endif
-
-      return 1
-    elseif buf_id
-      silent exec 'tab sbuffer ' . buf_id
+      try
+        let &switchbuf = 'useopen,usetab'
+        silent exec 'tab sbuffer' . buf_id
+      finally
+        let &switchbuf = pre
+      endtry
       return 1
     else
       return 0
@@ -71,22 +69,3 @@ function! dispatch#terminal#activate(pid) abort
 
   return 0
 endfunction
-
-function! s:find_open_window(buffer_id)
-   let [current_tab, last_tab] = [tabpagenr() - 1, tabpagenr('$')]
-
-   for tab_offset in range(0, tabpagenr('$') - 1)
-     let tab_id = (current_tab + tab_offset) % last_tab + 1
-     let buffers = tabpagebuflist(tab_id)
-
-     for window_id in range(1, len(buffers))
-       let buffer = buffers[window_id - 1]
-
-       if buffer == a:buffer_id
-         return [tab_id, window_id]
-       endif
-     endfor
-   endfor
-
-   return [0, 0]
- endfunction
