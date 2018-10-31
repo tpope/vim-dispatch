@@ -573,7 +573,7 @@ function! dispatch#compiler_options(compiler) abort
   try
     if a:compiler ==# 'make'
       if &makeprg !=# 'make'
-        setlocal errorformat&
+        setlocal errorformat<
       endif
       return {'program': 'make', 'format': &errorformat}
     endif
