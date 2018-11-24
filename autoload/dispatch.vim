@@ -318,7 +318,7 @@ function! dispatch#set_title(request) abort
 endfunction
 
 function! dispatch#isolate(request, keep, ...) abort
-  let keep = ['SHELL'] + a:keep
+  let keep = ['SHELL', 'USER'] + a:keep
   let command = ['cd ' . shellescape(getcwd())]
   for line in split(system('env'), "\n")
     let var = matchstr(line, '^\w\+\ze=')
