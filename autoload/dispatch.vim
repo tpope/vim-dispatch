@@ -1111,6 +1111,7 @@ function! dispatch#complete(file) abort
       redraw!
     endif
     echo label '!'.request.expanded s:postfix(request)
+    checktime
   endif
   return ''
 endfunction
