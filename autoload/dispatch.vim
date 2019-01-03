@@ -848,7 +848,7 @@ function! dispatch#compile_command(bang, args, count, ...) abort
       endif
     else
       let request.handler = 'sync'
-      let after = 'call DispatchComplete('.request.id.')'
+      let after = 'call dispatch#complete('.request.id.',0)'
       redraw!
       let sp = dispatch#shellpipe(request.file)
       let dest = request.file . '.complete'
@@ -1087,7 +1087,7 @@ function! dispatch#completed(request) abort
   return get(s:request(a:request), 'completed', 0)
 endfunction
 
-function! dispatch#complete(file) abort
+function! dispatch#complete(file, ...) abort
   if !dispatch#completed(a:file)
     let request = s:request(a:file)
     let request.completed = 1
@@ -1111,7 +1111,10 @@ function! dispatch#complete(file) abort
       redraw!
     endif
     echo label '!'.request.expanded s:postfix(request)
-    checktime
+    if !a:0
+      checktime
+      silent doautocmd ShellCmdPost
+    endif
   endif
   return ''
 endfunction
