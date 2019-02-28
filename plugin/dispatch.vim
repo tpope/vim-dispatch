@@ -1,6 +1,6 @@
 " Location:     plugin/dispatch.vim
 " Maintainer:   Tim Pope <http://tpo.pe/>
-" Version:      1.6
+" Version:      1.7
 " GetLatestVimScripts: 4504 1 :AutoInstall: dispatch.vim
 
 if exists("g:loaded_dispatch") || v:version < 700 || &compatible
