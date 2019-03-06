@@ -773,14 +773,17 @@ function! dispatch#compile_command(bang, args, count, ...) abort
   else
     let [compiler, prefix, program, rest] = s:compiler_split(args)
     let request.compiler = get(request, 'compiler', compiler)
+    let request.command = args
     if !empty(request.compiler)
       call extend(request,dispatch#compiler_options(request.compiler))
       if request.compiler ==# compiler
+        if empty(rest)
+          let request.command = request.program
+        endif
         let request.program = prefix . program
         let request.args = rest[1:-1]
       endif
     endif
-    let request.command = args
   endif
   let request.format = substitute(request.format, ',%-G%\.%#\%($\|,\@=\)', '', '')
 
