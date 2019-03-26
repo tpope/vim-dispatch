@@ -88,7 +88,7 @@ function! s:expand(expr, dispatch_opts) abort
 endfunction
 
 let s:flags = '<\=\%(:[p8~.htre]\|:g\=s\(.\).\{-\}\1.\{-\}\1\)*\%(:S\)\='
-let s:expandable = '\\*\%(`[+-]\==[^`]*`\|' . s:var . s:flags . '\)'
+let s:expandable = '\C\\*\%(`[+-]\==[^`]*`\|' . s:var . s:flags . '\)'
 function! dispatch#expand(string, ...) abort
   let opts = {}
   if a:0 && a:1 > 0
