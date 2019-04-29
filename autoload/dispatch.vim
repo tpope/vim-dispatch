@@ -419,7 +419,7 @@ function! dispatch#spawn_command(bang, command, count, ...) abort
   return ''
 endfunction
 
-function! dispatch#start_command(bang, command, count, ...) abort
+function! s:parse_start(command, count) abort
   let [command, opts] = s:extract_opts(a:command)
   if empty(command) && a:count >= 0
     let command = s:focus(a:count)
@@ -430,7 +430,12 @@ function! dispatch#start_command(bang, command, count, ...) abort
     let command = b:start
     let [command, opts] = s:extract_opts(command, opts)
   endif
-  let opts.background = a:bang
+  return [command, opts]
+endfunction
+
+function! dispatch#start_command(bang, command, count, ...) abort
+  let [command, opts] = s:parse_start(a:command, a:count)
+  let opts.background = get(opts, 'background') || a:bang
   if command =~# '^:\S'
     unlet! g:dispatch_last_start
     return s:wrapcd(get(opts, 'directory', getcwd()),
@@ -990,6 +995,36 @@ function! dispatch#make_focus(count) abort
   else
     return cmd
   endif
+endfunction
+
+function! dispatch#spawn_focus(count) abort
+  if a:count < 0
+    return &shell
+  else
+    return dispatch#expand(s:focus(a:count), a:count)
+  endif
+endfunction
+
+function! dispatch#start_focus(count) abort
+  let [command, opts] = s:parse_start('', a:count)
+  if a:count >= 0
+    let command = dispatch#expand(command, a:count)
+  endif
+  if empty(command)
+    let command = &shell
+  endif
+  if get(opts, 'wait', 'error') !=# 'error'
+    let command = '-wait=' . escape(opts.wait, '\ ') . ' ' . command
+  endif
+  if has_key(opts, 'title')
+    let command = '-title=' . escape(opts.title, '\ ') . ' ' . command
+  endif
+  if has_key(opts, 'directory') && opts.directory != getcwd()
+    let command = '-dir=' .
+            \ s:escape_path(fnamemodify(opts.directory, ':~:.')) . ' ' .
+            \ command
+  endif
+  return command
 endfunction
 
 " Section: Requests
