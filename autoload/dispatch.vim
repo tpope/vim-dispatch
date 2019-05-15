@@ -122,8 +122,8 @@ endfunction
 function! s:efm_query(key, format) abort
   let matches = []
   let efm = ',' . a:format
-  let pattern = '\C,%\\&\(' .
-        \ (type(a:key) == type('') ? a:key : join(a:key, '\|')) .
+  let pattern = '\c,%\\&\(' . substitute(
+        \ type(a:key) == type('') ? a:key : join(a:key, '\|'), '_', '_\=', 'g') .
         \ '\)=\(\%(\\.\|[^\,]\)*\)'
   let pos = 0
   while 1
@@ -343,8 +343,8 @@ function! dispatch#isolate(request, keep, ...) abort
   return 'env -i ' . join(map(copy(keep), 'v:val."=\"$". v:val ."\" "'), '') . &shell . ' ' . temp
 endfunction
 
-function! s:current_compiler() abort
-  return get((empty(&l:makeprg) ? g: : b:), 'current_compiler', '')
+function! s:current_compiler(...) abort
+  return get((empty(&l:makeprg) ? g: : b:), 'current_compiler', a:0 ? a:1 : '')
 endfunction
 
 function! s:set_current_compiler(name) abort
@@ -435,6 +435,18 @@ function! dispatch#spawn_command(bang, command, count, ...) abort
   return ''
 endfunction
 
+function! s:compiler_getcwd() abort
+  let modelines = &modelines
+  try
+    let &modelines = 0
+    silent doautocmd QuickFixCmdPre dispatch-make-complete
+    return getcwd()
+  finally
+    silent doautocmd QuickFixCmdPost dispatch-make-complete
+    let &modelines = modelines
+  endtry
+endfunction
+
 function! s:parse_start(command, count) abort
   let [command, opts] = s:extract_opts(a:command)
   if empty(command) && a:count >= 0
@@ -445,6 +457,20 @@ function! s:parse_start(command, count) abort
   if empty(command) && type(get(b:, 'start')) == type('')
     let command = b:start
     let [command, opts] = s:extract_opts(command, opts)
+  elseif empty(command) && len(s:efm_literal(['start', 'default_start'], &errorformat))
+    let task = s:efm_literal(['start', 'default_start'], &errorformat)
+    let command = &makeprg . ' ' . task
+    if !has_key(opts, 'title')
+      let opts.title = s:current_compiler('make') . ' ' . task
+    endif
+    if !has_key(opts, 'directory')
+      let opts.directory = s:compiler_getcwd()
+      " for dir in [s:efm_literal(['chdir', 'dir'], &errorformat)]
+      "   if len(dir)
+      "     let opts.directory = dir
+      "   endif
+      " endfor
+    endif
   endif
   return [command, opts]
 endfunction
