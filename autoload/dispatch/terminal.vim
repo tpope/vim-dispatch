@@ -35,6 +35,7 @@ function! dispatch#terminal#handle(request) abort
   let s:waiting[pid] = a:request
   call writefile([a:request.pid], a:request.file . '.pid')
   let a:request.handler = 'terminal'
+  let a:request.buf_id = buf_id
 
   return 1
 endfunction
@@ -49,7 +50,7 @@ endfunction
 function! dispatch#terminal#activate(pid) abort
   if index(keys(s:waiting), a:pid) >= 0
     let request = s:waiting[a:pid]
-    let buf_id = bufnr(request.title)
+    let buf_id = request.buf_id
 
     if buf_id > 0
       let pre = &switchbuf
