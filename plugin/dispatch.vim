@@ -28,7 +28,7 @@ command! -bang -nargs=* -range=-1 -complete=customlist,dispatch#command_complete
       \ execute dispatch#start_command(<bang>0, <q-args>,
       \   <count> < 0 || <line1> == <line2> ? <count> : 0)
 
-command! -bang -bar Copen call dispatch#copen(<bang>0)
+command! -bang -count -bar Copen call dispatch#copen(<bang>0, <count>)
 
 command! -bang -bar -nargs=* AbortDispatch
       \ execute dispatch#abort_command(<bang>0, <q-args>)
