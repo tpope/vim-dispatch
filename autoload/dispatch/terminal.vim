@@ -23,7 +23,7 @@ function! dispatch#terminal#handle(request) abort
         \ 'exit_cb': function('s:exit'),
         \ 'hidden': 1,
         \ 'term_name': a:request.title,
-        \ 'term_finish': (a:request.background ? 'open' : 'close'),
+        \ 'term_finish': 'open',
         \ }
   let buf_id = term_start([&shell, &shellcmdflag, a:request.expanded], options)
   silent exec 'tab sbuffer' . buf_id
@@ -43,6 +43,13 @@ function! s:exit(job, status) abort
   let pid = job_info(a:job).process
   let request = s:waiting[pid]
   call writefile([a:status], request.file . '.complete')
+  if a:status == 0
+    let buf_id = filter(term_list(), 'job_info(term_getjob(v:val)).process == ' . pid)[0]
+    let terminal_window = tabpagewinnr(buf_id)
+    let current_window = terminal_window - 1
+    silent exec current_window . 'tabnext'
+    silent exec 'bdelete ' . buf_id
+  endif
   unlet! s:waiting[pid]
 endfunction
 
