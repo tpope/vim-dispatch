@@ -119,24 +119,26 @@ function! s:build_make(program, args) abort
   endif
 endfunction
 
-function! s:efm_query(key, efm) abort
+function! s:efm_query(key, format) abort
   let matches = []
-  let efm = ',' . a:efm
-  let pattern = '\C,%\\&' . a:key . '=\zs\%(\\.\|[^\,]\)*'
+  let efm = ',' . a:format
+  let pattern = '\C,%\\&\(' .
+        \ (type(a:key) == type('') ? a:key : join(a:key, '\|')) .
+        \ '\)=\(\%(\\.\|[^\,]\)*\)'
   let pos = 0
   while 1
-    let match = matchstr(efm, pattern, pos)
-    let pos = match(efm, pattern, pos)
+    let match = matchlist(efm, pattern, pos)
+    let pos = matchend(efm, pattern, pos)
     if pos < 0
       return matches
     endif
-    call add(matches, substitute(match, '\\\ze[\,]', '', 'g'))
+    call add(matches, [match[1], substitute(match[2], '\\\ze[\,]', '', 'g')])
   endwhile
 endfunction
 
 function! s:efm_literal(key, format, ...) abort
   let subs = {'%': '%'}
-  for raw in s:efm_query(a:key, a:format)
+  for [key, raw] in s:efm_query(a:key, a:format)
     let value = substitute(raw, '%\(.\)', '\=get(subs,submatch(1),"\030")', 'g')
     if len(value) && value !~# "\030"
       return value
@@ -153,7 +155,9 @@ function! s:efm_to_regexp(pattern) abort
 endfunction
 
 function! s:efm_regexps(key, ...) abort
-  return map(s:efm_query(a:key, a:0 ? a:1 : &errorformat), 's:efm_to_regexp(v:val)')
+  let matches = s:efm_query(a:key, a:0 ? a:1 : &errorformat)
+  call map(matches, '[v:val[0], s:efm_to_regexp(v:val[1])]')
+  return matches
 endfunction
 
 function! s:escape_path(path) abort
@@ -369,7 +373,6 @@ function! s:dispatch(request) abort
   return 0
 endfunction
 
-" Section: :Start, :Spawn
 
 function! s:extract_opts(command, ...) abort
   let command = a:command
@@ -391,16 +394,26 @@ function! s:extract_opts(command, ...) abort
   return [command, extend(opts, a:0 ? a:1 : {})]
 endfunction
 
-function! s:make_focus(count) abort
-  let task = ''
+function! s:default_args(args, count, ...) abort
+  let args = matchstr(a:args, '\s\+\zs.*')
+  let format = a:0 ? a:1 : &errorformat
   if a:count >= 0
-    let task = s:efm_literal('buffer', &errorformat, a:count)
+    let prefix = s:efm_literal('buffer', format, a:count)
+    if len(prefix)
+      let args = prefix . substitute(args, '^\ze.', ' ', '')
+    endif
   endif
-  if empty(task)
-    let task = s:efm_literal('default', &errorformat, a:count)
+  if empty(args)
+    let args = s:efm_literal('default', format, a:count)
   endif
-  return s:build_make(&makeprg, task)
+  return args
 endfunction
+
+function! s:make_focus(count) abort
+  return s:build_make(&makeprg, s:default_args('', a:count))
+endfunction
+
+" Section: :Start, :Spawn
 
 function! s:focus(count) abort
   if type(get(b:, 'dispatch')) == type('')
@@ -767,16 +780,7 @@ function! dispatch#compile_command(bang, args, count, ...) abort
       let request.program = &makeprg
       let request.format = &errorformat
     endif
-    let request.args = matchstr(args, '\s\+\zs.*')
-    if a:count >= 0 || exists('default_dispatch')
-      let prefix = s:efm_literal('buffer', request.format, a:count)
-      if len(prefix)
-        let request.args = prefix . substitute(request.args, '^\ze.', ' ', '')
-      endif
-    endif
-    if empty(request.args)
-      let request.args = s:efm_literal('default', request.format, a:count)
-    endif
+    let request.args = s:default_args(args, exists('default_dispatch') && a:count < 0 ? 0 : a:count, request.format)
     let request.command = s:build_make(request.program, request.args)
   else
     let [compiler, prefix, program, rest] = s:compiler_split(args)
@@ -792,7 +796,7 @@ function! dispatch#compile_command(bang, args, count, ...) abort
   endif
   let request.format = substitute(request.format, ',%-G%\.%#\%($\|,\@=\)', '', '')
 
-  for regexp in s:efm_regexps('terminal', request.format)
+  for [key, regexp] in s:efm_regexps(['terminal'], request.format)
     if has_key(request, 'args') && request.args =~# regexp
       let title = request.compiler
       if regexp =~# '\\\@<!\\ze'
@@ -900,10 +904,7 @@ function! dispatch#focus(...) abort
     let lnum = a:0 ? a:1 : -1
     let [compiler, opts] = s:extract_opts(compiler)
     if compiler ==# '--'
-      let task = s:efm_literal('buffer', &errorformat, lnum)
-      if empty(task)
-        let task = s:efm_literal('default', &errorformat, lnum)
-      endif
+      let task = s:default_args('', lnum)
       if len(task)
         let compiler .= ' ' . task
       endif
@@ -922,10 +923,7 @@ function! dispatch#focus(...) abort
             \ ' ' . compiler
     endif
   elseif compiler ==# '--'
-    let task = s:efm_literal('buffer', &errorformat)
-    if empty(task)
-      let task = s:efm_literal('default', &errorformat)
-    endif
+    let task = s:default_args('', 0)
     if len(task)
       let compiler .= ' ' . task
     endif
@@ -950,10 +948,7 @@ function! dispatch#focus_command(bang, args, count, ...) abort
   elseif args =~# '^:\d\+Dispatch$'
     let args = dispatch#focus(+matchstr(a:args, '\d\+'))[0]
   elseif args =~# '^--\S\@!' && !has_key(opts, 'compiler')
-    let args = matchstr(args, '\s\+\zs.*')
-    if empty(args)
-      let args = s:efm_literal('default', &errorformat, -1)
-    endif
+    let args = s:default_args(args, -1)
     let args = s:build_make(&makeprg, args)
     let args = dispatch#expand(args, 0)
   else
