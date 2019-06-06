@@ -465,11 +465,6 @@ function! s:parse_start(command, count) abort
     endif
     if !has_key(opts, 'directory')
       let opts.directory = s:compiler_getcwd()
-      " for dir in [s:efm_literal(['chdir', 'dir'], &errorformat)]
-      "   if len(dir)
-      "     let opts.directory = dir
-      "   endif
-      " endfor
     endif
   endif
   return [command, opts]
