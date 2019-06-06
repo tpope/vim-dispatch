@@ -822,14 +822,14 @@ function! dispatch#compile_command(bang, args, count, ...) abort
   endif
   let request.format = substitute(request.format, ',%-G%\.%#\%($\|,\@=\)', '', '')
 
-  for [key, regexp] in s:efm_regexps(['terminal'], request.format)
+  for [key, regexp] in s:efm_regexps(['terminal', 'force_start', 'force_spawn'], request.format)
     if has_key(request, 'args') && request.args =~# regexp
       let title = request.compiler
       if regexp =~# '\\\@<!\\ze'
         let title .= ' ' . matchstr(request.args, regexp)
       endif
       let title = get(request, 'title', title)
-      return 'Start' . (a:bang ? '!' : '') .
+      return (key =~? 'spawn' ? 'Spawn' : 'Start') . (a:bang ? '!' : '') .
             \ ' -title=' . escape(title, '\ ') .
             \ ' ' . request.command
     endif
