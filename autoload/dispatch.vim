@@ -993,7 +993,12 @@ function! dispatch#focus_command(bang, args, count, ...) abort
     let b:Dispatch = args
     let [what, why] = dispatch#focus()
     echo 'Set buffer local focus to ' . what
-  elseif a:bang
+  elseif a:0 && a:1 =~# '\<tab\>'
+    let t:Dispatch = args
+    unlet! b:Dispatch w:Dispatch
+    let [what, why] = dispatch#focus(a:count)
+    echo 'Set tab local focus to ' . what
+  elseif a:bang || a:0 && a:1 =~# '\<vert\>'
     let w:Dispatch = args
     unlet! b:Dispatch
     let [what, why] = dispatch#focus(a:count)
@@ -1152,7 +1157,7 @@ function! dispatch#complete(file, ...) abort
       let label = 'Complete:'
     endif
     if !request.background && !get(request, 'aborted')
-      call s:cwindow(request, 0, status)
+      call s:cwindow(request, 0, status, '')
       redraw!
     endif
     echo label '!'.request.expanded s:postfix(request)
@@ -1195,7 +1200,7 @@ endfunction
 
 " Section: Quickfix window
 
-function! dispatch#copen(bang) abort
+function! dispatch#copen(bang, mods, ...) abort
   if empty(s:makes)
     return 'echoerr ' . string('No dispatches yet')
   endif
@@ -1203,7 +1208,7 @@ function! dispatch#copen(bang) abort
   if !dispatch#completed(request) && filereadable(request.file . '.complete')
     let request.completed = 1
   endif
-  call s:cwindow(request, a:bang, -2)
+  call s:cwindow(request, a:bang, -2, a:mods ==# '<mods>' ? '' : a:mods)
 endfunction
 
 function! s:is_quickfix(...) abort
@@ -1253,14 +1258,18 @@ function! s:cgetfile(request, ...) abort
   endtry
 endfunction
 
-function! s:cwindow(request, all, copen) abort
+function! s:cwindow(request, all, copen, mods) abort
   call s:cgetfile(a:request, a:all)
   let height = get(g:, 'dispatch_quickfix_height', 10)
   if height <= 0
     return
   endif
   let was_qf = s:is_quickfix()
-  execute 'botright' (a:copen ? 'copen' : 'cwindow') height
+  let mods = a:mods
+  if mods !~# 'aboveleft\|belowright\|leftabove\|rightbelow\|topleft\|botright'
+    let mods = 'botright ' . mods
+  endif
+  execute (mods) (a:copen ? 'copen' : 'cwindow') height
   if !was_qf && s:is_quickfix() && a:copen !=# -2
     wincmd p
   endif
