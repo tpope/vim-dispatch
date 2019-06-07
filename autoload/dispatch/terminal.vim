@@ -53,9 +53,13 @@ function! s:exit(job, status) abort
   unlet! s:waiting[pid]
 endfunction
 
+function s:buffer_for_pid(pid) abort
+  return filter(term_list(), 'job_info(term_getjob(v:val)).process == ' . a:pid)[0]
+endfunction
+
 function! dispatch#terminal#activate(pid) abort
   if index(keys(s:waiting), a:pid) >= 0
-    let buf_id = filter(term_list(), 'job_info(term_getjob(v:val)).process == ' . a:pid)[0]
+    let buf_id = s:buffer_for_pid(a:pid)
 
     if buf_id
       let pre = &switchbuf
