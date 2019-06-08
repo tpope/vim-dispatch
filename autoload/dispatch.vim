@@ -373,7 +373,6 @@ function! s:dispatch(request) abort
   return 0
 endfunction
 
-
 function! s:extract_opts(command, ...) abort
   let command = a:command
   let opts = {}
