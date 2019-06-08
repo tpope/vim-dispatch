@@ -934,11 +934,13 @@ function! dispatch#focus(...) abort
     else
       let compiler = dispatch#expand(compiler, a:1)
     endif
-    let persist = a:0 > 1 && a:2
-    if has_key(opts, 'compiler') && (opts.compiler !=# dispatch#compiler_for_program(compiler) || persist)
+    if a:0 > 1
+      return [compiler, extend(opts, a:2)]
+    endif
+    if has_key(opts, 'compiler') && opts.compiler !=# dispatch#compiler_for_program(compiler)
       let compiler = '-compiler=' . opts.compiler . ' ' . compiler
     endif
-    if has_key(opts, 'directory') && (opts.directory !=# getcwd() || persist)
+    if has_key(opts, 'directory') && opts.directory !=# getcwd()
       let compiler = '-dir=' .
             \ s:escape_path(fnamemodify(opts.directory, ':~:.')) .
             \ ' ' . compiler
@@ -962,12 +964,10 @@ endfunction
 
 function! dispatch#focus_command(bang, args, count, ...) abort
   let [args, opts] = s:extract_opts(a:args)
-  if args =~# '^:%\=Dispatch$'
-    let args = dispatch#focus(0, 1)[0]
-  elseif args =~# '^:[.$]Dispatch$'
-    let args = dispatch#focus(line(a:args[1]), 1)[0]
-  elseif args =~# '^:\d\+Dispatch$'
-    let args = dispatch#focus(+matchstr(a:args, '\d\+'), 1)[0]
+  if args =~# '^:[.$%]Dispatch$'
+    let [args, opts] = dispatch#focus(line(a:args[1]), opts)
+  elseif args =~# '^:\d*Dispatch$'
+    let [args, opts] = dispatch#focus(+matchstr(a:args, '\d\+'), opts)
   elseif args =~# '^--\S\@!' && !has_key(opts, 'compiler')
     let args = s:default_args(args, -1)
     let args = s:build_make(&makeprg, args)
