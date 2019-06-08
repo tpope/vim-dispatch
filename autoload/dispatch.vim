@@ -137,7 +137,7 @@ function! s:efm_query(key, format) abort
 endfunction
 
 function! s:efm_literal(key, format, ...) abort
-  let subs = {'%': '%'}
+  let subs = {'%': '%', 'f': '%:S'}
   for [key, raw] in s:efm_query(a:key, a:format)
     let value = substitute(raw, '%\(.\)', '\=get(subs,submatch(1),"\030")', 'g')
     if len(value) && value !~# "\030"
