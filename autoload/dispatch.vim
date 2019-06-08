@@ -920,15 +920,14 @@ function! dispatch#focus(...) abort
     let [what, why] = [b:dispatch, 'Buffer default']
   else
     let [what, why] = ['--', (len(&l:makeprg) ? 'Buffer' : 'Global') . ' default']
+    let default = 1
+  endif
+  if what =~# '^--\S\@!'
+    let args = s:default_args(what[2:-1], haslnum ? a:1 : exists('default') ? 0 : -1)
+    let what = len(args) ? '-- ' . args : args
   endif
   if haslnum
     let [what, opts] = s:extract_opts(what)
-    if what ==# '--'
-      let task = s:default_args('', a:1)
-      if len(task)
-        let what .= ' ' . task
-      endif
-    endif
     if what =~# '^:'
       let what = s:command_lnum(what, a:1)
     else
@@ -944,11 +943,6 @@ function! dispatch#focus(...) abort
       let what = '-dir=' .
             \ s:escape_path(fnamemodify(opts.directory, ':~:.')) .
             \ ' ' . what
-    endif
-  elseif what ==# '--'
-    let task = s:default_args('', 0)
-    if len(task)
-      let what .= ' ' . task
     endif
   endif
   if what =~# '^--\S\@!'
