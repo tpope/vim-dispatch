@@ -935,10 +935,10 @@ function! dispatch#focus(...) abort
     else
       let compiler = dispatch#expand(compiler, lnum)
     endif
-    if has_key(opts, 'compiler') && opts.compiler != dispatch#compiler_for_program(compiler)
+    if has_key(opts, 'compiler') && opts.compiler !=# dispatch#compiler_for_program(compiler)
       let compiler = '-compiler=' . opts.compiler . ' ' . compiler
     endif
-    if has_key(opts, 'directory') && opts.directory != getcwd()
+    if has_key(opts, 'directory') && opts.directory !=# getcwd()
       let compiler = '-dir=' .
             \ s:escape_path(fnamemodify(opts.directory, ':~:.')) .
             \ ' ' . compiler
@@ -1043,7 +1043,7 @@ function! dispatch#start_focus(count) abort
   if has_key(opts, 'title')
     let command = '-title=' . escape(opts.title, '\ ') . ' ' . command
   endif
-  if has_key(opts, 'directory') && opts.directory != getcwd()
+  if has_key(opts, 'directory') && opts.directory !=# getcwd()
     let command = '-dir=' .
             \ s:escape_path(fnamemodify(opts.directory, ':~:.')) . ' ' .
             \ command
