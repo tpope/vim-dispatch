@@ -909,56 +909,56 @@ endfunction
 function! dispatch#focus(...) abort
   let haslnum = a:0 && a:1 >= 0
   if exists('b:Dispatch') && !haslnum
-    let [compiler, why] = [b:Dispatch, 'Buffer local focus']
+    let [what, why] = [b:Dispatch, 'Buffer local focus']
   elseif exists('w:Dispatch') && !haslnum
-    let [compiler, why] = [w:Dispatch, 'Window local focus']
+    let [what, why] = [w:Dispatch, 'Window local focus']
   elseif exists('t:Dispatch') && !haslnum
-    let [compiler, why] = [t:Dispatch, 'Tab local focus']
+    let [what, why] = [t:Dispatch, 'Tab local focus']
   elseif exists('g:Dispatch') && !haslnum
-    let [compiler, why] = [g:Dispatch, 'Global focus']
+    let [what, why] = [g:Dispatch, 'Global focus']
   elseif exists('b:dispatch')
-    let [compiler, why] = [b:dispatch, 'Buffer default']
+    let [what, why] = [b:dispatch, 'Buffer default']
   else
-    let [compiler, why] = ['--', (len(&l:makeprg) ? 'Buffer' : 'Global') . ' default']
+    let [what, why] = ['--', (len(&l:makeprg) ? 'Buffer' : 'Global') . ' default']
   endif
   if haslnum
-    let [compiler, opts] = s:extract_opts(compiler)
-    if compiler ==# '--'
+    let [what, opts] = s:extract_opts(what)
+    if what ==# '--'
       let task = s:default_args('', a:1)
       if len(task)
-        let compiler .= ' ' . task
+        let what .= ' ' . task
       endif
     endif
-    if compiler =~# '^:'
-      let compiler = s:command_lnum(compiler, a:1)
+    if what =~# '^:'
+      let what = s:command_lnum(what, a:1)
     else
-      let compiler = dispatch#expand(compiler, a:1)
+      let what = dispatch#expand(what, a:1)
     endif
     if a:0 > 1
-      return [compiler, extend(opts, a:2)]
+      return [what, extend(opts, a:2)]
     endif
-    if has_key(opts, 'compiler') && opts.compiler !=# dispatch#compiler_for_program(compiler)
-      let compiler = '-compiler=' . opts.compiler . ' ' . compiler
+    if has_key(opts, 'compiler') && opts.compiler !=# dispatch#compiler_for_program(what)
+      let what = '-compiler=' . opts.compiler . ' ' . what
     endif
     if has_key(opts, 'directory') && opts.directory !=# getcwd()
-      let compiler = '-dir=' .
+      let what = '-dir=' .
             \ s:escape_path(fnamemodify(opts.directory, ':~:.')) .
-            \ ' ' . compiler
+            \ ' ' . what
     endif
-  elseif compiler ==# '--'
+  elseif what ==# '--'
     let task = s:default_args('', 0)
     if len(task)
-      let compiler .= ' ' . task
+      let what .= ' ' . task
     endif
   endif
-  if compiler =~# '^--\S\@!'
-    return [':Make' . compiler[2:-1], why]
-  elseif compiler =~# '^!'
-    return [':Start ' . compiler[1:-1], why]
-  elseif compiler =~# '^:\S'
-    return [compiler, why]
+  if what =~# '^--\S\@!'
+    return [':Make' . what[2:-1], why]
+  elseif what =~# '^!'
+    return [':Start ' . what[1:-1], why]
+  elseif what =~# '^:\S'
+    return [what, why]
   else
-    return [':Dispatch ' . compiler, why]
+    return [':Dispatch ' . what, why]
   endif
 endfunction
 
