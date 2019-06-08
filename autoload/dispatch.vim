@@ -921,24 +921,24 @@ function! dispatch#focus(...) abort
   else
     let [compiler, why] = ['--', (len(&l:makeprg) ? 'Buffer' : 'Global') . ' default']
   endif
-  if haslnum || !a:0
-    let lnum = a:0 ? a:1 : -1
+  if haslnum
     let [compiler, opts] = s:extract_opts(compiler)
     if compiler ==# '--'
-      let task = s:default_args('', lnum)
+      let task = s:default_args('', a:1)
       if len(task)
         let compiler .= ' ' . task
       endif
     endif
     if compiler =~# '^:'
-      let compiler = s:command_lnum(compiler, lnum)
+      let compiler = s:command_lnum(compiler, a:1)
     else
-      let compiler = dispatch#expand(compiler, lnum)
+      let compiler = dispatch#expand(compiler, a:1)
     endif
-    if has_key(opts, 'compiler') && opts.compiler !=# dispatch#compiler_for_program(compiler)
+    let persist = a:0 > 1 && a:2
+    if has_key(opts, 'compiler') && (opts.compiler !=# dispatch#compiler_for_program(compiler) || persist)
       let compiler = '-compiler=' . opts.compiler . ' ' . compiler
     endif
-    if has_key(opts, 'directory') && opts.directory !=# getcwd()
+    if has_key(opts, 'directory') && (opts.directory !=# getcwd() || persist)
       let compiler = '-dir=' .
             \ s:escape_path(fnamemodify(opts.directory, ':~:.')) .
             \ ' ' . compiler
@@ -962,12 +962,12 @@ endfunction
 
 function! dispatch#focus_command(bang, args, count, ...) abort
   let [args, opts] = s:extract_opts(a:args)
-  if args ==# ':Dispatch'
-    let args = dispatch#focus()[0]
+  if args =~# '^:%\=Dispatch$'
+    let args = dispatch#focus(0, 1)[0]
   elseif args =~# '^:[.$]Dispatch$'
-    let args = dispatch#focus(line(a:args[1]))[0]
+    let args = dispatch#focus(line(a:args[1]), 1)[0]
   elseif args =~# '^:\d\+Dispatch$'
-    let args = dispatch#focus(+matchstr(a:args, '\d\+'))[0]
+    let args = dispatch#focus(+matchstr(a:args, '\d\+'), 1)[0]
   elseif args =~# '^--\S\@!' && !has_key(opts, 'compiler')
     let args = s:default_args(args, -1)
     let args = s:build_make(&makeprg, args)
