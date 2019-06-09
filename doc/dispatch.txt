@@ -183,8 +183,6 @@ The tmux strategy can be used from the GUI as well.  Either start Vim from
 inside of tmux or assign g:tmux_session.  This will use a new window for
 foreground makes rather than a split.
 
-Tmux 1.6 or newer is required.
-
 GNU Screen ~
 
 A new window is always used, since splits in GNU Screen are awkward.
