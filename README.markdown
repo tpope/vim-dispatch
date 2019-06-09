@@ -97,9 +97,8 @@ can set it interactively, or in an autocommand:
 
 If no `b:dispatch` is found, it falls back to `:Make`.
 
-`:Dispatch` makes a great map:
-
-    nnoremap <F9> :Dispatch<CR>
+`:Dispatch` makes a great map.  By default dispatch.vim provides `` `<CR>`` for
+`:Dispatch<CR>`.  You can find all default maps under `:h dispatch-maps`.
 
 ### Focusing
 
