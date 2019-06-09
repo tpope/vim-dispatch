@@ -87,6 +87,7 @@ endfunction
 if !exists('g:dispatch_handlers')
   let g:dispatch_handlers = [
         \ 'tmux',
+        \ 'job',
         \ 'screen',
         \ 'windows',
         \ 'iterm',

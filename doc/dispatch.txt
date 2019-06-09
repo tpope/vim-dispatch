@@ -164,10 +164,10 @@ used.  Some strategies only provide for a subset of tasks.
 
 Disable :Make/:Dispatch or :Start/:Spawn using a given strategy by assigning
 g:dispatch_no_strategyname_make or g:dispatch_no_strategyname_start,
-respectively.  For example, to prevent :Dispatch from ever using the X11
+respectively.  For example, to prevent :Dispatch from ever using the Job
 handler:
 >
-        let g:dispatch_no_x11_make = 1
+        let g:dispatch_no_job_make = 1
 <
 Except for Tmux, which uses |VimResized|, all strategies require either |job|
 support plus a file system with FIFOs (basically everything but Windows) or
@@ -182,6 +182,11 @@ list.
 The tmux strategy can be used from the GUI as well.  Either start Vim from
 inside of tmux or assign g:tmux_session.  This will use a new window for
 foreground makes rather than a split.
+
+Job ~
+
+Uses the |job| support in Vim 8 and Neovim to update the quickfix list in real
+time.
 
 GNU Screen ~
 
