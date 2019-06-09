@@ -162,6 +162,13 @@ STRATEGIES                                      *dispatch-strategies*
 Strategies are listed in order of precedence.  The first available one is
 used.  Some strategies only provide for a subset of tasks.
 
+Disable :Make/:Dispatch or :Start/:Spawn using a given strategy by assigning
+g:dispatch_no_strategyname_make or g:dispatch_no_strategyname_start,
+respectively.  For example, to prevent :Dispatch from ever using the X11
+handler:
+>
+        let g:dispatch_no_x11_make = 1
+<
 Except for Tmux, which uses |VimResized|, all strategies require either |job|
 support plus a file system with FIFOs (basically everything but Windows) or
 |clientserver| support to do foreground makes.

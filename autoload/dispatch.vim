@@ -362,6 +362,9 @@ endfunction
 
 function! s:dispatch(request) abort
   for handler in g:dispatch_handlers
+    if get(g:, 'dispatch_no_' . handler . '_' . get(a:request, 'action'))
+      continue
+    endif
     let response = call('dispatch#'.handler.'#handle', [a:request])
     if !empty(response)
       let a:request.handler = handler
