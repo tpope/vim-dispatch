@@ -44,7 +44,7 @@ function! s:exit(job, status) abort
   let request = s:waiting[pid]
   call writefile([a:status], request.file . '.complete')
   if a:status == 0
-    let buf_id = filter(term_list(), 'job_info(term_getjob(v:val)).process == ' . pid)[0]
+    let buf_id = s:buffer_for_pid(pid)
     let terminal_window = tabpagewinnr(buf_id)
     let current_window = terminal_window - 1
     silent exec current_window . 'tabnext'
