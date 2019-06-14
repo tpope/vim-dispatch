@@ -22,7 +22,7 @@ function! dispatch#terminal#handle(request) abort
   let options = {
         \ 'exit_cb': function('s:exit'),
         \ 'hidden': 1,
-        \ 'term_name': a:request.title,
+        \ 'term_name': '!' . a:request.expanded,
         \ 'term_finish': 'open',
         \ }
   let buf_id = term_start([&shell, &shellcmdflag, a:request.expanded], options)
