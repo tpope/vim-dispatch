@@ -17,8 +17,6 @@ function! dispatch#terminal#handle(request) abort
     return 0
   endif
 
-  call dispatch#autowrite()
-
   let options = {
         \ 'exit_cb': function('s:exit'),
         \ 'term_name': '!' . a:request.expanded,
