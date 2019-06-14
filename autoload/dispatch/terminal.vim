@@ -39,7 +39,6 @@ function! s:exit(job, status) abort
   let pid = job_info(a:job).process
   let request = s:waiting[pid]
   call writefile([a:status], request.file . '.complete')
-  let previous_buffer_id = bufnr('#')
   let buf_id = s:buffer_for_pid(pid)
 
   if has_key(request, 'wait') && request.wait ==# 'always'
