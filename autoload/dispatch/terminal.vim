@@ -21,12 +21,10 @@ function! dispatch#terminal#handle(request) abort
 
   let options = {
         \ 'exit_cb': function('s:exit'),
-        \ 'hidden': 1,
         \ 'term_name': '!' . a:request.expanded,
         \ 'term_finish': 'open',
         \ }
-  let buf_id = term_start([&shell, &shellcmdflag, a:request.expanded], options)
-  silent exec 'tab sbuffer' . buf_id
+  tab let buf_id = term_start([&shell, &shellcmdflag, a:request.expanded], options)
   if a:request.background | tabprevious | endif
 
   let job = term_getjob(buf_id)
