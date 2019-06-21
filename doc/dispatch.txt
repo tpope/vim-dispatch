@@ -206,8 +206,8 @@ or if Vim is running in iTerm itself.
 X11 ~
 
 Uses g:dispatch_terminal_exec, "$TERMINAL -e", or "xterm -e".  Used only for
-foreground |:Start| unless wmctrl is installed (which is used to switch the
-focus back to Vim).
+|:Start|.  Background invocations require wmctrl to be is installed (which is
+used to switch the focus back to Vim).
 
 Headless ~
 

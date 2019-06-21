@@ -9,7 +9,7 @@ function! dispatch#x11#handle(request) abort
   if $DISPLAY !~# '^:'
     return 0
   endif
-  if (get(a:request, 'background', 0) || a:request.action ==# 'make') &&
+  if get(a:request, 'background') &&
         \ (!v:windowid || !executable('wmctrl'))
     return 0
   endif
@@ -22,12 +22,7 @@ function! dispatch#x11#handle(request) abort
   else
     return 0
   endif
-  if a:request.action ==# 'make'
-    if !get(a:request, 'background', 0) && !dispatch#has_callback()
-      return 0
-    endif
-    return dispatch#x11#spawn(terminal, dispatch#prepare_make(a:request), a:request)
-  elseif a:request.action ==# 'start'
+  if a:request.action ==# 'start'
     return dispatch#x11#spawn(terminal, dispatch#prepare_start(a:request), a:request)
   else
     return 0
@@ -36,7 +31,7 @@ endfunction
 
 function! dispatch#x11#spawn(terminal, command, request) abort
   let command = dispatch#set_title(a:request) . '; ' . a:command
-  if a:request.background || a:request.action ==# 'make'
+  if a:request.background
     let command = 'wmctrl -i -a '.v:windowid . ';' . command
   endif
   call system(a:terminal . ' ' . dispatch#shellescape(&shell, &shellcmdflag, command). ' &')
