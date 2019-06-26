@@ -20,13 +20,12 @@ function! dispatch#job#handle(request) abort
   endif
   if exists('*job_start')
     let job = job_start([&shell, &shellcmdflag, a:request.expanded], {
-          \ 'in_io': 'null',
-          \ 'out_mode': 'raw',
-          \ 'err_mode': 'raw',
+          \ 'mode': 'raw',
           \ 'callback': function('s:output'),
           \ 'close_cb': function('s:closed'),
           \ 'exit_cb': function('s:exit'),
           \ })
+    call ch_close_in(job)
     let a:request.pid = job_info(job).process
     let a:request.job = job
     let ch_id = ch_info(job_info(job).channel).id
