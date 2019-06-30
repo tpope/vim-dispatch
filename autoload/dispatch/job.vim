@@ -36,6 +36,7 @@ function! dispatch#job#handle(request) abort
           \ 'on_stderr': function('s:output'),
           \ 'on_exit': function('s:complete'),
           \ })
+    call chanclose(job_id, 'stdin')
     let a:request.pid = jobpid(job_id)
     let a:request.job = job_id
     let s:waiting[job_id] = {'request': a:request, 'output': ['']}
