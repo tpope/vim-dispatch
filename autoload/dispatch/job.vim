@@ -19,7 +19,7 @@ function! dispatch#job#handle(request) abort
     return 0
   endif
   if exists('*job_start')
-    let job = job_start([&shell, &shellcmdflag, a:request.expanded], {
+    let job = job_start(split(&shell) + split(&shellcmdflag) + [a:request.expanded], {
           \ 'mode': 'raw',
           \ 'callback': function('s:output'),
           \ 'close_cb': function('s:closed'),
