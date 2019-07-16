@@ -19,7 +19,12 @@ function! dispatch#job#handle(request) abort
     return 0
   endif
   if exists('*job_start')
-    let job = job_start(split(&shell) + split(&shellcmdflag) + [a:request.expanded], {
+    if has('win32')
+      let cmd = &shell . ' ' . &shellcmdflag . ' ' . dispatch#windows#escape(a:request.expanded)
+    else
+      let cmd = split(&shell) + split(&shellcmdflag) + [a:request.expanded]
+    endif
+    let job = job_start(cmd, {
           \ 'mode': 'raw',
           \ 'callback': function('s:output'),
           \ 'close_cb': function('s:closed'),

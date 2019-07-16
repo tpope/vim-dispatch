@@ -5,7 +5,7 @@ if exists('g:autoloaded_dispatch_windows')
 endif
 let g:autoloaded_dispatch_windows = 1
 
-function! s:escape(str) abort
+function! dispatch#windows#escape(str) abort
   if &shellxquote ==# '"'
     return '"' . substitute(a:str, '"', '""', 'g') . '"'
   else
@@ -31,7 +31,7 @@ function! dispatch#windows#spawn(title, exec, background) abort
   let extra = a:background ? ' /min' : ''
   silent execute dispatch#bang('start /min cmd.exe /cstart ' .
         \ '"' . substitute(a:title, '"', '', 'g') . '"' . extra . ' ' .
-        \ &shell . ' ' . &shellcmdflag . ' ' . s:escape(a:exec))
+        \ &shell . ' ' . &shellcmdflag . ' ' . dispatch#windows#escape(a:exec))
   return 1
 endfunction
 
