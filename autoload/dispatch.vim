@@ -77,6 +77,9 @@ function! s:expand(expr, dispatch_opts) abort
   endif
   call extend(l:, a:dispatch_opts)
   sandbox let v = expand(substitute(a:expr, ':S$', '', ''))
+  if has('win32') && a:expr =~# '^\\[%#]' && v =~# '^\\[%#]'
+    let v = v[1:-1]
+  endif
   if a:expr =~# ':S$'
     let v = shellescape(v)
   endif
