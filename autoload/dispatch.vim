@@ -376,9 +376,9 @@ function! s:dispatch(request) abort
       let msg = ':!'
       let suffix = s:postfix(a:request)
       let cmd = a:request.expanded
-      " NOTE: the extra "-12" is required to avoid the hit-enter, although
+      " NOTE: the extra "-13" is required to avoid the hit-enter, although
       " it's displayed on a single line already?!
-      let max_cmd_len = (&cmdheight * &columns)-2-len(suffix)-12
+      let max_cmd_len = (&cmdheight * &columns)-2-len(suffix)-13
       if len(cmd) > max_cmd_len
         let msg .= cmd[0:max_cmd_len-2] . '…'
       else
