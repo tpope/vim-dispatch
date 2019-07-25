@@ -379,14 +379,29 @@ function! s:dispatch(request) abort
       let suffix = s:postfix(a:request)
       let suffix_len = len(substitute(suffix, '.', '.', 'g'))
       let max_cmd_len = (&cmdheight * &columns) - 2 - suffix_len - 2
-      if &ruler || &showcmd
-        if &ruler
-          let max_cmd_len -= 17  " Default, might be dynamic.
+
+      if has('cmdline_info')
+        let last_has_status = (&statusline == 2 || (&statusline == 1 && winnr('$') != 1))
+
+        if &ruler && !last_has_status
+          if empty(&rulerformat)
+            " Default ruler is 17 chars wide.
+            let max_cmd_len -= 17
+          elseif exists('g:rulerwidth')
+            " User specified width of custom ruler.
+            let max_cmd_len -= g:rulerwidth
+          else
+            " Don't know width of custom ruler, make a conservative guess.
+            let max_cmd_len -= &columns / 2
+          endif
+          let max_cmd_len -= 1
         endif
         if &showcmd
           let max_cmd_len -= 10
+          if !&ruler || last_has_status
+            let max_cmd_len -= 1
+          endif
         endif
-        let max_cmd_len -= 1
       endif
       let cmd = a:request.expanded
       let cmd_len = len(substitute(cmd, '.', '.', 'g'))
