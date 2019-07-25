@@ -372,8 +372,46 @@ function! s:dispatch(request) abort
     let response = call('dispatch#'.handler.'#handle', [a:request])
     if !empty(response)
       let a:request.handler = handler
+
+      " Display command, avoiding hit-enter prompt.
       redraw
-      echo ':!'.a:request.expanded s:postfix(a:request)
+      let msg = ':!'
+      let suffix = s:postfix(a:request)
+      let suffix_len = len(substitute(suffix, '.', '.', 'g'))
+      let max_cmd_len = (&cmdheight * &columns) - 2 - suffix_len - 2
+
+      if has('cmdline_info')
+        let last_has_status = (&laststatus == 2 || (&laststatus == 1 && winnr('$') != 1))
+
+        if &ruler && !last_has_status
+          if empty(&rulerformat)
+            " Default ruler is 17 chars wide.
+            let max_cmd_len -= 17
+          elseif exists('g:rulerwidth')
+            " User specified width of custom ruler.
+            let max_cmd_len -= g:rulerwidth
+          else
+            " Don't know width of custom ruler, make a conservative guess.
+            let max_cmd_len -= &columns / 2
+          endif
+          let max_cmd_len -= 1
+        endif
+        if &showcmd
+          let max_cmd_len -= 10
+          if !&ruler || last_has_status
+            let max_cmd_len -= 1
+          endif
+        endif
+      endif
+      let cmd = a:request.expanded
+      let cmd_len = len(substitute(cmd, '.', '.', 'g'))
+      if cmd_len > max_cmd_len
+        let msg .= '<' . matchstr(cmd, '\v.{'.(max_cmd_len - 1).'}$')
+      else
+        let msg .= cmd
+      endif
+      let msg .= ' '.suffix
+      echo msg
       return response
     endif
   endfor
