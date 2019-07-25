@@ -381,7 +381,7 @@ function! s:dispatch(request) abort
       let max_cmd_len = (&cmdheight * &columns) - 2 - suffix_len - 2
 
       if has('cmdline_info')
-        let last_has_status = (&statusline == 2 || (&statusline == 1 && winnr('$') != 1))
+        let last_has_status = (&laststatus == 2 || (&laststatus == 1 && winnr('$') != 1))
 
         if &ruler && !last_has_status
           if empty(&rulerformat)
