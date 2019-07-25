@@ -372,15 +372,24 @@ function! s:dispatch(request) abort
     let response = call('dispatch#'.handler.'#handle', [a:request])
     if !empty(response)
       let a:request.handler = handler
+
+      " Display command, avoiding hit-enter prompt.
       redraw
       let msg = ':!'
       let suffix = s:postfix(a:request)
       let suffix_len = len(substitute(suffix, '.', '.', 'g'))
+      let max_cmd_len = (&cmdheight * &columns) - 2 - suffix_len - 2
+      if &ruler || &showcmd
+        if &ruler
+          let max_cmd_len -= 17  " Default, might be dynamic.
+        endif
+        if &showcmd
+          let max_cmd_len -= 10
+        endif
+        let max_cmd_len -= 1
+      endif
       let cmd = a:request.expanded
       let cmd_len = len(substitute(cmd, '.', '.', 'g'))
-      " NOTE: the extra "-13" is required to avoid the hit-enter, although
-      " it's displayed on a single line already?!
-      let max_cmd_len = (&cmdheight * &columns)-2-len(suffix)-13
       if cmd_len > max_cmd_len
         let msg .= '<' . matchstr(cmd, '\v.{'.(max_cmd_len - 1).'}$')
       else
