@@ -92,7 +92,7 @@ function! s:output(ch, output, ...) abort
   let waiting.output[-1] .= remove(output, 0)
   call extend(waiting.output, output)
 
-  if dispatch#request(getqflist({'all': 1}).title) is# request && len(waiting.output) > 1
+  if dispatch#request(get(getqflist({'title': 1}), 'title', '')) is# request && len(waiting.output) > 1
     let lefm = &l:efm
     let gefm = &g:efm
     let makeprg = &l:makeprg
