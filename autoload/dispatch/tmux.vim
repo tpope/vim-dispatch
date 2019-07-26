@@ -39,7 +39,7 @@ function! dispatch#tmux#handle(request) abort
 endfunction
 
 function! dispatch#tmux#make(request) abort
-  let pipepane = (&shellpipe ==# '2>&1| tee' || &shellpipe ==# '|& tee') && &shell !~# 'fish'
+  let pipepane = (&shellpipe ==# '2>&1| tee' || &shellpipe ==# '|& tee')
         \ && a:request.format !~# '%\\[er]'
   let session = get(g:, 'tmux_session', '')
   let script = dispatch#isolate(a:request, ['TMUX', 'TMUX_PANE'],
