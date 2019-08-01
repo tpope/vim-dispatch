@@ -504,7 +504,7 @@ function! s:parse_start(command, count) abort
   elseif empty(command) && len(s:efm_literal(['start', 'default_start'], &errorformat))
     let task = s:efm_literal(['start', 'default_start'], &errorformat)
     let command = &makeprg . ' ' . task
-    if !has_key(opts, 'title')
+    if !has_key(opts, 'title') && task =~# '^\w\S\{,19\}$'
       let opts.title = s:current_compiler('make') . ' ' . task
     endif
     if !has_key(opts, 'directory')
