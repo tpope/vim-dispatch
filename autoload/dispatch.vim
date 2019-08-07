@@ -589,6 +589,31 @@ function! dispatch#spawn(command, ...) abort
         endtry
         let i += 1
       endwhile
+      for tabnr in has('patch-7.4.1126') ? range(1, tabpagenr('$')) : []
+        for winnr in range(1, tabpagewinnr(tabnr, '$'))
+          let bufnr = tabpagebuflist(tabnr)[winnr-1]
+          if getcwd(winnr, tabnr) !=# request.directory
+            continue
+          endif
+          if exists('*term_getjob') && !empty(term_getjob(bufnr))
+            let job_info = job_info(term_getjob(bufnr))
+            if get(job_info, 'cmd', []) ==# [&shell, &shellcmdflag, request.expanded]
+              let request.pid = job_info.process
+            endif
+          endif
+          let ss = exists('+shellslash') && !&shellslash ? '\\\\' : '//'
+          let nvim_match = matchlist(bufname(bufnr), '^term:' . ss . '\.' . ss . '\(\d\+\):\(.*\)')
+          if len(nvim_match) && nvim_match[2] ==# request.expanded
+            let request.pid = +nvim_match[1]
+          endif
+          if has_key(request, 'pid')
+            let request.handler = 'terminal'
+            exe tabnr 'tabnext'
+            exe winnr 'wincmd w'
+            return request
+          endif
+        endfor
+      endfor
     endif
     call dispatch#autowrite()
     let request.file = dispatch#tempname()
