@@ -1203,6 +1203,9 @@ function! dispatch#complete(file, ...) abort
     else
       let label = 'Complete:'
     endif
+    if !a:0
+      silent doautocmd ShellCmdPost
+    endif
     if !request.background && !get(request, 'aborted')
       call s:cwindow(request, 0, status, '')
       redraw!
@@ -1210,7 +1213,6 @@ function! dispatch#complete(file, ...) abort
     echo label '!'.request.expanded s:postfix(request)
     if !a:0
       checktime
-      silent doautocmd ShellCmdPost
     endif
   endif
   return ''
