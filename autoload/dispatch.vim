@@ -917,7 +917,7 @@ function! dispatch#compile_command(bang, args, count, ...) abort
     endif
     if result
       if !get(request, 'background')
-        call s:cgetfile(request)
+        call s:cgetfile(request, '')
         if result is 2
           exe 'botright copen' get(g:, 'dispatch_quickfix_height', '')
           wincmd p
@@ -1268,7 +1268,7 @@ function! s:is_quickfix(...) abort
   return getwinvar(nr, '&buftype') ==# 'quickfix' && empty(getloclist(nr))
 endfunction
 
-function! s:cgetfile(request, ...) abort
+function! s:cgetfile(request, event, ...) abort
   let request = s:request(a:request)
   if !has_key(request, 'handler')
     throw 'Bad request ' . string(request)
@@ -1290,7 +1290,9 @@ function! s:cgetfile(request, ...) abort
     endif
     let &l:makeprg = dispatch#escape(request.expanded)
     let title = ':Dispatch '.dispatch#escape(request.expanded) . ' ' . s:postfix(request)
-    silent doautocmd QuickFixCmdPre cgetfile
+    if len(a:event)
+      exe 'silent doautocmd QuickFixCmdPre' a:event
+    endif
     if exists(':chistory') && get(getqflist({'title': 1}), 'title', '') ==# title
       call setqflist([], 'r')
       execute 'noautocmd caddfile' dispatch#fnameescape(request.file)
@@ -1300,7 +1302,9 @@ function! s:cgetfile(request, ...) abort
     if exists(':chistory')
       call setqflist([], 'r', {'title': title})
     endif
-    silent doautocmd QuickFixCmdPost cgetfile
+    if len(a:event)
+      exe 'silent doautocmd QuickFixCmdPost' a:event
+    endif
   finally
     let &modelines = modelines
     exe cd dispatch#fnameescape(dir)
@@ -1311,7 +1315,7 @@ function! s:cgetfile(request, ...) abort
 endfunction
 
 function! s:cwindow(request, all, copen, mods) abort
-  call s:cgetfile(a:request, a:all)
+  call s:cgetfile(a:request, 'cgetfile', a:all)
   let height = get(g:, 'dispatch_quickfix_height', 10)
   if height <= 0
     return
