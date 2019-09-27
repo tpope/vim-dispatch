@@ -1207,7 +1207,7 @@ function! dispatch#complete(file, ...) abort
       silent doautocmd ShellCmdPost
     endif
     if !request.background && !get(request, 'aborted')
-      call s:cwindow(request, 0, status, '')
+      call s:cwindow(request, 0, status, '', 'make')
       redraw!
     endif
     echo label '!'.request.expanded s:postfix(request)
@@ -1260,7 +1260,7 @@ function! dispatch#copen(bang, mods, ...) abort
   if !dispatch#completed(request) && filereadable(request.file . '.complete')
     let request.completed = 1
   endif
-  call s:cwindow(request, a:bang, -2, a:mods ==# '<mods>' ? '' : a:mods)
+  call s:cwindow(request, a:bang, -2, a:mods ==# '<mods>' ? '' : a:mods, 'cgetfile')
 endfunction
 
 function! s:is_quickfix(...) abort
@@ -1314,8 +1314,8 @@ function! s:cgetfile(request, event, ...) abort
   endtry
 endfunction
 
-function! s:cwindow(request, all, copen, mods) abort
-  call s:cgetfile(a:request, 'cgetfile', a:all)
+function! s:cwindow(request, all, copen, mods, event) abort
+  call s:cgetfile(a:request, a:event, a:all)
   let height = get(g:, 'dispatch_quickfix_height', 10)
   if height <= 0
     return
