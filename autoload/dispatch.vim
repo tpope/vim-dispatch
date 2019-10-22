@@ -370,7 +370,7 @@ function! s:echo_without_hitenter(msg, suffix) abort
     else
       let msg = a:msg
     endif
-    echom msg.' '.a:suffix
+    echo msg.' '.a:suffix
     return
   endif
 
@@ -408,7 +408,7 @@ function! s:echo_without_hitenter(msg, suffix) abort
   else
     let msg = a:msg
   endif
-  echom msg.' '.a:suffix
+  echo msg.' '.a:suffix
 endfunction
 
 function! s:dispatch(request) abort
