@@ -363,6 +363,54 @@ function! s:postfix(request) abort
   return '(' . a:request.handler.'/'.(!empty(pid) ? pid : '?') . ')'
 endfunction
 
+function! s:echo_without_hitenter(msg, suffix) abort
+  if exists('v:echospace')
+    if strwidth(a:msg.' '.a:suffix) > v:echospace
+      let msg = printf('%.*S...', v:echospace - 3 - len(a:suffix), a:msg)
+    else
+      let msg = a:msg
+    endif
+    echom msg.' '.a:suffix
+    return
+  endif
+
+  redraw
+  let suffix_len = len(substitute(a:suffix, '.', '.', 'g'))
+  let max_cmd_len = (&cmdheight * &columns) - 2 - suffix_len - 2
+
+  if has('cmdline_info')
+    let last_has_status = (&laststatus == 2 || (&laststatus == 1 && winnr('$') != 1))
+
+    if &ruler && !last_has_status
+      if empty(&rulerformat)
+        " Default ruler is 17 chars wide.
+        let max_cmd_len -= 17
+      elseif exists('g:rulerwidth')
+        " User specified width of custom ruler.
+        let max_cmd_len -= g:rulerwidth
+      else
+        " Don't know width of custom ruler, make a conservative guess.
+        let max_cmd_len -= &columns / 2
+      endif
+      let max_cmd_len -= 1
+    endif
+    if &showcmd
+      let max_cmd_len -= 10
+      if !&ruler || last_has_status
+        let max_cmd_len -= 1
+      endif
+    endif
+  endif
+
+  let msg_len = len(substitute(a:msg, '.', '.', 'g'))
+  if msg_len > max_cmd_len
+    let msg = '<' . matchstr(a:msg, '\v.{'.(max_cmd_len - 1).'}$')
+  else
+    let msg = a:msg
+  endif
+  echom msg.' '.a:suffix
+endfunction
+
 function! s:dispatch(request) abort
   for handler in g:dispatch_handlers
     if get(g:, 'dispatch_no_' . handler . '_' . get(a:request, 'action')) ||
@@ -374,44 +422,7 @@ function! s:dispatch(request) abort
       let a:request.handler = handler
 
       " Display command, avoiding hit-enter prompt.
-      redraw
-      let msg = ':!'
-      let suffix = s:postfix(a:request)
-      let suffix_len = len(substitute(suffix, '.', '.', 'g'))
-      let max_cmd_len = (&cmdheight * &columns) - 2 - suffix_len - 2
-
-      if has('cmdline_info')
-        let last_has_status = (&laststatus == 2 || (&laststatus == 1 && winnr('$') != 1))
-
-        if &ruler && !last_has_status
-          if empty(&rulerformat)
-            " Default ruler is 17 chars wide.
-            let max_cmd_len -= 17
-          elseif exists('g:rulerwidth')
-            " User specified width of custom ruler.
-            let max_cmd_len -= g:rulerwidth
-          else
-            " Don't know width of custom ruler, make a conservative guess.
-            let max_cmd_len -= &columns / 2
-          endif
-          let max_cmd_len -= 1
-        endif
-        if &showcmd
-          let max_cmd_len -= 10
-          if !&ruler || last_has_status
-            let max_cmd_len -= 1
-          endif
-        endif
-      endif
-      let cmd = a:request.expanded
-      let cmd_len = len(substitute(cmd, '.', '.', 'g'))
-      if cmd_len > max_cmd_len
-        let msg .= '<' . matchstr(cmd, '\v.{'.(max_cmd_len - 1).'}$')
-      else
-        let msg .= cmd
-      endif
-      let msg .= ' '.suffix
-      echo msg
+      call s:echo_without_hitenter(':!'.a:request.expanded, s:postfix(a:request))
       return response
     endif
   endfor
@@ -1210,7 +1221,7 @@ function! dispatch#complete(file, ...) abort
       call s:cwindow(request, 0, status, '', 'make')
       redraw!
     endif
-    echo label '!'.request.expanded s:postfix(request)
+    call s:echo_without_hitenter(printf('%s !%s', label, request.expanded), s:postfix(request))
     if !a:0
       checktime
     endif
