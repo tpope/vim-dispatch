@@ -363,7 +363,9 @@ function! s:postfix(request) abort
   return '(' . a:request.handler.'/'.(!empty(pid) ? pid : '?') . ')'
 endfunction
 
-function! s:echo_without_hitenter(msg, suffix) abort
+function! s:echo_truncated(msg, suffix) abort
+  redraw
+
   if exists('v:echospace')
     if strwidth(a:msg.' '.a:suffix) > v:echospace
       let msg = printf('%.*S...', v:echospace - 3 - len(a:suffix), a:msg)
@@ -374,7 +376,6 @@ function! s:echo_without_hitenter(msg, suffix) abort
     return
   endif
 
-  redraw
   let suffix_len = len(substitute(a:suffix, '.', '.', 'g'))
   let max_cmd_len = (&cmdheight * &columns) - 2 - suffix_len - 2
 
@@ -422,7 +423,7 @@ function! s:dispatch(request) abort
       let a:request.handler = handler
 
       " Display command, avoiding hit-enter prompt.
-      call s:echo_without_hitenter(':!'.a:request.expanded, s:postfix(a:request))
+      call s:echo_truncated(':!'.a:request.expanded, s:postfix(a:request))
       return response
     endif
   endfor
@@ -1221,7 +1222,7 @@ function! dispatch#complete(file, ...) abort
       call s:cwindow(request, 0, status, '', 'make')
       redraw!
     endif
-    call s:echo_without_hitenter(printf('%s !%s', label, request.expanded), s:postfix(request))
+    call s:echo_truncated(printf('%s !%s', label, request.expanded), s:postfix(request))
     if !a:0
       checktime
     endif
