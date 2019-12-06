@@ -16,9 +16,7 @@ mind.
 Install using your favorite package manager, or use Vim's built-in package
 support:
 
-    mkdir -p ~/.vim/pack/tpope/start
-    cd ~/.vim/pack/tpope/start
-    git clone https://tpope.io/vim/dispatch.git
+    git clone https://tpope.io/vim/dispatch.git ~/.vim/pack/tpope/start/dispatch
     vim -u NONE -c "helptags dispatch/doc" -c q
 
 
