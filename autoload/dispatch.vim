@@ -1194,15 +1194,6 @@ function! dispatch#complete(file, ...) abort
       let status = -1
       call writefile([-1], request.file . '.complete')
     endtry
-    if has_key(request, 'aborted')
-      let label = 'Aborted:'
-    elseif status > 0
-      let label = 'Failure:'
-    elseif status == 0
-      let label = 'Success:'
-    else
-      let label = 'Complete:'
-    endif
     if !a:0
       silent doautocmd ShellCmdPost
     endif
@@ -1210,7 +1201,21 @@ function! dispatch#complete(file, ...) abort
       call s:cwindow(request, 0, status, '', 'make')
       redraw!
     endif
+    if has_key(request, 'aborted')
+      echohl DispatchAbortedMsg
+      let label = 'Aborted:'
+    elseif status > 0
+      echohl DispatchFailureMsg
+      let label = 'Failure:'
+    elseif status == 0
+      echohl DispatchSuccessMsg
+      let label = 'Success:'
+    else
+      echohl DispatchCompleteMsg
+      let label = 'Complete:'
+    endif
     echo label '!'.request.expanded s:postfix(request)
+    echohl NONE
     if !a:0
       checktime
     endif
