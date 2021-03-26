@@ -354,7 +354,7 @@ function! dispatch#isolate(request, keep, ...) abort
   let command += a:000
   let temp = type(a:request) == type({}) ? a:request.file . '.dispatch' : dispatch#tempname()
   call writefile(command, temp)
-  return 'env -i ' . join(map(copy(keep), 'v:val."=\"$". v:val ."\" "'), '') . &shell . ' ' . temp
+  return 'env -i ' . join(map(copy(keep), 'v:val."=". dispatch#shellescape(eval("$".v:val))." "'), '') . &shell . ' ' . temp
 endfunction
 
 function! s:current_compiler(...) abort
