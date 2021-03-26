@@ -267,8 +267,19 @@ endfunction
 
 function! dispatch#autowrite() abort
   if &autowrite || &autowriteall
-    silent! wall
+    try
+      if &confirm
+        let reconfirm = 1
+        setglobal noconfirm
+      endif
+      silent! wall
+    finally
+      if exists('reconfirm')
+        setglobal confirm
+      endif
+    endtry
   endif
+  return ''
 endfunction
 
 function! dispatch#status_var() abort
