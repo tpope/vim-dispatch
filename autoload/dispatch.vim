@@ -1226,7 +1226,7 @@ function! dispatch#complete(file, ...) abort
       echohl DispatchCompleteMsg
       let label = 'Complete:'
     endif
-    echo label '!'.request.expanded s:postfix(request)
+    call s:echo_truncated(label . '!', request.expanded . ' ' . s:postfix(request))
     echohl NONE
     if !a:0
       checktime
