@@ -374,6 +374,40 @@ function! s:postfix(request) abort
   return '(' . a:request.handler.'/'.(!empty(pid) ? pid : '?') . ')'
 endfunction
 
+function! s:echo_truncated(left, right) abort
+  if exists('v:echospace')
+    let max_len = (&cmdheight - 1) * &columns + v:echospace
+  else
+    let max_len = &cmdheight * &columns - 1
+    let last_has_status = (&laststatus == 2 || (&laststatus == 1 && winnr('$') != 1))
+
+    if &ruler && !last_has_status
+      if empty(&rulerformat)
+        " Default ruler is 17 chars wide.
+        let max_len -= 17
+      elseif exists('g:rulerwidth')
+        " User specified width of custom ruler.
+        let max_len -= g:rulerwidth
+      else
+        " Don't know width of custom ruler, make a conservative guess.
+        let max_len -= &columns / 2
+      endif
+      let max_len -= 1
+    endif
+    if &showcmd
+      let max_len -= 10
+      if !&ruler || last_has_status
+        let max_len -= 1
+      endif
+    endif
+  endif
+  let msg = a:left . a:right
+  if len(substitute(msg, '.', '.', 'g')) > max_len
+    let msg = a:left . '<' . matchstr(a:right, '\v.{'.(max_len - len(substitute(a:left, '.', '.', 'g')) - 1).'}$')
+  endif
+  echo msg
+endfunction
+
 function! s:dispatch(request) abort
   for handler in g:dispatch_handlers
     if get(g:, 'dispatch_no_' . handler . '_' . get(a:request, 'action')) ||
@@ -388,41 +422,8 @@ function! s:dispatch(request) abort
       redraw
       let msg = ':!'
       let suffix = s:postfix(a:request)
-      let suffix_len = len(substitute(suffix, '.', '.', 'g'))
-      let max_cmd_len = (&cmdheight * &columns) - 2 - suffix_len - 2
-
-      if has('cmdline_info')
-        let last_has_status = (&laststatus == 2 || (&laststatus == 1 && winnr('$') != 1))
-
-        if &ruler && !last_has_status
-          if empty(&rulerformat)
-            " Default ruler is 17 chars wide.
-            let max_cmd_len -= 17
-          elseif exists('g:rulerwidth')
-            " User specified width of custom ruler.
-            let max_cmd_len -= g:rulerwidth
-          else
-            " Don't know width of custom ruler, make a conservative guess.
-            let max_cmd_len -= &columns / 2
-          endif
-          let max_cmd_len -= 1
-        endif
-        if &showcmd
-          let max_cmd_len -= 10
-          if !&ruler || last_has_status
-            let max_cmd_len -= 1
-          endif
-        endif
-      endif
-      let cmd = a:request.expanded
-      let cmd_len = len(substitute(cmd, '.', '.', 'g'))
-      if cmd_len > max_cmd_len
-        let msg .= '<' . matchstr(cmd, '\v.{'.(max_cmd_len - 1).'}$')
-      else
-        let msg .= cmd
-      endif
-      let msg .= ' '.suffix
-      echo msg
+      let cmd = a:request.expanded . ' ' . suffix
+      call s:echo_truncated(':!', a:request.expanded . ' ' . s:postfix(a:request))
       return response
     endif
   endfor
