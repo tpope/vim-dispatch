@@ -371,7 +371,12 @@ endfunction
 
 function! s:postfix(request) abort
   let pid = dispatch#pid(a:request)
-  return '(' . a:request.handler.'/'.(!empty(pid) ? pid : '?') . ')'
+  let label = get(a:request, 'label', 'Running')
+  return '(' . (!empty(pid) ? pid : '?') . '/' . label . ')'
+endfunction
+
+function! s:quickfix_title(request) abort
+    return ':Dispatch '.dispatch#escape(a:request.expanded) . ' ' . s:postfix(a:request)
 endfunction
 
 function! s:echo_truncated(left, right) abort
@@ -1232,24 +1237,24 @@ function! dispatch#complete(file, ...) abort
     if !a:0
       silent doautocmd ShellCmdPost
     endif
+    if has_key(request, 'aborted')
+      echohl DispatchAbortedMsg
+      let request.label = 'Aborted'
+    elseif status > 0
+      echohl DispatchFailureMsg
+      let request.label = 'Failure'
+    elseif status == 0
+      echohl DispatchSuccessMsg
+      let request.label = 'Success'
+    else
+      echohl DispatchCompleteMsg
+      let request.label = 'Complete'
+    endif
     if !request.background && !get(request, 'aborted')
       call s:cwindow(request, 0, status, '', 'make')
       redraw!
     endif
-    if has_key(request, 'aborted')
-      echohl DispatchAbortedMsg
-      let label = 'Aborted:'
-    elseif status > 0
-      echohl DispatchFailureMsg
-      let label = 'Failure:'
-    elseif status == 0
-      echohl DispatchSuccessMsg
-      let label = 'Success:'
-    else
-      echohl DispatchCompleteMsg
-      let label = 'Complete:'
-    endif
-    call s:echo_truncated(label . ' !', request.expanded . ' ' . s:postfix(request))
+    call s:echo_truncated('!', request.expanded . ' ' . s:postfix(request))
     echohl NONE
     if !a:0
       checktime
@@ -1327,11 +1332,12 @@ function! s:cgetfile(request, event, ...) abort
       let &l:efm = request.format
     endif
     let &l:makeprg = dispatch#escape(request.expanded)
-    let title = ':Dispatch '.dispatch#escape(request.expanded) . ' ' . s:postfix(request)
     if len(a:event)
       exe s:doautocmd('QuickFixCmdPre ' . a:event)
     endif
-    if exists(':chistory') && get(getqflist({'title': 1}), 'title', '') ==# title
+    let title = s:quickfix_title(request)
+    let title_to_match = title[:strridx(title, '/')]
+    if exists(':chistory') && stridx(get(getqflist({'title': 1}), 'title', ''), title_to_match) >= 0
       call setqflist([], 'r')
       execute 'noautocmd caddfile' dispatch#fnameescape(request.file)
     else
