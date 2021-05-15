@@ -374,6 +374,14 @@ function! s:postfix(request) abort
   return '(' . a:request.handler.'/'.(!empty(pid) ? pid : '?') . ')'
 endfunction
 
+function! s:status_label(request) abort
+    let label = get(a:request, 'label', '') . get(a:request, 'status', '')
+    if !empty(label)
+        return '(' . label . ')'
+    endif
+    return ''
+endfunction
+
 function! s:echo_truncated(left, right) abort
   if exists('v:echospace')
     let max_len = (&cmdheight - 1) * &columns + v:echospace
@@ -1209,10 +1217,6 @@ function! dispatch#complete(file, ...) abort
     if !a:0
       silent doautocmd ShellCmdPost
     endif
-    if !request.background && !get(request, 'aborted')
-      call s:cwindow(request, 0, status, '', 'make')
-      redraw!
-    endif
     if has_key(request, 'aborted')
       echohl DispatchAbortedMsg
       let label = 'Aborted:'
@@ -1225,6 +1229,12 @@ function! dispatch#complete(file, ...) abort
     else
       echohl DispatchCompleteMsg
       let label = 'Complete:'
+    endif
+    let request.label = label
+    let request.status = status
+    if !request.background && !get(request, 'aborted')
+      call s:cwindow(request, 0, status, '', 'make')
+      redraw!
     endif
     call s:echo_truncated(label . '!', request.expanded . ' ' . s:postfix(request))
     echohl NONE
@@ -1310,13 +1320,14 @@ function! s:cgetfile(request, event, ...) abort
     if len(a:event)
       exe 'silent doautocmd QuickFixCmdPre' a:event
     endif
-    if exists(':chistory') && get(getqflist({'title': 1}), 'title', '') ==# title
+    if exists(':chistory') && stridx(get(getqflist({'title': 1}), 'title', ''), title) >= 0
       call setqflist([], 'r')
       execute 'noautocmd caddfile' dispatch#fnameescape(request.file)
     else
       execute 'noautocmd cgetfile' dispatch#fnameescape(request.file)
     endif
     if exists(':chistory')
+      let title .= ' ' . s:status_label(request)
       call setqflist([], 'r', {'title': title})
     endif
     if len(a:event)
