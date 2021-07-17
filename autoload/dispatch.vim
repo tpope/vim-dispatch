@@ -1253,6 +1253,7 @@ function! dispatch#complete(file, ...) abort
     if !a:0
       checktime
     endif
+    doautocmd User DispatchComplete
   endif
   return ''
 endfunction
