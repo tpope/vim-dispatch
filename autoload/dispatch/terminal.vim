@@ -26,8 +26,8 @@ function! dispatch#terminal#handle(request) abort
   if a:request.background | tabprevious | endif
 
   let job = term_getjob(buf_id)
-  let a:request.pid = job_info(job).process
   let pid = job_info(job).process
+  let a:request.pid = pid
   let s:waiting[pid] = a:request
   call writefile([a:request.pid], a:request.file . '.pid')
   let a:request.handler = 'terminal'
