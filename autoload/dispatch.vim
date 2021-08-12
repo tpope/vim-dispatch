@@ -815,7 +815,6 @@ function! dispatch#compile_command(bang, args, count, ...) abort
   let [args, request] = s:extract_opts(a:args)
 
   if empty(args)
-    let args = '--'
     let default_dispatch = 1
     if type(get(b:, 'dispatch')) == type('')
       unlet! default_dispatch
@@ -828,6 +827,9 @@ function! dispatch#compile_command(bang, args, count, ...) abort
       endif
     endfor
     let [args, request] = s:extract_opts(args, request)
+  endif
+  if empty(args)
+    let args = '--'
   endif
 
   if args =~# '^!'
