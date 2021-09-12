@@ -479,7 +479,7 @@ function! s:focus(count) abort
   endif
 endfunction
 
-function! dispatch#spawn_command(bang, command, count, ...) abort
+function! dispatch#spawn_command(bang, command, count, mods, ...) abort
   let [command, opts] = s:extract_opts(a:command)
   if empty(command) && a:count >= 0
     let command = s:focus(a:count)
@@ -487,6 +487,7 @@ function! dispatch#spawn_command(bang, command, count, ...) abort
     let [command, opts] = s:extract_opts(command, opts)
   endif
   let opts.background = a:bang
+  let opts.mods = a:mods ==# '<mods>' ? '' : a:mods
   call dispatch#spawn(command, opts, a:count)
   return ''
 endfunction
@@ -526,9 +527,10 @@ function! s:parse_start(command, count) abort
   return [command, opts]
 endfunction
 
-function! dispatch#start_command(bang, command, count, ...) abort
+function! dispatch#start_command(bang, command, count, mods, ...) abort
   let [command, opts] = s:parse_start(a:command, a:count)
   let opts.background = get(opts, 'background') || a:bang
+  let opts.mods = a:mods ==# '<mods>' ? '' : a:mods
   if command =~# '^:\S'
     unlet! g:dispatch_last_start
     return s:wrapcd(get(opts, 'directory', getcwd()),
@@ -555,6 +557,7 @@ function! dispatch#spawn(command, ...) abort
         \ 'command': command,
         \ 'directory': getcwd(),
         \ 'title': '',
+        \ 'mods': '',
         \ }, a:0 ? a:1 : {})
   if empty(a:command)
     call extend(request, {'wait': 'never'}, 'keep')
@@ -811,8 +814,8 @@ if !exists('s:makes')
   let s:files = {}
 endif
 
-function! dispatch#compile_command(bang, args, count, ...) abort
-  let [args, request] = s:extract_opts(a:args)
+function! dispatch#compile_command(bang, args, count, mods, ...) abort
+  let [args, request] = s:extract_opts(a:args, {'mods': a:mods ==# '<mods>' ? '' : a:mods})
 
   if empty(args)
     let default_dispatch = 1
