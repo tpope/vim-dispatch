@@ -26,11 +26,10 @@ function! dispatch#terminal#handle(request) abort
         \ 'curwin': '1',
         \ }
   exe a:request.mods 'split'
-  let buf_id = term_start([&shell, &shellcmdflag, a:request.expanded], options)
-  let a:request.bufnr = buf_id
+  let a:request.bufnr = term_start([&shell, &shellcmdflag, a:request.expanded], options)
   if a:request.background | tabprevious | endif
 
-  let job = term_getjob(buf_id)
+  let job = term_getjob(a:request.bufnr)
   let pid = job_info(job).process
   let a:request.pid = pid
   let s:waiting[pid] = a:request
@@ -55,20 +54,16 @@ function! s:exit(request, job, status) abort
   unlet! s:waiting[a:request.pid]
 endfunction
 
-function! s:buffer_for_pid(pid) abort
-  return filter(term_list(), 'job_info(term_getjob(v:val)).process == ' . a:pid)[0]
-endfunction
-
 function! dispatch#terminal#activate(pid) abort
   if index(keys(s:waiting), a:pid) >= 0
-    let buf_id = s:buffer_for_pid(a:pid)
+    let request = s:waiting[a:pid]
 
-    if buf_id
+    if request.bufnr
       let pre = &switchbuf
 
       try
         let &switchbuf = 'useopen,usetab'
-        silent exec 'tab sbuffer' . buf_id
+        silent exec 'tab sbuffer' . a:request.bufnr
       finally
         let &switchbuf = pre
       endtry
