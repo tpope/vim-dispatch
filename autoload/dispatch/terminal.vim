@@ -21,8 +21,10 @@ function! dispatch#terminal#handle(request) abort
         \ 'exit_cb': function('s:exit'),
         \ 'term_name': '!' . a:request.expanded,
         \ 'term_finish': 'open',
+        \ 'curwin': '1',
         \ }
-  tab let buf_id = term_start([&shell, &shellcmdflag, a:request.expanded], options)
+  exe a:request.mods 'split'
+  let buf_id = term_start([&shell, &shellcmdflag, a:request.expanded], options)
   if a:request.background | tabprevious | endif
 
   let job = term_getjob(buf_id)
