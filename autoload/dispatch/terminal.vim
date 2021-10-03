@@ -17,6 +17,8 @@ function! dispatch#terminal#handle(request) abort
     return 0
   endif
 
+  let a:request.handler = 'terminal'
+
   let options = {
         \ 'exit_cb': function('s:exit', [a:request]),
         \ 'term_name': '!' . a:request.expanded,
@@ -33,7 +35,6 @@ function! dispatch#terminal#handle(request) abort
   let a:request.pid = pid
   let s:waiting[pid] = a:request
   call writefile([a:request.pid], a:request.file . '.pid')
-  let a:request.handler = 'terminal'
 
   return 1
 endfunction
