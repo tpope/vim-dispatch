@@ -18,13 +18,14 @@ function! dispatch#terminal#handle(request) abort
   endif
 
   let options = {
-        \ 'exit_cb': function('s:exit'),
+        \ 'exit_cb': function('s:exit', [a:request]),
         \ 'term_name': '!' . a:request.expanded,
         \ 'term_finish': 'open',
         \ 'curwin': '1',
         \ }
   exe a:request.mods 'split'
   let buf_id = term_start([&shell, &shellcmdflag, a:request.expanded], options)
+  let a:request.bufnr = buf_id
   if a:request.background | tabprevious | endif
 
   let job = term_getjob(buf_id)
@@ -37,23 +38,20 @@ function! dispatch#terminal#handle(request) abort
   return 1
 endfunction
 
-function! s:exit(job, status) abort
-  let pid = job_info(a:job).process
-  let request = s:waiting[pid]
-  call writefile([a:status], request.file . '.complete')
-  let buf_id = s:buffer_for_pid(pid)
+function! s:exit(request, job, status) abort
+  call writefile([a:status], a:request.file . '.complete')
 
-  if has_key(request, 'wait') && request.wait ==# 'always'
-  elseif has_key(request, 'wait') && request.wait ==# 'never'
-    silent exec 'bdelete ' . buf_id
-  elseif has_key(request, 'wait') && request.wait ==# 'error'
+  if has_key(a:request, 'wait') && a:request.wait ==# 'always'
+  elseif has_key(a:request, 'wait') && a:request.wait ==# 'never'
+    silent exec 'bdelete ' . a:request.bufnr
+  elseif has_key(a:request, 'wait') && a:request.wait ==# 'error'
     if a:status == 0
-      silent exec 'bdelete ' . buf_id
+      silent exec 'bdelete ' . a:request.bufnr
     endif
   elseif a:status == 0
-    silent exec 'bdelete ' . buf_id
+    silent exec 'bdelete ' . a:request.bufnr
   endif
-  unlet! s:waiting[pid]
+  unlet! s:waiting[a:request.pid]
 endfunction
 
 function! s:buffer_for_pid(pid) abort
