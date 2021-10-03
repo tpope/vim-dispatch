@@ -27,7 +27,6 @@ function! dispatch#terminal#handle(request) abort
         \ }
   exe a:request.mods 'split'
   let a:request.bufnr = term_start([&shell, &shellcmdflag, a:request.expanded], options)
-  if a:request.background | tabprevious | endif
 
   let job = term_getjob(a:request.bufnr)
   let pid = job_info(job).process
@@ -63,7 +62,7 @@ function! dispatch#terminal#activate(pid) abort
 
       try
         let &switchbuf = 'useopen,usetab'
-        silent exec 'tab sbuffer' . a:request.bufnr
+        silent exe a:request.mods 'split' a:request.bufnr
       finally
         let &switchbuf = pre
       endtry
