@@ -62,7 +62,7 @@ function! dispatch#terminal#activate(pid) abort
 
       try
         let &switchbuf = 'useopen,usetab'
-        silent exe a:request.mods 'split' a:request.bufnr
+        silent exe a:request.mods 'sbuffer' a:request.bufnr
       finally
         let &switchbuf = pre
       endtry
