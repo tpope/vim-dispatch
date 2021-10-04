@@ -40,16 +40,11 @@ endfunction
 function! s:exit(request, job, status) abort
   call writefile([a:status], a:request.file . '.complete')
 
-  if has_key(a:request, 'wait') && a:request.wait ==# 'always'
-  elseif has_key(a:request, 'wait') && a:request.wait ==# 'never'
-    silent exec 'bdelete ' . a:request.bufnr
-  elseif has_key(a:request, 'wait') && a:request.wait ==# 'error'
-    if a:status == 0
-      silent exec 'bdelete ' . a:request.bufnr
-    endif
-  elseif a:status == 0
-    silent exec 'bdelete ' . a:request.bufnr
+  let wait = get(a:request, 'wait', 'error')
+  if wait ==# 'never' || (wait !=# 'always' && a:status == 0)
+    silent exec 'bdelete! ' . a:request.bufnr
   endif
+
   unlet! s:waiting[a:request.pid]
 endfunction
 
