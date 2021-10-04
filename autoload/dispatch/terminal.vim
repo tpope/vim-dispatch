@@ -19,25 +19,35 @@ function! dispatch#terminal#handle(request) abort
 
   let a:request.handler = 'terminal'
 
-  let options = {
-        \ 'exit_cb': function('s:exit', [a:request]),
-        \ 'term_name': '!' . a:request.expanded,
-        \ 'term_finish': 'open',
-        \ 'curwin': 1,
-        \ }
-  exe a:request.mods 'split'
-  let a:request.bufnr = term_start([&shell, &shellcmdflag, a:request.expanded], options)
+  if has('nvim')
+    exe a:request.mods 'new'
+    let options = {
+          \ 'on_exit': function('s:exit', [a:request]),
+          \ }
+    let job = termopen(a:request.expanded, options)
+    let a:request.bufnr = bufnr('')
+    let a:request.pid = jobpid(job)
+    startinsert
+  else
+    exe a:request.mods 'split'
+    let options = {
+          \ 'exit_cb': function('s:exit', [a:request]),
+          \ 'term_name': '!' . a:request.expanded,
+          \ 'term_finish': 'open',
+          \ 'curwin': 1,
+          \ }
+    let a:request.bufnr = term_start([&shell, &shellcmdflag, a:request.expanded], options)
+    let job = term_getjob(a:request.bufnr)
+    let a:request.pid = job_info(job).process
+  endif
 
-  let job = term_getjob(a:request.bufnr)
-  let pid = job_info(job).process
-  let a:request.pid = pid
-  let s:waiting[pid] = a:request
+  let s:waiting[a:request.pid] = a:request
   call writefile([a:request.pid], a:request.file . '.pid')
 
   return 1
 endfunction
 
-function! s:exit(request, job, status) abort
+function! s:exit(request, job, status, ...) abort
   call writefile([a:status], a:request.file . '.complete')
 
   let wait = get(a:request, 'wait', 'error')
