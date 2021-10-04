@@ -21,6 +21,7 @@ function! dispatch#terminal#handle(request) abort
   let a:request.handler = 'terminal'
 
   if has('nvim')
+    let winid = win_getid()
     exe a:request.mods 'new'
     let options = {
           \ 'on_exit': function('s:exit', [a:request]),
@@ -30,15 +31,12 @@ function! dispatch#terminal#handle(request) abort
     let a:request.pid = jobpid(job)
 
     if a:request.background
-      if a:request.mods ==# '\<tab\>'
-        tabprevious
-      else
-        wincmd w
-      endif
+      call win_gotoid(winid)
     else
       startinsert
     endif
   else
+    let winid = win_getid()
     exe a:request.mods 'split'
     let options = {
           \ 'exit_cb': function('s:exit', [a:request]),
@@ -51,11 +49,7 @@ function! dispatch#terminal#handle(request) abort
     let a:request.pid = job_info(job).process
 
     if a:request.background
-      if a:request.mods ==# '\<tab\>'
-        tabprevious
-      else
-        wincmd w
-      endif
+      call win_gotoid(winid)
     endif
   endif
 
