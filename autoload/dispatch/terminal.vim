@@ -30,7 +30,7 @@ function! dispatch#terminal#handle(request) abort
     let a:request.pid = jobpid(job)
 
     if a:request.background
-      if a:request.mods ==# 'tab'
+      if a:request.mods ==# '\<tab\>'
         tabprevious
       else
         wincmd w
@@ -51,7 +51,7 @@ function! dispatch#terminal#handle(request) abort
     let a:request.pid = job_info(job).process
 
     if a:request.background
-      if a:request.mods ==# 'tab'
+      if a:request.mods ==# '\<tab\>'
         tabprevious
       else
         wincmd w
