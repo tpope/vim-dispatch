@@ -49,7 +49,7 @@ function! s:exit(request, job, status) abort
 endfunction
 
 function! dispatch#terminal#activate(pid) abort
-  if index(keys(s:waiting), a:pid) >= 0
+  if has_key(s:waiting, a:pid)
     let request = s:waiting[a:pid]
     let pre = &switchbuf
 
