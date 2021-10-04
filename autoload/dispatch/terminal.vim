@@ -23,7 +23,7 @@ function! dispatch#terminal#handle(request) abort
         \ 'exit_cb': function('s:exit', [a:request]),
         \ 'term_name': '!' . a:request.expanded,
         \ 'term_finish': 'open',
-        \ 'curwin': '1',
+        \ 'curwin': 1,
         \ }
   exe a:request.mods 'split'
   let a:request.bufnr = term_start([&shell, &shellcmdflag, a:request.expanded], options)
