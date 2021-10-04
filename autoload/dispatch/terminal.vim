@@ -28,7 +28,16 @@ function! dispatch#terminal#handle(request) abort
     let job = termopen(a:request.expanded, options)
     let a:request.bufnr = bufnr('')
     let a:request.pid = jobpid(job)
-    startinsert
+
+    if a:request.background
+      if a:request.mods ==# 'tab'
+        tabprevious
+      else
+        wincmd w
+      endif
+    else
+      startinsert
+    endif
   else
     exe a:request.mods 'split'
     let options = {
@@ -40,6 +49,14 @@ function! dispatch#terminal#handle(request) abort
     let a:request.bufnr = term_start([&shell, &shellcmdflag, a:request.expanded], options)
     let job = term_getjob(a:request.bufnr)
     let a:request.pid = job_info(job).process
+
+    if a:request.background
+      if a:request.mods ==# 'tab'
+        tabprevious
+      else
+        wincmd w
+      endif
+    endif
   endif
 
   let s:waiting[a:request.pid] = a:request
