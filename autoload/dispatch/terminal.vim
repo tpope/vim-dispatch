@@ -51,20 +51,15 @@ endfunction
 function! dispatch#terminal#activate(pid) abort
   if index(keys(s:waiting), a:pid) >= 0
     let request = s:waiting[a:pid]
+    let pre = &switchbuf
 
-    if request.bufnr
-      let pre = &switchbuf
-
-      try
-        let &switchbuf = 'useopen,usetab'
-        silent exe a:request.mods 'sbuffer' a:request.bufnr
-      finally
-        let &switchbuf = pre
-      endtry
-      return 1
-    else
-      return 0
-    endif
+    try
+      let &switchbuf = 'useopen,usetab'
+      silent exe a:request.mods 'sbuffer' a:request.bufnr
+    finally
+      let &switchbuf = pre
+    endtry
+    return 1
   endif
 
   return 0
