@@ -13,8 +13,7 @@ function! dispatch#terminal#handle(request) abort
   if !get(g:, 'dispatch_experimental', 1)
     return 0
   endif
-  let has_terminal = (has('terminal') || has('nvim'))
-  if !has_terminal || a:request.action !=# 'start'
+  if !(has('terminal') || has('nvim')) || a:request.action !=# 'start'
     return 0
   endif
 
