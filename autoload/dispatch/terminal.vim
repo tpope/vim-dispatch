@@ -18,9 +18,9 @@ function! dispatch#terminal#handle(request) abort
   endif
 
   let a:request.handler = 'terminal'
+  let winid = win_getid()
 
   if has('nvim')
-    let winid = win_getid()
     exe a:request.mods 'new'
     let options = {
           \ 'on_exit': function('s:exit', [a:request]),
@@ -29,9 +29,7 @@ function! dispatch#terminal#handle(request) abort
     let a:request.bufnr = bufnr('')
     let a:request.pid = jobpid(job)
 
-    if a:request.background
-      call win_gotoid(winid)
-    else
+    if !a:request.background
       startinsert
     endif
   else
@@ -46,10 +44,10 @@ function! dispatch#terminal#handle(request) abort
     let a:request.bufnr = term_start([&shell, &shellcmdflag, a:request.expanded], options)
     let job = term_getjob(a:request.bufnr)
     let a:request.pid = job_info(job).process
+  endif
 
-    if a:request.background
-      call win_gotoid(winid)
-    endif
+  if a:request.background
+    call win_gotoid(winid)
   endif
 
   let s:waiting[a:request.pid] = a:request
