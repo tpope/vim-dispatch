@@ -57,14 +57,13 @@ function! dispatch#terminal#handle(request) abort
 endfunction
 
 function! s:exit(request, job, status, ...) abort
+  unlet! s:waiting[a:request.pid]
   call writefile([a:status], a:request.file . '.complete')
 
   let wait = get(a:request, 'wait', 'error')
   if wait ==# 'never' || (wait !=# 'always' && a:status == 0)
     silent exec 'bdelete! ' . a:request.bufnr
   endif
-
-  unlet! s:waiting[a:request.pid]
 endfunction
 
 function! dispatch#terminal#activate(pid) abort
