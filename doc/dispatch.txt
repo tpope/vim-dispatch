@@ -192,6 +192,10 @@ GNU Screen ~
 
 A new window is always used, since splits in GNU Screen are awkward.
 
+Terminal ~
+
+Uses the respective |:terminal| features of Vim and Neovim.
+
 Windows ~
 
 You can use either the standard cmd.exe or a cygwin shell.  Both foreground
