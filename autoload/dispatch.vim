@@ -670,6 +670,9 @@ function! dispatch#compiler_options(compiler) abort
   let current_compiler = get(b:, 'current_compiler', '')
   let makeprg = &l:makeprg
   let efm = &l:efm
+  if empty(a:compiler)
+    return {}
+  endif
 
   try
     if a:compiler ==# 'make'
