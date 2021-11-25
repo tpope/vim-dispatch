@@ -682,7 +682,11 @@ function! dispatch#compiler_options(compiler) abort
       return {'program': 'make', 'format': &errorformat}
     endif
     let &l:makeprg = ''
-    execute 'compiler '.dispatch#fnameescape(a:compiler)
+    try
+      execute 'compiler' dispatch#fnameescape(a:compiler)
+    catch /^Vim(compiler):E666:/
+      return {}
+    endtry
     let options = {'format': &errorformat}
     if !empty(&l:makeprg)
       let options.program = &l:makeprg
@@ -858,8 +862,12 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
         \ }, 'keep')
 
   if executable ==# '_' || executable ==# '--'
-    if has_key(request, 'compiler')
-      call extend(request, dispatch#compiler_options(request.compiler))
+    if !empty(get(request, 'compiler', ''))
+      let compiler_options = dispatch#compiler_options(request.compiler)
+      if !has_key(compiler_options, 'program')
+        return 'compiler ' . dispatch#fnameescape(request.compiler)
+      endif
+      call extend(request, compiler_options)
     else
       let request.compiler = s:current_compiler()
       let request.program = &makeprg
@@ -871,7 +879,11 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
     let [compiler, prefix, program, rest] = s:compiler_split(args)
     let request.compiler = get(request, 'compiler', compiler)
     if !empty(request.compiler)
-      call extend(request,dispatch#compiler_options(request.compiler))
+      let compiler_options = dispatch#compiler_options(request.compiler)
+      if !has_key(compiler_options, 'program')
+        return 'compiler ' . dispatch#fnameescape(request.compiler)
+      endif
+      call extend(request, compiler_options)
       if request.compiler ==# compiler
         let request.program = prefix . program
         let request.args = rest[1:-1]
