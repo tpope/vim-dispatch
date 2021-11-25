@@ -786,7 +786,7 @@ function! dispatch#command_complete(A, L, P) abort
     else
       let results = []
     endif
-  elseif a:A =~# '^\%(\w:\|\.\)\=[\/]'
+  elseif a:A =~# '[\/]'
     let results = s:file_complete(a:A)
   else
     let results = []
