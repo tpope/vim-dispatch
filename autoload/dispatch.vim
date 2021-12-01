@@ -405,7 +405,13 @@ function! s:echo_truncated(left, right) abort
   if len(substitute(msg, '.', '.', 'g')) > max_len
     let msg = a:left . '<' . matchstr(a:right, '\v.{'.(max_len - len(substitute(a:left, '.', '.', 'g')) - 1).'}$')
   endif
-  echo msg
+
+  if exists('g:dispatch_message_handler')
+    call g:dispatch_message_handler(msg)
+  else
+    echo msg
+  endif
+
 endfunction
 
 function! s:dispatch(request) abort
