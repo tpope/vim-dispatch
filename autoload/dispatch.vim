@@ -492,15 +492,22 @@ function! dispatch#spawn_command(bang, command, count, mods, ...) abort
   return ''
 endfunction
 
+function! s:doautocmd(event) abort
+  if v:version >= 704 || (v:version == 703 && has('patch442'))
+    return 'doautocmd <nomodeline> ' . a:event
+  elseif &modelines == 0 || !&modeline
+    return 'doautocmd ' . a:event
+  else
+    return 'try|set modelines=0|doautocmd ' . a:event . '|finally|set modelines=' . &modelines . '|endtry'
+  endif
+endfunction
+
 function! s:compiler_getcwd() abort
-  let modelines = &modelines
   try
-    let &modelines = 0
-    silent doautocmd QuickFixCmdPre dispatch-make-complete
+    exe s:doautocmd('QuickFixCmdPre dispatch-make-complete')
     return getcwd()
   finally
-    silent doautocmd QuickFixCmdPost dispatch-make-complete
-    let &modelines = modelines
+    exe s:doautocmd('QuickFixCmdPost dispatch-make-complete')
   endtry
 endfunction
 
@@ -805,14 +812,11 @@ function! dispatch#command_complete(A, L, P) abort
 endfunction
 
 function! dispatch#make_complete(A, L, P) abort
-  let modelines = &modelines
   try
-    let &modelines = 0
-    silent doautocmd QuickFixCmdPre dispatch-make-complete
+    exe s:doautocmd('QuickFixCmdPre dispatch-make-complete')
     return s:compiler_complete(&errorformat, s:current_compiler(), a:A, a:L, a:P)
   finally
-    silent doautocmd QuickFixCmdPost dispatch-make-complete
-    let &modelines = modelines
+    exe s:doautocmd('QuickFixCmdPost dispatch-make-complete')
   endtry
 endfunction
 
@@ -922,16 +926,14 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
   let efm = &l:efm
   let makeprg = &l:makeprg
   let compiler = get(b:, 'current_compiler', '')
-  let modelines = &modelines
   let after = ''
   let cd = s:cd_command()
   try
-    let &modelines = 0
     call s:set_current_compiler(get(request, 'compiler', ''))
     let v:lnum = a:count > 0 ? a:count : 0
     let &l:efm = request.format
     let &l:makeprg = request.command
-    silent doautocmd QuickFixCmdPre dispatch-make
+    exe s:doautocmd('QuickFixCmdPre dispatch-make')
     let request.directory = get(request, 'directory', getcwd())
     if request.directory !=# getcwd()
       let cwd = getcwd()
@@ -977,9 +979,8 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
       redraw!
     endif
   finally
-    silent doautocmd QuickFixCmdPost dispatch-make
+    exe s:doautocmd('QuickFixCmdPost dispatch-make')
     let v:lnum = lnum
-    let &modelines = modelines
     let &l:efm = efm
     let &l:makeprg = makeprg
     call s:set_current_compiler(compiler)
@@ -1317,9 +1318,7 @@ function! s:cgetfile(request, event, ...) abort
   let compiler = get(b:, 'current_compiler', '')
   let cd = s:cd_command()
   let dir = getcwd()
-  let modelines = &modelines
   try
-    let &modelines = 0
     call s:set_current_compiler(get(request, 'compiler', ''))
     exe cd dispatch#fnameescape(request.directory)
     if a:0 && a:1
@@ -1330,7 +1329,7 @@ function! s:cgetfile(request, event, ...) abort
     let &l:makeprg = dispatch#escape(request.expanded)
     let title = ':Dispatch '.dispatch#escape(request.expanded) . ' ' . s:postfix(request)
     if len(a:event)
-      exe 'silent doautocmd QuickFixCmdPre' a:event
+      exe s:doautocmd('QuickFixCmdPre ' . a:event)
     endif
     if exists(':chistory') && get(getqflist({'title': 1}), 'title', '') ==# title
       call setqflist([], 'r')
@@ -1342,10 +1341,9 @@ function! s:cgetfile(request, event, ...) abort
       call setqflist([], 'r', {'title': title})
     endif
     if len(a:event)
-      exe 'silent doautocmd QuickFixCmdPost' a:event
+      exe s:doautocmd('QuickFixCmdPost ' . a:event)
     endif
   finally
-    let &modelines = modelines
     exe cd dispatch#fnameescape(dir)
     let &l:efm = efm
     let &l:makeprg = makeprg
