@@ -912,7 +912,9 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
   let request.title = get(request, 'title', get(request, 'compiler', 'make'))
 
   call dispatch#autowrite()
-  cclose
+  if winnr('$') > 1
+    cclose
+  endif
   let request.file = dispatch#tempname()
   let &errorfile = request.file
 
