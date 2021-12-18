@@ -39,7 +39,6 @@ Kick off quick tasks with `:Make`.  What happens next depends on which adapter
 takes charge.
 
 * If you're in tmux, a small split will be opened at the bottom.
-* If you have iTerm running, a new tab is opened.
 * On Windows, a minimized cmd.exe window is spawned.
 * Otherwise, you get a plain old `:make` invocation.
 
@@ -52,7 +51,6 @@ stolen.
 Use `:Make!` for longer running tasks, like "run the entire test suite".
 
 * If you're in tmux or GNU screen, a new window is created in the background.
-* If you have iTerm running, a new tab is opened but not selected.
 * Windows still spawns a minimized cmd.exe window.
 * Otherwise, you get a headless invocation.  You can't see it, but it's
   running in the background.

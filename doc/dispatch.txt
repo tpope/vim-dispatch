@@ -205,7 +205,7 @@ stealing.
 iTerm ~
 
 This strategy fires if you're in MacVim with at least one iTerm window open,
-or if Vim is running in iTerm itself.
+or if Vim is running in iTerm itself.  Used only for |:Start|.
 
 X11 ~
 

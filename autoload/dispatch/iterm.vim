@@ -9,13 +9,7 @@ function! dispatch#iterm#handle(request) abort
   if $TERM_PROGRAM !=# 'iTerm.app' && !((has('gui_macvim') || has('gui_vimr')) && has('gui_running'))
     return 0
   endif
-  if a:request.action ==# 'make'
-    if !get(a:request, 'background', 0) && !dispatch#has_callback()
-      return 0
-    endif
-    let exec = dispatch#prepare_make(a:request)
-    return dispatch#iterm#spawn(exec, a:request, 0)
-  elseif a:request.action ==# 'start'
+  if a:request.action ==# 'start'
     return dispatch#iterm#spawn(dispatch#prepare_start(a:request), a:request, !a:request.background)
   endif
 endfunction
