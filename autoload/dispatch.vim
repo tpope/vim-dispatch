@@ -868,7 +868,7 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
   if executable ==# '_' || executable ==# '--'
     if !empty(get(request, 'compiler', ''))
       let compiler_options = dispatch#compiler_options(request.compiler)
-      if !has_key(compiler_options, 'program')
+      if !has_key(compiler_options, 'format')
         return 'compiler ' . dispatch#fnameescape(request.compiler)
       endif
       call extend(request, compiler_options)
@@ -878,13 +878,13 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
       let request.format = &errorformat
     endif
     let request.args = s:default_args(args, exists('default_dispatch') && a:count < 0 ? 0 : a:count, request.format)
-    let request.command = s:build_make(request.program, request.args)
+    let request.command = s:build_make(get(request, 'program', get(request, 'compiler', '--')), request.args)
   else
     let [compiler, prefix, program, rest] = s:compiler_split(args)
     let request.compiler = get(request, 'compiler', compiler)
     if !empty(request.compiler)
       let compiler_options = dispatch#compiler_options(request.compiler)
-      if !has_key(compiler_options, 'program')
+      if !has_key(compiler_options, 'format')
         return 'compiler ' . dispatch#fnameescape(request.compiler)
       endif
       call extend(request, compiler_options)
