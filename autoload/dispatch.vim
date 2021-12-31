@@ -878,7 +878,7 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
       let request.format = &errorformat
     endif
     let request.args = s:default_args(args, exists('default_dispatch') && a:count < 0 ? 0 : a:count, request.format)
-    let request.command = s:build_make(request.program, request.args)
+    let request.command = s:build_make(get(request, 'program', get(request, 'compiler', '--')), request.args)
   else
     let [compiler, prefix, program, rest] = s:compiler_split(args)
     let request.compiler = get(request, 'compiler', compiler)
