@@ -1362,7 +1362,11 @@ function! s:cwindow(request, all, copen, mods, event) abort
   if mods !~# 'aboveleft\|belowright\|leftabove\|rightbelow\|topleft\|botright'
     let mods = 'botright ' . mods
   endif
-  execute (mods) (a:copen ? 'copen' : 'cwindow') height
+  if a:copen
+    execute (mods) 'copen' height
+  elseif !was_qf || winnr('$') > 1
+    execute (mods) 'cwindow' height
+  endif
   if !was_qf && s:is_quickfix() && a:copen !=# -2
     wincmd p
   endif
