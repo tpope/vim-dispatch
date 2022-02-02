@@ -375,6 +375,7 @@ function! s:postfix(request) abort
 endfunction
 
 function! s:echo_truncated(left, right) abort
+  exe s:doautocmd('QuickFixCmdPre dispatch-make-done')
   if exists('v:echospace')
     let max_len = (&cmdheight - 1) * &columns + v:echospace
   else
@@ -405,7 +406,12 @@ function! s:echo_truncated(left, right) abort
   if len(substitute(msg, '.', '.', 'g')) > max_len
     let msg = a:left . '<' . matchstr(a:right, '\v.{'.(max_len - len(substitute(a:left, '.', '.', 'g')) - 1).'}$')
   endif
-  echo msg
+  if exists('g:DispatchMsgHandler')
+    call g:DispatchMsgHandler(msg)
+  else
+    echo msg
+  end
+  exe s:doautocmd('QuickFixCmdPost dispatch-make-done')
 endfunction
 
 function! s:dispatch(request) abort
