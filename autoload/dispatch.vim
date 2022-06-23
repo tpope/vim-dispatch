@@ -5,6 +5,7 @@ if exists('g:autoloaded_dispatch')
 endif
 
 let g:autoloaded_dispatch = 1
+let g:dispatch_quickfix_split = 'botright vertical'
 
 " Section: Utility
 
@@ -955,7 +956,8 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
       if !get(request, 'background')
         call s:cgetfile(request, '')
         if result is 2
-          exe 'botright copen' get(g:, 'dispatch_quickfix_height', '')
+          let direction = g:dispatch_quickfix_split
+          exe direction ' copen' get(g:, 'dispatch_quickfix_height', '')
           wincmd p
         endif
       endif
@@ -1287,7 +1289,7 @@ function! dispatch#abort_command(bang, query, ...) abort
   else
     call system('kill -' . (a:bang ? 'KILL' : 'HUP') . ' ' . pid)
   endif
-  return 'call dispatch#complete('.request.id.')'
+  return 'call dispatch#complete('.request.id.', <mods>)'
 endfunction
 
 " Section: Quickfix window
@@ -1359,8 +1361,10 @@ function! s:cwindow(request, all, copen, mods, event) abort
   endif
   let was_qf = s:is_quickfix()
   let mods = a:mods
+  echom "a:mods = " (mods)
   if mods !~# 'aboveleft\|belowright\|leftabove\|rightbelow\|topleft\|botright'
-    let mods = 'botright ' . mods
+    let splitdir = g:dispatch_quickfix_split
+    let mods = splitdir . ' ' . mods
   endif
   if a:copen
     execute (mods) 'copen' height
