@@ -5,7 +5,7 @@ if exists('g:autoloaded_dispatch')
 endif
 
 let g:autoloaded_dispatch = 1
-let g:dispatch_quickfix_split = 'botright vertical'
+let g:dispatch_quickfix_split = get(g:, 'dispatch_quickfix_split', 'botright vertical')
 
 " Section: Utility
 
