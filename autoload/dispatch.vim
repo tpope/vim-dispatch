@@ -5,7 +5,7 @@ if exists('g:autoloaded_dispatch')
 endif
 
 let g:autoloaded_dispatch = 1
-let g:dispatch_quickfix_split = get(g:, 'dispatch_quickfix_split', 'botright vertical')
+let g:dispatch_quickfix_split = get(g:, 'dispatch_quickfix_split', 'botright')
 
 " Section: Utility
 
@@ -1289,7 +1289,7 @@ function! dispatch#abort_command(bang, query, ...) abort
   else
     call system('kill -' . (a:bang ? 'KILL' : 'HUP') . ' ' . pid)
   endif
-  return 'call dispatch#complete('.request.id.', <mods>)'
+  return 'call dispatch#complete('.request.id.')'
 endfunction
 
 " Section: Quickfix window
