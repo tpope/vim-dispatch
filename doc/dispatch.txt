@@ -29,6 +29,11 @@ COMMANDS                                        *dispatch-commands*
                         it with |:copen|.  You may call this before the
                         process is finished.
 
+                        Quickfix list is opened with g:dispatch_quickfix_split
+                        split mode (default [botright])
+
+
+
 :Copen!                 Load the latest build into the quickfix list using a
                         catch-all parser.  This is useful when you can't tell
                         what went wrong.
