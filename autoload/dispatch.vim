@@ -1361,7 +1361,6 @@ function! s:cwindow(request, all, copen, mods, event) abort
   endif
   let was_qf = s:is_quickfix()
   let mods = a:mods
-  echom "a:mods = " (mods)
   if mods !~# 'aboveleft\|belowright\|leftabove\|rightbelow\|topleft\|botright'
     let splitdir = g:dispatch_quickfix_split
     let mods = splitdir . ' ' . mods
