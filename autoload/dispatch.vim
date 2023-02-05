@@ -916,9 +916,6 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
   let request.title = get(request, 'title', get(request, 'compiler', 'make'))
 
   call dispatch#autowrite()
-  if winnr('$') > 1
-    cclose
-  endif
   let request.file = dispatch#tempname()
   let &errorfile = request.file
 
@@ -957,6 +954,8 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
         if result is 2
           exe 'botright copen' get(g:, 'dispatch_quickfix_height', '')
           wincmd p
+        elseif winnr('$') > 1
+          cclose
         endif
       endif
     else
