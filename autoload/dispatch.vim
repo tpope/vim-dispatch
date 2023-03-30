@@ -1223,7 +1223,7 @@ function! dispatch#complete(file, ...) abort
     let request = s:request(a:file)
     let request.completed = 1
     try
-      let status = readfile(request.file . '.complete', 1)[0]
+      let status = +readfile(request.file . '.complete', 1)[0]
     catch
       let status = -1
       call writefile([-1], request.file . '.complete')
