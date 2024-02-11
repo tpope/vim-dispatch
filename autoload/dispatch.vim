@@ -943,7 +943,7 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
 
     call writefile([], request.file)
 
-    if exists(':chistory')
+    if has('patch-8.0.1023')
       let result = s:dispatch(request)
     else
       let result = 0
