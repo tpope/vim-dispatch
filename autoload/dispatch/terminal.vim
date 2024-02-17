@@ -33,7 +33,6 @@ function! dispatch#terminal#handle(request) abort
       startinsert
     endif
   else
-    let winid = win_getid()
     exe a:request.mods 'split'
     let options = {
           \ 'exit_cb': function('s:exit', [a:request]),
