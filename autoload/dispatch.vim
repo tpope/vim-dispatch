@@ -1050,7 +1050,7 @@ function! dispatch#focus_command(bang, args, count, ...) abort
     let [args, opts] = dispatch#focus(line(a:args[1]), opts)
   elseif args =~# '^:\d*Dispatch$'
     let [args, opts] = dispatch#focus(+matchstr(a:args, '\d\+'), opts)
-  elseif args =~# '^--\S\@!' && !has_key(opts, 'compiler')
+  elseif args =~# '^\%(--\|:[Mm]ake\)\S\@!' && !has_key(opts, 'compiler')
     let args = s:default_args(args, -1)
     let args = s:build_make(&makeprg, args)
     let args = dispatch#expand(args, 0)
