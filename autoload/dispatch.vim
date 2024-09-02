@@ -365,7 +365,7 @@ function! s:set_current_compiler(name, ...) abort
   if empty(a:name) && (!a:0 || a:1 ==# bufnr(''))
     unlet! b:current_compiler
   else
-    call setbufvar(a:bufnr, 'current_compiler', a:name)
+    call setbufvar(a:1, 'current_compiler', a:name)
   endif
 endfunction
 
