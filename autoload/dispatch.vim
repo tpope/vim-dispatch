@@ -361,7 +361,7 @@ function! s:current_compiler(...) abort
   return get((empty(&l:makeprg) ? g: : b:), 'current_compiler', a:0 ? a:1 : '')
 endfunction
 
-function! s:set_current_compiler(name, ...) abort
+function! s:set_current_compiler(name, bufnr, ...) abort
   if empty(a:name) && (!a:0 || a:1 ==# bufnr(''))
     unlet! b:current_compiler
   else
@@ -702,7 +702,7 @@ function! dispatch#compiler_options(compiler) abort
   finally
     let &l:makeprg = makeprg
     let &l:efm = efm
-    call s:set_current_compiler(current_compiler)
+    call s:set_current_compiler(current_compiler, bufnr(''))
   endtry
 endfunction
 
@@ -927,7 +927,7 @@ function! dispatch#compile_command(bang, args, count, mods, ...) abort
   let cd = s:cd_command()
   let bufnr = bufnr('')
   try
-    call s:set_current_compiler(get(request, 'compiler', ''))
+    call s:set_current_compiler(get(request, 'compiler', ''), bufnr)
     let v:lnum = a:count > 0 ? a:count : 0
     let &l:efm = request.format
     let &l:makeprg = request.command
@@ -1318,8 +1318,9 @@ function! s:cgetfile(request, event, ...) abort
   let compiler = get(b:, 'current_compiler', '')
   let cd = s:cd_command()
   let dir = getcwd()
+  let bufnr = bufnr('')
   try
-    call s:set_current_compiler(get(request, 'compiler', ''))
+    call s:set_current_compiler(get(request, 'compiler', ''), bufnr)
     exe cd dispatch#fnameescape(request.directory)
     if a:0 && a:1
       let &l:efm = '%+G%.%#'
@@ -1347,7 +1348,7 @@ function! s:cgetfile(request, event, ...) abort
     exe cd dispatch#fnameescape(dir)
     let &l:efm = efm
     let &l:makeprg = makeprg
-    call s:set_current_compiler(compiler)
+    call s:set_current_compiler(compiler, bufnr)
   endtry
 endfunction
 
