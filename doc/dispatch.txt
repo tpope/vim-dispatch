@@ -80,6 +80,9 @@ COMMANDS                                        *dispatch-commands*
                         Set a global default command for |:Dispatch| with no
                         arguments.  Overrides |b:dispatch|.
 
+                        If {program} is `:Make` or `--`, the current value of
+                        `&makeprg` will be used for {program} instead.
+
 :FocusDispatch! [options] {program} [arguments]
                         Set a window local default command for |:Dispatch|
                         with no arguments.  Overrides |b:dispatch| and the
