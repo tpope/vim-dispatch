@@ -308,6 +308,7 @@ function! dispatch#prepare_start(request, ...) abort
   else
     let exec .= 'sleep 1; '
   endif
+  let exec .= "trap 'trap \"\" INT; ". dispatch#complete_make(a:request, '130') . "' INT; "
   let exec .= a:0 ? a:1 : a:request.expanded
   let wait = a:0 > 1 ? a:2 : get(a:request, 'wait', 'error')
   let pause = s:subshell("printf '\e[1m--- Press ENTER to continue ---\e[0m\\n'; exec head -1")
@@ -325,10 +326,14 @@ function! dispatch#prepare_start(request, ...) abort
 endfunction
 
 function! dispatch#prepare_make(request, ...) abort
-  let exec = a:0 ? a:1 : s:subshell(a:request.expanded . '; echo ' .
-        \ dispatch#status_var() . ' > ' . a:request.file . '.complete') .
+  let exec = a:0 ? a:1 : s:subshell(a:request.expanded . '; ' .
+        \ dispatch#complete_make(a:request, dispatch#status_var())) .
         \ dispatch#shellpipe(a:request.file)
   return dispatch#prepare_start(a:request, exec, 'make')
+endfunction
+
+function! dispatch#complete_make(request, status, ...) abort
+  return 'echo ' . a:status . ' > ' . a:request.file . '.complete'
 endfunction
 
 function! dispatch#set_title(request) abort
