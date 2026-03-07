@@ -183,6 +183,27 @@ The tmux strategy can be used from the GUI as well.  Either start Vim from
 inside of tmux or assign g:tmux_session.  This will use a new window for
 foreground makes rather than a split.
 
+Kitty ~
+
+Foreground makes open in a split respecting the current layout.  The closure
+of the pane triggers a |VimResized| event which loads the results into the
+quickfix list if callbacks are not supported.
+
+This handler requires you to enable kitty's remote control feature via Unix
+socket because (neo)vim has no /dev/tty configured (neovim/neovim#1496).
+>
+        allow_remote_control yes
+        listen_on unix:/tmp/kitty
+<
+See https://sw.kovidgoyal.net/kitty/remote-control/
+
+Kitty does not have a way to specify window size and direction explicitly
+because those depend on the layout.  To controll the window size, adjust the
+bias Kitty uses to calculate the window size.  It is passed as "--bias=<num>"
+to the "kitten @ launch" command.
+>
+        let g:dispatch_kitty_bias = 20
+<
 Job ~
 
 Uses the |job| support in Vim 8 and Neovim to update the quickfix list in real
