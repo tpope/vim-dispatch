@@ -183,6 +183,19 @@ The tmux strategy can be used from the GUI as well.  Either start Vim from
 inside of tmux or assign g:tmux_session.  This will use a new window for
 foreground makes rather than a split.
 
+Windows Terminal ~
+
+Used when console Vim on Windows runs inside Windows Terminal ($WT_SESSION is
+set).  Both |:Make| and |:Start| open a pane below Vim (like Alt+Shift+-),
+running PowerShell, which closes once the task finishes.  |:Make| output is
+shown in the pane and loaded into the quickfix list afterwards; focus stays
+in Vim.  A foreground |:Start| focuses the pane and, by default, waits for
+ENTER if the command fails.
+
+The pane height is g:dispatch_wt_height lines (default
+g:dispatch_quickfix_height, or 10).  The pane only closes on its own if the
+Windows Terminal profile's "closeOnExit" is not "never".
+
 Job ~
 
 Uses the |job| support in Vim 8 and Neovim to update the quickfix list in real

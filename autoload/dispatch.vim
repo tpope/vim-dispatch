@@ -1195,7 +1195,7 @@ endfunction
 function! dispatch#pid(request) abort
   let request = s:request(a:request)
   if !has_key(request, 'pid')
-    if has('win32') && !executable('wmic')
+    if has('win32') && !executable('wmic') && get(request, 'handler') !=# 'wt'
       let request.pid = 0
       return 0
     endif
